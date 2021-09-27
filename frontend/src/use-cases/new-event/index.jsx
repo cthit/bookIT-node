@@ -6,8 +6,13 @@ import {
 } from "@cthit/react-digit-components";
 import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
+import { formatDT } from "../../utils/utils";
 
-const NewReservation = () => {
+const NewReservation = ({
+  history: {
+    location: { state },
+  },
+}) => {
   const [openToast] = useDigitToast({
     duration: 3000,
     actionText: "Ok",
@@ -19,8 +24,8 @@ const NewReservation = () => {
       title: event.title,
       phone: event.phone,
       room: event.room,
-      start: event.start.toISOString(),
-      end: event.end.toISOString(),
+      start: formatDT(event.start),
+      end: formatDT(event.end),
       description: event.description,
       party_report: !event.isActivity
         ? null
@@ -49,7 +54,11 @@ const NewReservation = () => {
       <DigitDesign.Card>
         <DigitDesign.CardBody>
           <DigitDesign.CardTitle text="New booking" />
-          <NewReservationFrom onSubmit={handleSubmit} />
+          <NewReservationFrom
+            start={state ? state.start : null}
+            end={state ? state.end : null}
+            onSubmit={handleSubmit}
+          />
         </DigitDesign.CardBody>
       </DigitDesign.Card>
     </DigitLayout.Center>

@@ -51,26 +51,12 @@ const validationSchema = yup.object().shape({
 const default_begin_date = new Date();
 const default_end_date = moment(new Date()).add(1, "h").toDate();
 
-const initialValues = {
-  title: "",
-  phone: "",
-  room: "BIG_HUB",
-  start: default_begin_date,
-  end: default_end_date,
-  description: "",
-  isActivity: false,
-  permit: false,
-  responsible_name: "",
-  responsible_number: "",
-  responsible_email: "",
-};
-
 const rooms = Object.keys(roomNames).map(k => ({
   value: k,
   text: roomNames[k],
 }));
 
-const NewReservationFrom = ({ onSubmit }) => {
+const NewReservationFrom = ({ onSubmit, start, end }) => {
   const [openToast] = useDigitToast({
     duration: 3000,
     actionText: "Ok",
@@ -85,6 +71,20 @@ const NewReservationFrom = ({ onSubmit }) => {
     if (!room) return;
     setValidTime(endDate > beginDate);
   }, [endDate, beginDate, room]);
+
+  const initialValues = {
+    title: "",
+    phone: "",
+    room: "BIG_HUB",
+    start: start ?? default_begin_date,
+    end: end ?? default_end_date,
+    description: "",
+    isActivity: false,
+    permit: false,
+    responsible_name: "",
+    responsible_number: "",
+    responsible_email: "",
+  };
 
   return (
     <DigitForm
