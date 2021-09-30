@@ -5,6 +5,7 @@ query GetEvents($from: String!, $to: String!){
     end
     id
     title
+    room
   }
 }`;
 

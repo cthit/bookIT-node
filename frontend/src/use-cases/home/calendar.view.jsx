@@ -46,10 +46,7 @@ const Calendar = ({ getEvents, eventClick, onSelect }) => {
       initialView={window.innerWidth > 600 ? "timeGridWeek" : "timeGridDay"}
       eventOverlap
       height={window.innerWidth > 600 ? "100%" : "auto"}
-      events={async info => {
-        const events = await getEvents(info.start, info.end);
-        return events;
-      }}
+      events={getEvents}
     />
   );
 };

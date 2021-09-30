@@ -7,7 +7,7 @@ import {
   DigitAutocompleteSelectMultiple,
 } from "@cthit/react-digit-components";
 import { DayMaskInput } from "./day-mask.element";
-import { roomNames } from "../../api/backend.api";
+import ROOMS from "../../common/rooms";
 
 export const ruleForm = {
   title: {
@@ -63,10 +63,7 @@ export const ruleForm = {
   _room: {
     component: DigitAutocompleteSelectMultiple,
     componentProps: {
-      options: Object.keys(roomNames).map(k => ({
-        value: k,
-        text: roomNames[k],
-      })),
+      options: ROOMS,
     },
   },
   _day_mask: {

@@ -18,8 +18,8 @@ import * as moment from "moment";
 import PartyReport from "./party-report.component";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CancelIcon from "@material-ui/icons/Cancel";
-import { roomNames } from "../../api/backend.api";
 import UserContext from "../../common/contexts/user-context";
+import ROOMS from "../../common/rooms";
 
 const whenTrue = {
   is: true,
@@ -52,11 +52,6 @@ const validationSchema = yup.object().shape({
 
 const default_begin_date = new Date();
 const default_end_date = moment(new Date()).add(1, "h").toDate();
-
-const rooms = Object.keys(roomNames).map(k => ({
-  value: k,
-  text: roomNames[k],
-}));
 
 const NewReservationFrom = ({ onSubmit, start, end }) => {
   const [openToast] = useDigitToast({
@@ -113,7 +108,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
             label="Phone number"
             size={{ width: "20rem" }}
           />
-          <Rooms rooms={rooms} onChange={e => setRoom(e.target.value)} />
+          <Rooms rooms={ROOMS} onChange={e => setRoom(e.target.value)} />
           <DigitLayout.Row>
             <TimeAndTimePicker
               name="start"
