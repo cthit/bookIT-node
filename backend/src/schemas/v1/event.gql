@@ -9,6 +9,8 @@ type Event {
   party_report: PartyReport
   room: Room!
   phone: String!
+  booked_as: String!
+  booked_by: String!
 }
 
 type Query {
@@ -29,6 +31,7 @@ input InputEvent {
   party_report: InputPartyReport
   room: Room!
   phone: String!
+  booked_as: String!
 }
 
 type Mutation {

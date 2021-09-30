@@ -48,6 +48,14 @@ exports.up = pgm => {
       type: "text",
       notNull: true,
     },
+    booked_by: {
+      type: "text",
+      notNull: true,
+    },
+    booked_as: {
+      type: "text",
+      notNull: true,
+    },
   });
 };
 

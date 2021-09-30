@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import {
   DigitForm,
   DigitLayout,
@@ -12,12 +12,14 @@ import {
   Description,
   Rooms,
   PhoneNumber,
+  BookAs,
 } from "./elements";
 import * as moment from "moment";
 import PartyReport from "./party-report.component";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CancelIcon from "@material-ui/icons/Cancel";
 import { roomNames } from "../../api/backend.api";
+import UserContext from "../../common/contexts/user-context";
 
 const whenTrue = {
   is: true,
@@ -66,6 +68,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
   const [endDate, setEndDate] = useState(default_end_date);
   const [room, setRoom] = useState(null);
   const [validTime, setValidTime] = useState(false);
+  const [user] = useContext(UserContext);
 
   useEffect(() => {
     if (!room) return;
@@ -84,6 +87,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
     responsible_name: "",
     responsible_number: "",
     responsible_email: "",
+    booked_as: "",
   };
 
   return (
@@ -128,6 +132,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
             )}
           </DigitLayout.Row>
           <Description />
+          <BookAs groups={user.groups} />
 
           <PartyReport />
           {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">

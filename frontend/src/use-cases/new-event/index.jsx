@@ -27,6 +27,7 @@ const NewReservation = ({
       start: formatDT(event.start),
       end: formatDT(event.end),
       description: event.description,
+      booked_as: event.booked_as,
       party_report: !event.isActivity
         ? null
         : {
