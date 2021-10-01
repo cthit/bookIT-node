@@ -65,6 +65,6 @@ export const getOverlapEvent = (
     "SELECT id, party_report_id, start, end_date as end,\
     description, title, created_at, updated_at, room, \
     booked_by, booked_as FROM event \
-    WHERE $1 < end_date AND $2 > start AND room = $3",
+    WHERE $1 < end_date AND $2 > start AND $3 && room",
     [start, end, room],
   );

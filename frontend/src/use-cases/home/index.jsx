@@ -5,16 +5,33 @@ import ROOMS from "../../common/rooms";
 import Calendar from "./calendar.view";
 import "./index.css";
 
+const getClassName = rooms => {
+  let name = "event";
+  for (const i in rooms) {
+    name += "-" + rooms[i].toLowerCase();
+  }
+  console.log(name);
+  return name;
+};
+
 const getCalendarEvents = async info => {
   const events = await getEvents(info.start, info.end);
   return events.map(e => {
-    const room = ROOMS.find(r => r.value === e.room);
     return {
       ...e,
-      color: room.color,
+      className: getClassName(e.room.sort()),
     };
   });
 };
+
+const getColorVariables = () => {
+  let variables = {};
+  for (const i in ROOMS) {
+    variables["--bg_" + ROOMS[i].value.toLowerCase()] = ROOMS[i].color;
+  }
+  return variables;
+};
+const colorVariables = getColorVariables();
 
 const Home = () => {
   const history = useHistory();
@@ -25,6 +42,7 @@ const Home = () => {
         margin: "1rem",
         height: "40rem",
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+        ...colorVariables,
       }}
     >
       <div style={{ display: "flex", alignContent: "center" }}>

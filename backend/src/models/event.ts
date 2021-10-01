@@ -11,7 +11,7 @@ export interface Event {
   updated_at: string;
   party_report?: PartyReport;
   party_report_id?: string;
-  room: Room;
+  room: Room[];
   phone: string;
   booked_by?: string;
   booked_as: string;

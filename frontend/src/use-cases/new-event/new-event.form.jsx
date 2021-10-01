@@ -27,19 +27,10 @@ const whenTrue = {
   otherwise: yup.string(),
 };
 
-const badRooms = [
-  "",
-  {
-    target: {
-      value: "null",
-    },
-  },
-];
-
 const validationSchema = yup.object().shape({
   title: yup.string().required("You need to provide a title for the event"),
   phone: yup.string().required("You need to provide a phone number"),
-  room: yup.string().notOneOf(badRooms, "You need to select a room to book"),
+  room: yup.array().min(1, "You need to select at least one room"),
   description: yup.string(),
   start: yup.date().required(),
   end: yup.date().required(),
@@ -73,7 +64,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
   const initialValues = {
     title: "",
     phone: "",
-    room: "BIG_HUB",
+    room: ["BIG_HUB"],
     start: start ?? default_begin_date,
     end: end ?? default_end_date,
     description: "",

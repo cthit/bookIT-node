@@ -26,7 +26,7 @@ const sameDay = (d1: Date, d2: Date): boolean => {
  * 16 -> "16"
  */
 const zero = (n: number): string => {
-  return n > 10 ? n.toString() : "0" + n;
+  return n >= 10 ? n.toString() : "0" + n;
 };
 
 export const day = (date: Date): string => {

@@ -23,6 +23,10 @@ export const createEvent = async (
     return false;
   }
 
+  if (event.room.length <= 0) {
+    return false;
+  }
+
   var { err, res } = await to<pg.QueryResult<Event[]>>(
     eventRepo.getOverlapEvent(db, event),
   );

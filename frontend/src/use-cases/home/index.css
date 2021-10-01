@@ -5,3 +5,65 @@
   margin-left: 0.5rem;
   margin-right: 0.5rem;
 }
+
+/*Event colors*/
+.event-big_hub {
+  border-color: var(--bg_big_hub);
+  background: var(--bg_big_hub);
+}
+
+.event-group_room {
+  border-color: var(--bg_group_room);
+  background: var(--bg_group_room);
+}
+
+.event-hasen {
+  border-color: var(--bg_hasen);
+  background: var(--bg_hasen);
+}
+
+.event-big_hub-group_room {
+  border-color: var(--bg_big_hub);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg_big_hub),
+    var(--bg_big_hub) 10px,
+    var(--bg_group_room) 10px,
+    var(--bg_group_room) 20px
+  );
+}
+
+.event-big_hub-hasen {
+  border-color: var(--bg_big_hub);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg_big_hub),
+    var(--bg_big_hub) 10px,
+    var(--bg_hasen) 10px,
+    var(--bg_hasen) 20px
+  );
+}
+
+.event-group_room-hasen {
+  border-color: var(--bg_hasen);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg_group_room),
+    var(--bg_group_room) 10px,
+    var(--bg_hasen) 10px,
+    var(--bg_hasen) 20px
+  );
+}
+
+.event-big_hub-group_room-hasen {
+  border-color: var(--bg_big_hub);
+  background: repeating-linear-gradient(
+    45deg,
+    var(--bg_big_hub),
+    var(--bg_big_hub) 10px,
+    var(--bg_group_room) 10px,
+    var(--bg_group_room) 20px,
+    var(--bg_hasen) 20px,
+    var(--bg_hasen) 30px
+  );
+}

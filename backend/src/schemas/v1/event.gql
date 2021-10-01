@@ -7,7 +7,7 @@ type Event {
   created_at: String
   updated_at: String
   party_report: PartyReport
-  room: Room!
+  room: [Room]!
   phone: String!
   booked_as: String!
   booked_by: String!
@@ -29,7 +29,7 @@ input InputEvent {
   created_at: String
   updated_at: String
   party_report: InputPartyReport
-  room: Room!
+  room: [Room]!
   phone: String!
   booked_as: String!
 }

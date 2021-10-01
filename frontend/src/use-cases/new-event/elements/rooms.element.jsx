@@ -1,12 +1,12 @@
 import {
-  DigitAutocompleteSelectSingle,
+  DigitAutocompleteSelectMultiple,
   useDigitFormField,
 } from "@cthit/react-digit-components";
 
 const Rooms = ({ rooms, onChange }) => {
   const roomValues = useDigitFormField("room");
   return (
-    <DigitAutocompleteSelectSingle
+    <DigitAutocompleteSelectMultiple
       {...roomValues}
       upperLabel="Room"
       options={rooms}
