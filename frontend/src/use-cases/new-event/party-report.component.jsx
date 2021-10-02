@@ -3,7 +3,9 @@ import {
   DigitCheckbox,
   DigitTextField,
   DigitLayout,
+  useDigitTranslations,
 } from "@cthit/react-digit-components";
+import translations from "./new-event.translations.json";
 
 const PartyReport = () => {
   const activityValues = formField("isActivity");
@@ -11,27 +13,31 @@ const PartyReport = () => {
   const repNameValues = formField("responsible_name");
   const repNumberValues = formField("responsible_number");
   const repEmailValues = formField("responsible_email");
+  const [texts] = useDigitTranslations(translations);
 
   return (
     <>
       <DigitCheckbox
         {...activityValues}
-        label="Submit party report"
+        label={texts.isActivity}
         size={{ width: "100%" }}
       />
       {activityValues.value && (
         <>
-          <DigitCheckbox {...permitValues} label="Serving permit" />
+          <DigitCheckbox {...permitValues} label={texts.permit} />
 
           <DigitLayout.Row>
-            <DigitTextField {...repNameValues} upperLabel="Responsible name" />
+            <DigitTextField
+              {...repNameValues}
+              upperLabel={texts.responsible_name}
+            />
             <DigitTextField
               {...repNumberValues}
-              upperLabel="Responsible phone"
+              upperLabel={texts.responsible_number}
             />
             <DigitTextField
               {...repEmailValues}
-              upperLabel="Responsible email"
+              upperLabel={texts.responsible_email}
             />
           </DigitLayout.Row>
         </>

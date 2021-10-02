@@ -1,0 +1,78 @@
+{
+  "title": [
+    "Title",
+    "Titel"
+  ],
+  "location": [
+    "Location",
+    "Plats"
+  ],
+  "rooms": [
+    "Rooms",
+    "Rum"
+  ],
+  "attendees": [
+    "Attendees",
+    "Adress"
+  ],
+  "status": [
+    "Status",
+    "Status"
+  ],
+  "start": [
+    "Start",
+    "Börjar"
+  ],
+  "end": [
+    "End",
+    "Slutar"
+  ],
+  "booked_as": [
+    "Booked as",
+    "Bokad som"
+  ],
+  "serving_permit": [
+    "Serving permit",
+    "Serveringstillstånd"
+  ],
+  "responsible_name": [
+    "Event responsible name",
+    "Arransvarigs namn"
+  ],
+  "responsible_number": [
+    "Event responsible phone",
+    "Arransvarigs telefon"
+  ],
+  "responsible_email": [
+    "Event responsible e-mail",
+    "Arransvarigs e-post"
+  ],
+  "co_responsible_name": [
+    "Event co-responsible name",
+    "Medansvarigs namn"
+  ],
+  "co_responsible_number": [
+    "Event Responsible number",
+    "Medansvarigs telefon"
+  ],
+  "co_responsible_email": [
+    "Event responsible email",
+    "Medansvarigs e-mail"
+  ],
+  "description": [
+    "Description",
+    "Beskrivning"
+  ],
+  "created_at": [
+    "Created at",
+    "Skapades"
+  ],
+  "party_reports": [
+    "Party reports",
+    "Aktivitetsanmälningar"
+  ],
+  "back": [
+    "Back",
+    "Tillbaka"
+  ]
+}

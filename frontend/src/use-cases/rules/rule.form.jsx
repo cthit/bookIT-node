@@ -9,54 +9,54 @@ import {
 import { DayMaskInput } from "./day-mask.element";
 import ROOMS from "../../common/rooms";
 
-export const ruleForm = {
+export const ruleForm = texts => ({
   title: {
     component: DigitTextField,
     componentProps: {
       outlined: true,
-      upperLabel: "Title",
+      upperLabel: texts.title,
     },
   },
   priority: {
     component: DigitTextField,
     componentProps: {
       outlined: true,
-      upperLabel: "Priority",
+      upperLabel: texts.priority,
     },
   },
   start_date: {
     component: DigitDatePicker,
     componentProps: {
       outlined: true,
-      upperLabel: "Start date",
+      upperLabel: texts.start_date,
     },
   },
   end_date: {
     component: DigitDatePicker,
     componentProps: {
       outlined: true,
-      upperLabel: "End date",
+      upperLabel: texts.end_date,
     },
   },
   start_time: {
     component: DigitTimePicker,
     componentProps: {
       outlined: true,
-      upperLabel: "Start time",
+      upperLabel: texts.start_time,
     },
   },
   end_time: {
     component: DigitTimePicker,
     componentProps: {
       outlined: true,
-      upperLabel: "End time",
+      upperLabel: texts.end_time,
     },
   },
   description: {
     component: DigitTextArea,
     componentProps: {
       outlined: true,
-      upperLabel: "Description",
+      upperLabel: texts.description,
       rows: 3,
     },
   },
@@ -64,16 +64,20 @@ export const ruleForm = {
     component: DigitAutocompleteSelectMultiple,
     componentProps: {
       options: ROOMS,
+      upperLabel: texts._room,
     },
   },
   _day_mask: {
     component: DayMaskInput,
+    componentProps: {
+      label: texts._day_mask,
+    },
   },
   _allow: {
     component: DigitSwitch,
     componentProps: {
       primary: true,
-      label: "Allow",
+      label: texts._allow,
     },
   },
-};
+});

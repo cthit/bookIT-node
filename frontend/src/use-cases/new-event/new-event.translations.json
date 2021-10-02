@@ -29,7 +29,7 @@
   ],
   "isActivity": [
     "Submit party report",
-    "Aktivitetsanmäl"
+    "Skapa aktivitetsanmäl"
   ],
   "permit": [
     "Serving permit",
@@ -37,15 +37,15 @@
   ],
   "responsible_name": [
     "Event responsible name",
-    "Arrangemangsansvarigs namn"
+    "Arransvarigs namn"
   ],
   "responsible_number": [
     "Event responsible phone",
-    "Arrangemangsansvarigs telefon"
+    "Arransvarigs telefon"
   ],
   "responsible_email": [
     "Event responsible e-mail",
-    "Arrangemangsansvarigs e-post"
+    "Arransvarigs e-post"
   ],
   "booked_as": [
     "Booking as",

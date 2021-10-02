@@ -2,12 +2,10 @@ import { DigitCheckbox, DigitText } from "@cthit/react-digit-components";
 import { useCallback } from "react";
 import "./day-mask.style.css";
 
-const week_days = ["mon", "tue", "wen", "thu", "fri", "sat", "sun"];
-
 const dayArray = day_mask => {
   const days = [];
   for (var i = 0; i < 7; i++) {
-    days.push({ value: day_mask % 2, id: week_days[i] });
+    days.push({ value: day_mask % 2, id: i });
     day_mask >>= 1;
   }
   return days;
@@ -28,13 +26,13 @@ const DayMask = ({ day_mask }) => {
   );
 };
 
-export const DayMaskInput = ({ value, onChange }) => {
+export const DayMaskInput = ({ value, onChange, label }) => {
   const daysArr = useCallback(dayArray, [value]);
 
   return (
     <div>
       <div className="mask-container" style={{ paddingLeft: "1.1rem" }}>
-        {["M", "T", "W", "T", "F", "S", "S"].map(letter => (
+        {label.split(" ").map(letter => (
           <DigitText.Title className="day-input" text={letter} />
         ))}
       </div>
