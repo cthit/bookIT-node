@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@cthit/react-digit-components": "^1.0.4-alpha.1",
+    "@cthit/react-digit-components": "^1.0.4-alpha.2",
     "@fullcalendar/core": "^5.9.0",
     "@fullcalendar/daygrid": "^5.9.0",
     "@fullcalendar/interaction": "^5.9.0",
