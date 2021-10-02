@@ -13,7 +13,7 @@
   ],
   "attendees": [
     "Attendees",
-    "Adress"
+    "Antal deltagare"
   ],
   "status": [
     "Status",
@@ -57,7 +57,7 @@
   ],
   "co_responsible_email": [
     "Event responsible email",
-    "Medansvarigs e-mail"
+    "Medansvarigs e-post"
   ],
   "description": [
     "Description",
