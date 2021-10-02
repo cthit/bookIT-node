@@ -3,10 +3,12 @@ import {
   DigitDesign,
   DigitLayout,
   useDigitToast,
+  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
 import { formatDT } from "../../utils/utils";
+import transitions from "./new-event.translations.json";
 
 const NewReservation = ({
   history: {
@@ -50,11 +52,13 @@ const NewReservation = ({
     });
   };
 
+  const [texts] = useDigitTranslations(transitions);
+
   return (
     <DigitLayout.Center>
       <DigitDesign.Card>
         <DigitDesign.CardBody>
-          <DigitDesign.CardTitle text="New booking" />
+          <DigitDesign.CardTitle text={texts.new_booking} />
           <NewReservationFrom
             start={state ? state.start : null}
             end={state ? state.end : null}

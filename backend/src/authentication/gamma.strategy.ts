@@ -45,6 +45,7 @@ export const init = (pass: passport.PassportStatic) => {
           groups: profile.groups
             .filter(g => g.superGroup.type != "ALUMNI")
             .map(g => g.superGroup.name),
+          language: profile.language ?? "en",
           accessToken: accessToken,
         },
         null,

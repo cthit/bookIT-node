@@ -69,6 +69,7 @@ export const getUser_query = `
     cid
     groups
     is_admin
+    language
   }
 }
 `;

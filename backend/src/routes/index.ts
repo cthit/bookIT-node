@@ -18,7 +18,13 @@ const setupAuth = (app: express.Application, { passport }: Tools) => {
     "/api/callback",
     passport.authenticate("gamma"),
     (req: express.Request, res: express.Response) => {
-      const user: User = { cid: "", is_admin: false, groups: [], ...req.user };
+      const user: User = {
+        cid: "",
+        is_admin: false,
+        groups: [],
+        language: "en",
+        ...req.user,
+      };
       delete user.accessToken;
       res.send(user);
       res.status(200);

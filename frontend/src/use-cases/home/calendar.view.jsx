@@ -4,14 +4,21 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
 import momentPlugin from "@fullcalendar/moment";
+import svLocale from "@fullcalendar/core/locales/sv";
+import enLocale from "@fullcalendar/core/locales/en-gb";
+import { useDigitTranslations } from "@cthit/react-digit-components";
 
 const Calendar = ({ getEvents, eventClick, onSelect }) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));
   eventClick = eventClick ?? (() => {});
   onSelect = onSelect ?? (() => {});
 
+  const [, activeLanguage] = useDigitTranslations({});
+
   return (
     <FullCallendar
+      locales={[enLocale, svLocale]}
+      locale={activeLanguage}
       select={onSelect}
       selectable
       firstDay={1}

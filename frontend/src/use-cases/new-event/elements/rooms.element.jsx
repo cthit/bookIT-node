@@ -3,17 +3,13 @@ import {
   useDigitFormField,
 } from "@cthit/react-digit-components";
 
-const Rooms = ({ rooms, onChange }) => {
+const Rooms = ({ rooms, label }) => {
   const roomValues = useDigitFormField("room");
   return (
     <DigitAutocompleteSelectMultiple
       {...roomValues}
-      upperLabel="Room"
+      upperLabel={label}
       options={rooms}
-      onChange={e => {
-        onChange(e);
-        roomValues.onChange(e);
-      }}
     />
   );
 };

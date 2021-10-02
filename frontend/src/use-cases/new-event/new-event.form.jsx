@@ -1,9 +1,10 @@
-import { useState, useEffect, useContext } from "react";
+import { useContext } from "react";
 import {
   DigitForm,
   DigitLayout,
   DigitButton,
   useDigitToast,
+  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
 import {
@@ -16,10 +17,9 @@ import {
 } from "./elements";
 import * as moment from "moment";
 import PartyReport from "./party-report.component";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import CancelIcon from "@material-ui/icons/Cancel";
 import UserContext from "../../common/contexts/user-context";
 import ROOMS from "../../common/rooms";
+import translations from "./new-event.translations.json";
 
 const whenTrue = {
   is: true,
@@ -50,16 +50,8 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
     actionText: "Ok",
     actionHandler: () => {},
   });
-  const [beginDate, setBeginDate] = useState(default_begin_date);
-  const [endDate, setEndDate] = useState(default_end_date);
-  const [room, setRoom] = useState(null);
-  const [validTime, setValidTime] = useState(false);
   const [user] = useContext(UserContext);
-
-  useEffect(() => {
-    if (!room) return;
-    setValidTime(endDate > beginDate);
-  }, [endDate, beginDate, room]);
+  const [texts] = useDigitTranslations(translations);
 
   const initialValues = {
     title: "",
@@ -93,32 +85,19 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
       render={() => (
         <DigitLayout.Column>
           {/*<DigitText.Text text={`Bokare: ${me ? me.cid : ""}`} />*/}
-          <Title />
+          <Title label={texts.title} />
           <PhoneNumber
             name="phone"
-            label="Phone number"
+            label={texts.phone}
             size={{ width: "20rem" }}
           />
-          <Rooms rooms={ROOMS} onChange={e => setRoom(e.target.value)} />
+          <Rooms label={texts.room} rooms={ROOMS} />
           <DigitLayout.Row>
-            <TimeAndTimePicker
-              name="start"
-              label="Startdatum"
-              onChange={e => setBeginDate(e.target.value)}
-            />
-            <TimeAndTimePicker
-              name="end"
-              label="Slutdatum"
-              onChange={e => setEndDate(e.target.value)}
-            />
-            {!room ? null : validTime ? (
-              <CheckCircleIcon style={{ color: "green" }} />
-            ) : (
-              <CancelIcon style={{ color: "red" }} />
-            )}
+            <TimeAndTimePicker name="start" label={texts.start} />
+            <TimeAndTimePicker name="end" label={texts.end} />
           </DigitLayout.Row>
-          <Description />
-          <BookAs groups={user.groups} />
+          <Description label={texts.description} />
+          <BookAs label={texts.booked_as} groups={user.groups} />
 
           <PartyReport />
           {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">

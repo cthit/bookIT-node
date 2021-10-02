@@ -3,12 +3,12 @@ import {
   useDigitFormField,
 } from "@cthit/react-digit-components";
 
-const BookAs = ({ groups }) => {
+const BookAs = ({ groups, label }) => {
   const bookedAsValues = useDigitFormField("booked_as");
   return (
     <DigitAutocompleteSelectSingle
       {...bookedAsValues}
-      upperLabel="Book as"
+      upperLabel={label}
       options={groups.map(e => ({ text: e, value: e }))}
     />
   );

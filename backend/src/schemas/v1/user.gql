@@ -3,6 +3,7 @@ type User {
   phone: String
   groups: [String]!
   is_admin: Boolean!
+  language: String!
 }
 
 type Query {

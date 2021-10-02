@@ -10,7 +10,6 @@ const getClassName = rooms => {
   for (const i in rooms) {
     name += "-" + rooms[i].toLowerCase();
   }
-  console.log(name);
   return name;
 };
 
