@@ -1,4 +1,4 @@
-import { DigitCRUD } from "@cthit/react-digit-components";
+import { DigitCRUD, useDigitTranslations } from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
 import CancelIcon from "@material-ui/icons/Cancel";
@@ -11,13 +11,9 @@ import {
   getRules,
 } from "../../api/backend.api";
 import { formatDate, formatDT, formatTime } from "../../utils/utils";
-import {
-  detailed_view_keys,
-  detailed_view_texts,
-  table_header_keys,
-  table_header_texts,
-} from "./rules.labels";
+import { detailed_view_keys, table_header_keys } from "./rules.labels";
 import { ruleForm } from "./rule.form";
+import translations from "./rules.translations.json";
 
 const formatRule = r => ({
   ...r,
@@ -55,6 +51,8 @@ const createRuleCallback = async rule =>
   });
 
 const Rules = () => {
+  const [texts] = useDigitTranslations(translations);
+
   return (
     <div className="container">
       <DigitCRUD
@@ -65,18 +63,18 @@ const Rules = () => {
         path="/rules"
         idProp="id"
         keysOrder={detailed_view_keys}
-        keysText={detailed_view_texts}
+        keysText={texts}
+        backButtonText={texts.back}
+        createButtonText={texts.create}
+        detailsButtonText={texts.details}
+        createTitle={texts.create_rule}
         tableProps={{
           columnsOrder: table_header_keys,
-          headerTexts: table_header_texts,
-          titleText: "Rules",
+          headerTexts: texts,
+          titleText: texts.Rules,
           startOrderBy: "title",
           startRowsPerPage: 10,
         }}
-        backButtonText="Back"
-        detailsButtonText="Details"
-        detailsTitle={data => data.title}
-        createTitle="Create Rule"
         formInitialValues={{
           title: "",
           priority: 10,
@@ -89,7 +87,7 @@ const Rules = () => {
           description: "",
           _room: [],
         }}
-        formComponentData={ruleForm}
+        formComponentData={ruleForm(texts)}
       />
     </div>
   );

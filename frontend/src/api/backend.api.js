@@ -13,11 +13,6 @@ import {
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
-export const roomNames = {
-  BIG_HUB: "Storhubben",
-  GROUP_ROOM: "Grupprummet",
-  HASEN: "HASen",
-};
 
 const request = (body, dataLabel, errorMessage, onReject = () => null) =>
   new Promise(resolve =>

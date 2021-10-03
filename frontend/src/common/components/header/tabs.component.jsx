@@ -1,6 +1,8 @@
 import { DigitTabs } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { useDigitTranslations } from "@cthit/react-digit-components";
+import translations from "./tabs.translations.json";
 
 const tabs = [
   {
@@ -20,6 +22,7 @@ const tabs = [
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState("");
   const history = useHistory();
+  const [texts] = useDigitTranslations(translations);
 
   useEffect(() => {
     const value = window.location.pathname.split("/")[1];
@@ -38,7 +41,7 @@ const Tabs = () => {
       centered
       selected={activeTab}
       fullwidth
-      tabs={tabs}
+      tabs={tabs.map(t => ({ ...t, text: texts[t.text] }))}
     />
   );
 };

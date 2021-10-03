@@ -10,6 +10,7 @@ import { getResolvers } from "../resolvers";
 // Import types
 import express from "express";
 import { Tools } from "../utils/commonTypes";
+import { User } from "../models/user";
 
 const setupAuth = (app: express.Application, { passport }: Tools) => {
   app.get("/api/login", passport.authenticate("gamma"));
@@ -17,7 +18,15 @@ const setupAuth = (app: express.Application, { passport }: Tools) => {
     "/api/callback",
     passport.authenticate("gamma"),
     (req: express.Request, res: express.Response) => {
-      res.send(req.user);
+      const user: User = {
+        cid: "",
+        is_admin: false,
+        groups: [],
+        language: "en",
+        ...req.user,
+      };
+      delete user.accessToken;
+      res.send(user);
       res.status(200);
     },
   );

@@ -4,12 +4,26 @@ import pg from "pg";
 import * as eventRepo from "../repositories/event.repository";
 import { checkRules } from "./rule.service";
 import { createPartyReport } from "./party_report.service";
+import { User } from "../models/user";
 
 export const createEvent = async (
   db: pg.Pool,
   event: Event,
+  { groups }: User,
 ): Promise<boolean> => {
   if (new Date(event.start) >= new Date(event.end)) {
+    return false;
+  }
+
+  if (!groups.includes(event.booked_as)) {
+    return false;
+  }
+
+  if (!event.booked_by || event.booked_by == "") {
+    return false;
+  }
+
+  if (event.room.length <= 0) {
     return false;
   }
 

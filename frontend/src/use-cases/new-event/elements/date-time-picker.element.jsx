@@ -3,19 +3,16 @@ import {
   DigitDateAndTimePicker,
 } from "@cthit/react-digit-components";
 import { string } from "prop-types";
+import { useEffect } from "react";
+import moment from "moment";
+import "moment/locale/sv";
 
-const TimeAndTimePicker = ({ name, label, onChange }) => {
+const TimeAndTimePicker = ({ name, label }) => {
   const timeValues = useDigitFormField(name);
-  return (
-    <DigitDateAndTimePicker
-      {...timeValues}
-      upperLabel={label}
-      onChange={e => {
-        onChange(e);
-        timeValues.onChange(e);
-      }}
-    />
-  );
+  useEffect(() => {
+    moment.locale("sv", { week: { dow: 0 } });
+  }, []);
+  return <DigitDateAndTimePicker {...timeValues} upperLabel={label} />;
 };
 
 TimeAndTimePicker.propTypes = {

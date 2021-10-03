@@ -3,7 +3,7 @@ import {
   DigitTextArea,
 } from "@cthit/react-digit-components";
 
-const Description = () => {
+const Description = ({ label }) => {
   const descriptionValues = useDigitFormField("description");
   return (
     <DigitTextArea
@@ -11,7 +11,7 @@ const Description = () => {
       rows={5}
       rowsMax={8}
       {...descriptionValues}
-      upperLabel="Description"
+      upperLabel={label}
     />
   );
 };

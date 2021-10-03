@@ -45,6 +45,14 @@ exports.up = pgm => {
       default: pgm.func("NOW()"),
     },
     room: {
+      type: "text[]",
+      notNull: true,
+    },
+    booked_by: {
+      type: "text",
+      notNull: true,
+    },
+    booked_as: {
       type: "text",
       notNull: true,
     },

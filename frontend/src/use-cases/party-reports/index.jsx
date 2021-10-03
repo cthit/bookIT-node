@@ -2,17 +2,14 @@ import {
   DigitButton,
   DigitCRUD,
   DigitTooltip,
+  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { getPartyReport, getPartyReports } from "../../api/backend.api";
 import { formatDT } from "../../utils/utils";
 import "./index.css";
 import { useHistory } from "react-router";
-import {
-  detailed_view_keys,
-  detailed_view_texts,
-  table_header_keys,
-  table_header_texts,
-} from "./party-report.labels";
+import { detailed_view_keys, table_header_keys } from "./party-report.labels";
+import translations from "./party-report.translations.json";
 
 import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
@@ -68,6 +65,7 @@ const formatPartyReport = e => ({
 
 const PartyReports = () => {
   const history = useHistory();
+  const [texts] = useDigitTranslations(translations);
 
   const readAllPartyReports = async () =>
     (await getPartyReports()).map(e => ({
@@ -89,15 +87,15 @@ const PartyReports = () => {
         path="/party_reports"
         idProp="id"
         keysOrder={detailed_view_keys}
-        keysText={detailed_view_texts}
+        keysText={texts}
         tableProps={{
           columnsOrder: table_header_keys,
-          headerTexts: table_header_texts,
-          titleText: "Party reports",
+          headerTexts: texts,
+          titleText: texts.party_reports,
           startOrderBy: "created",
           startRowsPerPage: 10,
         }}
-        backButtonText="Back"
+        backButtonText={texts.back}
         detailsButtonText="Details"
         detailsTitle={data => data.title}
         readOneProps={{ style: { maxWidth: "40rem" } }}

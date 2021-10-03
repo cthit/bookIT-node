@@ -1,0 +1,74 @@
+{
+  "title": [
+    "Title",
+    "Titel"
+  ],
+  "priority": [
+    "Priority",
+    "Prioritet"
+  ],
+  "start_date": [
+    "Start date",
+    "Start datum"
+  ],
+  "end_date": [
+    "End date",
+    "Slut datum"
+  ],
+  "start_time": [
+    "Start time",
+    "Start tid"
+  ],
+  "end_time": [
+    "End time",
+    "Slut tid"
+  ],
+  "description": [
+    "Description",
+    "Beskrivning"
+  ],
+  "_room": [
+    "Rooms",
+    "Rum"
+  ],
+  "_day_mask": [
+    "M T W T F S S",
+    "M T O T F L S"
+  ],
+  "_allow": [
+    "Allow",
+    "Tillåt"
+  ],
+  "_time": [
+    "Time",
+    "Tid"
+  ],
+  "created_at": [
+    "Created at",
+    "Skapades"
+  ],
+  "updated_at": [
+    "Updated at",
+    "Uppdaterades"
+  ],
+  "rules": [
+    "Rules",
+    "Regler"
+  ],
+  "back": [
+    "Back",
+    "Tillbaka"
+  ],
+  "details": [
+    "Details",
+    "Detaljer"
+  ],
+  "create": [
+    "Create",
+    "Skapa"
+  ],
+  "create_rule": [
+    "Create rule",
+    "Skapa regel"
+  ]
+}

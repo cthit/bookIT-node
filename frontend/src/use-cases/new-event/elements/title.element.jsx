@@ -3,13 +3,13 @@ import {
   useDigitFormField,
 } from "@cthit/react-digit-components";
 
-const Title = () => {
+const Title = ({ label }) => {
   const titleValues = useDigitFormField("title");
   return (
     <DigitTextField
       {...titleValues}
       size={{ width: "20rem" }}
-      upperLabel="Title"
+      upperLabel={label}
     />
   );
 };

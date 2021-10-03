@@ -5,6 +5,7 @@ query GetEvents($from: String!, $to: String!){
     end
     id
     title
+    room
   }
 }`;
 
@@ -68,6 +69,7 @@ export const getUser_query = `
     cid
     groups
     is_admin
+    language
   }
 }
 `;

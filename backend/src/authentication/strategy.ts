@@ -27,6 +27,7 @@ interface GammaUser {
   phone?: string;
   authorities: Authority[];
   groups: { superGroup: { name: string; type: string } }[];
+  language: string;
 }
 
 type VerifyFunction = (

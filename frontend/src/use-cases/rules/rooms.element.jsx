@@ -1,11 +1,12 @@
-import { roomNames } from "../../api/backend.api";
+import ROOMS from "../../common/rooms";
 
 const Rooms = ({ rooms }) => {
   return (
     <div>
-      {rooms.map(r => (
-        <div key={r}>{roomNames[r]}</div>
-      ))}
+      {rooms.map(r => {
+        const room = ROOMS.find(e => e.value === r);
+        return <div key={r}>{room.text}</div>;
+      })}
     </div>
   );
 };

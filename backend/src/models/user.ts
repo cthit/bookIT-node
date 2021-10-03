@@ -3,5 +3,6 @@ export interface User {
   phone?: string;
   is_admin: boolean;
   groups: string[];
-  accessToken: string;
+  language: string;
+  accessToken?: string;
 }

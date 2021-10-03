@@ -26,7 +26,7 @@ export const getRulesByEvent = (
   db.query<Rule>(
     "SELECT id, day_mask, start_date, end_date, start_time,\
     end_time, description, allow, priority, title, created_at, updated_at,\
-    room FROM rule WHERE $1 <= end_date AND $2 >= start_date AND $3 = ANY (room)",
+    room FROM rule WHERE $1 <= end_date AND $2 >= start_date AND $3 && room",
     [start, end, room],
   );
 

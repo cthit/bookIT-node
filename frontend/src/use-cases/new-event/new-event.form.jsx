@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
+import { useContext } from "react";
 import {
   DigitForm,
   DigitLayout,
   DigitButton,
   useDigitToast,
+  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
 import {
@@ -12,12 +13,13 @@ import {
   Description,
   Rooms,
   PhoneNumber,
+  BookAs,
 } from "./elements";
 import * as moment from "moment";
 import PartyReport from "./party-report.component";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import CancelIcon from "@material-ui/icons/Cancel";
-import { roomNames } from "../../api/backend.api";
+import UserContext from "../../common/contexts/user-context";
+import ROOMS from "../../common/rooms";
+import translations from "./new-event.translations.json";
 
 const whenTrue = {
   is: true,
@@ -25,19 +27,10 @@ const whenTrue = {
   otherwise: yup.string(),
 };
 
-const badRooms = [
-  "",
-  {
-    target: {
-      value: "null",
-    },
-  },
-];
-
 const validationSchema = yup.object().shape({
   title: yup.string().required("You need to provide a title for the event"),
   phone: yup.string().required("You need to provide a phone number"),
-  room: yup.string().notOneOf(badRooms, "You need to select a room to book"),
+  room: yup.array().min(1, "You need to select at least one room"),
   description: yup.string(),
   start: yup.date().required(),
   end: yup.date().required(),
@@ -51,40 +44,29 @@ const validationSchema = yup.object().shape({
 const default_begin_date = new Date();
 const default_end_date = moment(new Date()).add(1, "h").toDate();
 
-const initialValues = {
-  title: "",
-  phone: "",
-  room: "BIG_HUB",
-  start: default_begin_date,
-  end: default_end_date,
-  description: "",
-  isActivity: false,
-  permit: false,
-  responsible_name: "",
-  responsible_number: "",
-  responsible_email: "",
-};
-
-const rooms = Object.keys(roomNames).map(k => ({
-  value: k,
-  text: roomNames[k],
-}));
-
-const NewReservationFrom = ({ onSubmit }) => {
+const NewReservationFrom = ({ onSubmit, start, end }) => {
   const [openToast] = useDigitToast({
     duration: 3000,
     actionText: "Ok",
     actionHandler: () => {},
   });
-  const [beginDate, setBeginDate] = useState(default_begin_date);
-  const [endDate, setEndDate] = useState(default_end_date);
-  const [room, setRoom] = useState(null);
-  const [validTime, setValidTime] = useState(false);
+  const [user] = useContext(UserContext);
+  const [texts] = useDigitTranslations(translations);
 
-  useEffect(() => {
-    if (!room) return;
-    setValidTime(endDate > beginDate);
-  }, [endDate, beginDate, room]);
+  const initialValues = {
+    title: "",
+    phone: "",
+    room: ["BIG_HUB"],
+    start: start ?? default_begin_date,
+    end: end ?? default_end_date,
+    description: "",
+    isActivity: false,
+    permit: false,
+    responsible_name: "",
+    responsible_number: "",
+    responsible_email: "",
+    booked_as: "",
+  };
 
   return (
     <DigitForm
@@ -103,31 +85,19 @@ const NewReservationFrom = ({ onSubmit }) => {
       render={() => (
         <DigitLayout.Column>
           {/*<DigitText.Text text={`Bokare: ${me ? me.cid : ""}`} />*/}
-          <Title />
+          <Title label={texts.title} />
           <PhoneNumber
             name="phone"
-            label="Phone number"
+            label={texts.phone}
             size={{ width: "20rem" }}
           />
-          <Rooms rooms={rooms} onChange={e => setRoom(e.target.value)} />
+          <Rooms label={texts.room} rooms={ROOMS} />
           <DigitLayout.Row>
-            <TimeAndTimePicker
-              name="start"
-              label="Startdatum"
-              onChange={e => setBeginDate(e.target.value)}
-            />
-            <TimeAndTimePicker
-              name="end"
-              label="Slutdatum"
-              onChange={e => setEndDate(e.target.value)}
-            />
-            {!room ? null : validTime ? (
-              <CheckCircleIcon style={{ color: "green" }} />
-            ) : (
-              <CancelIcon style={{ color: "red" }} />
-            )}
+            <TimeAndTimePicker name="start" label={texts.start} />
+            <TimeAndTimePicker name="end" label={texts.end} />
           </DigitLayout.Row>
-          <Description />
+          <Description label={texts.description} />
+          <BookAs label={texts.booked_as} groups={user.groups} />
 
           <PartyReport />
           {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">

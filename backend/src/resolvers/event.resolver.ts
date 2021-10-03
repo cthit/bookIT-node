@@ -2,6 +2,7 @@ import * as events from "../repositories/event.repository";
 import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
+import { User } from "../models/user";
 import pg from "pg";
 import { createEvent } from "../services/event.service";
 
@@ -50,6 +51,12 @@ export const getEventQResolvers = ({ db }: Tools) => ({
 });
 
 export const getEventMResolvers = ({ db }: Tools) => ({
-  createEvent: async (_: any, { event }: { event: Event }) =>
-    createEvent(db, event),
+  createEvent: async (
+    _: any,
+    { event }: { event: Event },
+    { user }: { user: User },
+  ) => {
+    event.booked_by = user.cid;
+    return createEvent(db, event, user);
+  },
 });
