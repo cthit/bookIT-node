@@ -1,8 +1,10 @@
+import { useDigitCustomDialog } from "@cthit/react-digit-components";
 import { useHistory } from "react-router";
 import { getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
 import ROOMS from "../../common/rooms";
 import Calendar from "./calendar.view";
+import DetailedView from "./detailed-view.view";
 import "./index.css";
 
 const getClassName = rooms => {
@@ -34,6 +36,9 @@ const colorVariables = getColorVariables();
 
 const Home = () => {
   const history = useHistory();
+  const [openDialog] = useDigitCustomDialog({
+    title: "Event",
+  });
   return (
     <div
       style={{
@@ -53,7 +58,14 @@ const Home = () => {
       </div>
       <Calendar
         getEvents={getCalendarEvents}
-        eventClick={value => console.log(value)}
+        eventClick={value =>
+          openDialog({
+            title: value.event._def.title,
+            renderMain: () => (
+              <DetailedView event_id={value.event._def.publicId} />
+            ),
+          })
+        }
         onSelect={value =>
           history.push("/new-event", { start: value.start, end: value.end })
         }

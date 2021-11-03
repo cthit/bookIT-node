@@ -1,0 +1,7 @@
+{
+  "bookedBy": ["Booked by:", "Bokad av:"],
+  "description": ["Description:", "Beskrivning:"],
+  "start": ["Start:", "Börjar:"],
+  "end": ["End:", "Slutar:"],
+  "rooms": ["Rooms:", "Rum:"]
+}

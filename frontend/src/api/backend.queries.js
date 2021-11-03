@@ -9,6 +9,21 @@ query GetEvents($from: String!, $to: String!){
   }
 }`;
 
+export const getEvent_query = `
+query GetEvent($id: String!) {
+  event(id: $id) {
+    title
+    description
+    start
+    end
+    booked_as
+    booked_by
+    created_at
+    room
+  }
+}
+`;
+
 export const createEvent_query = `
 mutation CreateEvent($event: InputEvent!) {
   createEvent(event: $event)

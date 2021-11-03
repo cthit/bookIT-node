@@ -53,6 +53,8 @@ const Calendar = ({ getEvents, eventClick, onSelect }) => {
       initialView={window.innerWidth > 600 ? "timeGridWeek" : "timeGridDay"}
       eventOverlap
       height={window.innerWidth > 600 ? "100%" : "auto"}
+      scrollTime={"17:00:00"}
+      scrollTimeReset={false}
       events={getEvents}
     />
   );
