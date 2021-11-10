@@ -1,6 +1,6 @@
 import pg from "pg";
 import * as ruleRepo from "../repositories/rule.repository";
-import { Event, Rule } from "../models";
+import { Event, Rule, Error } from "../models";
 import { to } from "../utils";
 
 const ms_24H = 86400000; // == 1000 * 60 * 60 * 24
@@ -8,7 +8,7 @@ const ms_24H = 86400000; // == 1000 * 60 * 60 * 24
 export interface MiniRule {
   start: Date;
   end: Date;
-  description: string;
+  title: string;
   allow: boolean;
   priority: number;
 }
@@ -91,29 +91,35 @@ export const mergeRules = (rules: MiniRule[]): MiniRule[] => {
   return mergedRules;
 };
 
-const doesObeyRules = (rules: Rule[], event: Event): string => {
+const doesObeyRules = (rules: Rule[], event: Event): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
   var mr: MiniRule[] = mergeRules(toMiniRules(rules, start, end));
   for (const i in mr) {
     if (mr[i].start < end && mr[i].end > start) {
-      return mr[i].description;
+      return {
+        sv: "Bokning bryter regel: " + mr[i].title,
+        en: "Booking breaks rule: " + mr[i].title,
+      };
     }
   }
-  return "";
+  return null;
 };
 
 export const checkRules = async (
   db: pg.Pool,
   event: Event,
-): Promise<string> => {
+): Promise<Error | null> => {
   const { err, res } = await to<pg.QueryResult<Rule>>(
     ruleRepo.getRulesByEvent(db, event),
   );
   if (err) {
     console.log(err);
-    return "Database error";
+    return {
+      sv: "Databas error",
+      en: "Database error",
+    };
   }
 
   return doesObeyRules(res ? res.rows : [], event);

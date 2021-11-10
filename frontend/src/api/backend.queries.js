@@ -26,7 +26,10 @@ query GetEvent($id: String!) {
 
 export const createEvent_query = `
 mutation CreateEvent($event: InputEvent!) {
-  createEvent(event: $event)
+  createEvent(event: $event) {
+    sv
+    en
+  }
 }`;
 
 export const getRules_query = `

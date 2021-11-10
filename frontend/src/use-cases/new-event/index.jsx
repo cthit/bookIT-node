@@ -16,11 +16,13 @@ const NewReservation = ({
   },
 }) => {
   const [openToast] = useDigitToast({
-    duration: 3000,
+    duration: 7000,
     actionText: "Ok",
     actionHandler: () => {},
   });
   const history = useHistory();
+  const [texts, activeLanguage] = useDigitTranslations(transitions);
+
   const handleSubmit = async event => {
     const res = await createEvent({
       title: event.title,
@@ -39,20 +41,17 @@ const NewReservation = ({
             serving_permit: event.permit,
           },
     });
-    if (res === true) {
+    if (res === null) {
       openToast({
-        text: "A new event was created",
+        text: texts.new_event_created,
       });
       history.push("/");
       return;
     }
     openToast({
-      //TODO: Show description of broken rule
-      text: "Failed to create event",
+      text: res[activeLanguage],
     });
   };
-
-  const [texts] = useDigitTranslations(transitions);
 
   return (
     <DigitLayout.Center>

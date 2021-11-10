@@ -27,20 +27,6 @@ const whenTrue = {
   otherwise: yup.string(),
 };
 
-const validationSchema = yup.object().shape({
-  title: yup.string().required("You need to provide a title for the event"),
-  phone: yup.string().required("You need to provide a phone number"),
-  room: yup.array().min(1, "You need to select at least one room"),
-  description: yup.string(),
-  start: yup.date().required(),
-  end: yup.date().required(),
-  isActivity: yup.bool().required(),
-  permit: yup.bool(),
-  responsible_name: yup.string().when("isActivity", whenTrue),
-  responsible_number: yup.string().when("isActivity", whenTrue),
-  responsible_email: yup.string().when("isActivity", whenTrue),
-});
-
 const default_begin_date = new Date();
 const default_end_date = moment(new Date()).add(1, "h").toDate();
 
@@ -52,6 +38,20 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
   });
   const [user] = useContext(UserContext);
   const [texts] = useDigitTranslations(translations);
+
+  const validationSchema = yup.object().shape({
+    title: yup.string().required(texts.title_required),
+    phone: yup.string().required(texts.phone_required),
+    room: yup.array().min(1, texts.room_required),
+    description: yup.string(),
+    start: yup.date().required(),
+    end: yup.date().required(),
+    isActivity: yup.bool().required(),
+    permit: yup.bool(),
+    responsible_name: yup.string().when("isActivity", whenTrue),
+    responsible_number: yup.string().when("isActivity", whenTrue),
+    responsible_email: yup.string().when("isActivity", whenTrue),
+  });
 
   const initialValues = {
     title: "",

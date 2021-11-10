@@ -35,5 +35,5 @@ input InputEvent {
 }
 
 type Mutation {
-  createEvent(event: InputEvent): Boolean
+  createEvent(event: InputEvent): Error
 }

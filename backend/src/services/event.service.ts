@@ -4,27 +4,39 @@ import pg from "pg";
 import * as eventRepo from "../repositories/event.repository";
 import { checkRules } from "./rule.service";
 import { createPartyReport } from "./party_report.service";
-import { User } from "../models/user";
+import { User, Error } from "../models";
 
 export const createEvent = async (
   db: pg.Pool,
   event: Event,
   { groups }: User,
-): Promise<boolean> => {
+): Promise<Error | null> => {
   if (new Date(event.start) >= new Date(event.end)) {
-    return false;
+    return {
+      sv: "Starttid är efter sluttid",
+      en: "Start date is later than end date",
+    };
   }
 
   if (!groups.includes(event.booked_as)) {
-    return false;
+    return {
+      sv: "Bokande grupp ej specificerad",
+      en: "Booking group not specified",
+    };
   }
 
   if (!event.booked_by || event.booked_by == "") {
-    return false;
+    return {
+      sv: "Bokande användare ej specificerad",
+      en: "Booking user not specified",
+    };
   }
 
   if (event.room.length <= 0) {
-    return false;
+    return {
+      sv: "Inget rum specificerat",
+      en: "No room specified",
+    };
   }
 
   var { err, res } = await to<pg.QueryResult<Event[]>>(
@@ -32,22 +44,31 @@ export const createEvent = async (
   );
   if (err) {
     console.log(err);
-    return false;
+    return {
+      sv: "Databas error",
+      en: "Database error",
+    };
   }
 
   if (!res || res?.rowCount > 0) {
-    return false;
+    return {
+      sv: "Den angivna tiden är upptagen",
+      en: "The time slot is already taken",
+    };
   }
 
-  if ((await checkRules(db, event)) !== "") {
-    //TODO: Return error string instead of bool
-    return false;
+  err = await checkRules(db, event);
+  if (err) {
+    return err;
   }
 
   if (event.party_report) {
     const id = await createPartyReport(db, event.party_report);
     if (!id) {
-      return false;
+      return {
+        sv: "Misslyckades att skapa aktivitetsanmälan",
+        en: "Failed to create party report",
+      };
     }
     event.party_report_id = id;
   }
@@ -55,7 +76,10 @@ export const createEvent = async (
   var { err } = await to<pg.QueryResult<any>>(eventRepo.createEvent(db, event));
   if (err) {
     console.log(err);
-    return false;
+    return {
+      sv: "Databas error",
+      en: "Database error",
+    };
   }
-  return true;
+  return null;
 };
