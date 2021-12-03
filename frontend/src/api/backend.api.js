@@ -12,6 +12,7 @@ import {
   getPartyReport_query,
   getEvent_query,
   getFullEvent_query,
+  editEvent_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -73,6 +74,18 @@ export const createEvent = event =>
     "createEvent",
     "Failed to create event",
     err => err.message,
+  );
+
+export const editEvent = event =>
+  request(
+    {
+      query: editEvent_query,
+      variables: { event: event },
+      operationName: "EditEvent",
+    },
+    "editEvent",
+    "Failed to edit event",
+    () => {},
   );
 
 export const getRules = () =>

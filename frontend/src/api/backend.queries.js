@@ -156,3 +156,12 @@ query GetEvent($id: String) {
   }
 }
 `;
+
+export const editEvent_query = `
+mutation EditEvent($event: InputEvent) {
+  editEvent(event: $event) {
+    sv
+    en
+  }
+}
+`;
