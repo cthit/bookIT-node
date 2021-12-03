@@ -24,6 +24,30 @@ query GetEvent($id: String!) {
 }
 `;
 
+export const getFullEvent_query = `
+query GetFullEvent($id: String) {
+  event(id: $id) {
+    start
+    end
+    description
+    title
+    party_report {
+      id
+      responsible_name
+      responsible_email
+      responsible_number
+      co_responsible_name
+      co_responsible_email
+      co_responsible_number
+      serving_permit
+    }
+    room
+    phone
+    booked_as
+  }
+}
+`;
+
 export const createEvent_query = `
 mutation CreateEvent($event: InputEvent!) {
   createEvent(event: $event) {

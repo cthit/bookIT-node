@@ -11,6 +11,7 @@ import {
   getUser_query,
   getPartyReport_query,
   getEvent_query,
+  getFullEvent_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -44,6 +45,18 @@ export const getEvent = id =>
       query: getEvent_query,
       variables: { id: id },
       operationName: "GetEvent",
+    },
+    "event",
+    "Failed to fetch event: " + id,
+    () => {},
+  );
+
+export const getFullEvent = id =>
+  request(
+    {
+      query: getFullEvent_query,
+      variables: { id: id },
+      operationName: "GetFullEvent",
     },
     "event",
     "Failed to fetch event: " + id,

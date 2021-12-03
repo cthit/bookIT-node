@@ -1,5 +1,5 @@
 import {
-  useDigitFormField as formField,
+  useDigitFormField as ff,
   DigitCheckbox,
   DigitTextField,
   DigitLayout,
@@ -7,12 +7,24 @@ import {
 } from "@cthit/react-digit-components";
 import translations from "./event.form.translations.json";
 
-const PartyReport = () => {
-  const activityValues = formField("isActivity");
-  const permitValues = formField("permit");
-  const repNameValues = formField("responsible_name");
-  const repNumberValues = formField("responsible_number");
-  const repEmailValues = formField("responsible_email");
+const PartyReport = ({ init }) => {
+  const activityValues = ff("isActivity", "value", init.isActivity || false);
+  const permitValues = ff("permit", "value", init.permit || false);
+  const repNameValues = ff(
+    "responsible_name",
+    "value",
+    init.responsible_name || "",
+  );
+  const repNumberValues = ff(
+    "responsible_number",
+    "value",
+    init.responsible_number || "",
+  );
+  const repEmailValues = ff(
+    "responsible_email",
+    "value",
+    init.responsible_email || "",
+  );
   const [texts] = useDigitTranslations(translations);
 
   return (

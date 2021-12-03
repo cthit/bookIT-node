@@ -36,7 +36,7 @@ const colorVariables = getColorVariables();
 
 const Home = () => {
   const history = useHistory();
-  const [openDialog] = useDigitCustomDialog({
+  const [openDialog, closeDialog] = useDigitCustomDialog({
     title: "Event",
   });
   return (
@@ -62,7 +62,10 @@ const Home = () => {
           openDialog({
             title: value.event._def.title,
             renderMain: () => (
-              <DetailedView event_id={value.event._def.publicId} />
+              <DetailedView
+                event_id={value.event._def.publicId}
+                onClose={closeDialog}
+              />
             ),
           })
         }

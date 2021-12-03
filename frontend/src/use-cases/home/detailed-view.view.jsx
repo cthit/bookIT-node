@@ -1,14 +1,17 @@
 import {
   DigitDisplayData,
   DigitText,
+  DigitButton,
   useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 import { getEvent } from "../../api/backend.api";
 import ROOMS from "../../common/rooms";
 import translations from "./detailed-view.translations.json";
 
-const DetailedView = ({ event_id }) => {
+const DetailedView = ({ event_id, onClose }) => {
+  const history = useHistory();
   const [event, setEvent] = useState({});
   const [texts] = useDigitTranslations(translations);
 
@@ -38,17 +41,26 @@ const DetailedView = ({ event_id }) => {
       .catch(() => {});
   }, [event_id]);
   return (
-    <DigitDisplayData
-      data={event}
-      keysText={{
-        _booked_by: texts.bookedBy,
-        description: texts.description,
-        start: texts.start,
-        end: texts.end,
-        room: texts.rooms,
-      }}
-      keysOrder={["_booked_by", "description", "start", "end", "room"]}
-    />
+    <>
+      <DigitDisplayData
+        data={event}
+        keysText={{
+          _booked_by: texts.bookedBy,
+          description: texts.description,
+          start: texts.start,
+          end: texts.end,
+          room: texts.rooms,
+        }}
+        keysOrder={["_booked_by", "description", "start", "end", "room"]}
+      />
+      <DigitButton
+        text="Edit"
+        onClick={() => {
+          onClose();
+          history.push(`/edit-event?id=${event_id}`);
+        }}
+      />
+    </>
   );
 };
 
