@@ -2,6 +2,7 @@ import pg from "pg";
 import { PartyReport } from "../models";
 import { to } from "../utils";
 import * as partyReportRepo from "../repositories/party_report.repository";
+import { Error } from "../models/error";
 
 export const createPartyReport = async (
   db: pg.Pool,
@@ -15,4 +16,38 @@ export const createPartyReport = async (
     return null;
   }
   return res && res.rows[0] ? res.rows[0].id : null;
+};
+
+export const deletePartyReport = async (
+  db: pg.Pool,
+  id: string,
+): Promise<Error | null> => {
+  const { err, res } = await to<pg.QueryResult>(
+    partyReportRepo.deletePartyReport(db, id),
+  );
+  if (err || !res || res.rowCount < 0) {
+    console.log(err);
+    return {
+      sv: "Misslyckades att ta bort gamla aktivitetsanmälan",
+      en: "Failed to delete the old party report",
+    };
+  }
+  return null;
+};
+
+export const editPartyReport = async (
+  db: pg.Pool,
+  party_report: PartyReport,
+): Promise<Error | null> => {
+  const { err, res } = await to<pg.QueryResult>(
+    partyReportRepo.editPartyReport(db, party_report),
+  );
+  if (err || !res || res.rowCount < 0) {
+    console.log(err);
+    return {
+      sv: "Misslyckades att uppdatera aktivitetsanmälan",
+      en: "Failed to update party report",
+    };
+  }
+  return null;
 };

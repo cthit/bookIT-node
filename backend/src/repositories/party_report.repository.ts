@@ -40,3 +40,40 @@ export const createPartyReport = (
       pr.serving_permit,
     ],
   );
+
+export const deletePartyReport = (
+  db: pg.Pool,
+  id: string,
+): Promise<pg.QueryResult> =>
+  db.query("DELETE FROM party_report WHERE id=$1", [id]);
+
+export const editPartyReport = (
+  db: pg.Pool,
+  {
+    id,
+    responsible_email,
+    responsible_name,
+    responsible_number,
+    co_responsible_email,
+    co_responsible_name,
+    co_responsible_number,
+    serving_permit,
+  }: PartyReport,
+): Promise<pg.QueryResult> =>
+  db.query(
+    "UPDATE party_report SET\
+  responsible_name = $1, responsible_number = $2,\
+  responsible_email = $3, co_responsible_name = $4,\
+  co_responsible_number = $5, co_responsible_email = $6,\
+  serving_permit = $7 WHERE id=$8",
+    [
+      responsible_name,
+      responsible_number,
+      responsible_email,
+      co_responsible_name,
+      co_responsible_number,
+      co_responsible_email,
+      serving_permit,
+      id,
+    ],
+  );

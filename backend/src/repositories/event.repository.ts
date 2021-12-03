@@ -59,12 +59,37 @@ export const createEvent = (db: pg.Pool, event: Event) =>
 
 export const getOverlapEvent = (
   db: pg.Pool,
-  { start, end, room }: Event,
-): Promise<pg.QueryResult<Event[]>> =>
+  { start, end, room, id }: Event,
+): Promise<pg.QueryResult<Event>> =>
   db.query(
     "SELECT id, party_report_id, start, end_date as end,\
     description, title, created_at, updated_at, room, \
     booked_by, booked_as FROM event \
-    WHERE $1 < end_date AND $2 > start AND $3 && room",
-    [start, end, room],
+    WHERE $1 < end_date AND $2 > start AND $3 && room AND id != $4",
+    [start, end, room, id],
   );
+
+export const editEvent = (
+  db: pg.Pool,
+  event: Event,
+): Promise<pg.QueryResult<Event>> =>
+  db.query(
+    "UPDATE event SET start=$1, end_date=$2, description=$3,\
+    title=$4, room=$5, phone=$6, booked_by=$7, booked_as=$8, \
+    party_report_id=$9 WHERE id=$10",
+    [
+      event.start,
+      event.end,
+      event.description,
+      event.title,
+      event.room,
+      event.phone,
+      event.booked_by,
+      event.booked_as,
+      event.party_report_id,
+      event.id,
+    ],
+  );
+
+export const deleteEvent = (db: pg.Pool, id: string): Promise<pg.QueryResult> =>
+  db.query("DELETE FROM event WHERE id=$1", [id]);
