@@ -1,28 +1,4 @@
 {
   "new_booking": ["New Booking", "Ny bokning"],
-  "title": ["Title", "Titel"],
-  "phone": ["Phone number", "Telefonnummer"],
-  "room": ["Room", "Rum"],
-  "start": ["Begins at", "Börjar"],
-  "end": ["Ends at", "Slutar"],
-  "description": ["Description", "Beskrivning"],
-  "isActivity": ["Submit party report", "Skapa aktivitetsanmäl"],
-  "permit": ["Serving permit", "Serveringstillstånd"],
-  "responsible_name": ["Event responsible name", "Arransvarigs namn"],
-  "responsible_number": ["Event responsible phone", "Arransvarigs telefon"],
-  "responsible_email": ["Event responsible e-mail", "Arransvarigs e-post"],
-  "booked_as": ["Booking as", "Bokas som"],
-  "new_event_created": ["A new event was created", "Ett nytt event skapades"],
-  "title_required": [
-    "You need to provide a title for the event",
-    "Du måste ange en title för bokningen"
-  ],
-  "phone_required": [
-    "You need to provide a phone number",
-    "Du måste ange ett telefonnummer"
-  ],
-  "room_required": [
-    "You need to select at least one room",
-    "Du måste välja minst ett rum"
-  ]
+  "new_event_created": ["A new event was created", "Ett nytt event skapades"]
 }

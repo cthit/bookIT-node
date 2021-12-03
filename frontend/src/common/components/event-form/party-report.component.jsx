@@ -5,7 +5,7 @@ import {
   DigitLayout,
   useDigitTranslations,
 } from "@cthit/react-digit-components";
-import translations from "./new-event.translations.json";
+import translations from "./event.form.translations.json";
 
 const PartyReport = () => {
   const activityValues = formField("isActivity");

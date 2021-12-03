@@ -15,11 +15,10 @@ import {
   PhoneNumber,
   BookAs,
 } from "./elements";
-import * as moment from "moment";
 import PartyReport from "./party-report.component";
-import UserContext from "../../common/contexts/user-context";
-import ROOMS from "../../common/rooms";
-import translations from "./new-event.translations.json";
+import UserContext from "../../contexts/user-context";
+import ROOMS from "../../rooms";
+import translations from "./event.form.translations.json";
 
 const whenTrue = {
   is: true,
@@ -27,10 +26,7 @@ const whenTrue = {
   otherwise: yup.string(),
 };
 
-const default_begin_date = new Date();
-const default_end_date = moment(new Date()).add(1, "h").toDate();
-
-const NewReservationFrom = ({ onSubmit, start, end }) => {
+const EventFrom = ({ onSubmit, initialValues }) => {
   const [openToast] = useDigitToast({
     duration: 3000,
     actionText: "Ok",
@@ -53,7 +49,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
     responsible_email: yup.string().when("isActivity", whenTrue),
   });
 
-  const initialValues = {
+  /*const initialValues = {
     title: "",
     phone: "",
     room: ["BIG_HUB"],
@@ -66,7 +62,7 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
     responsible_number: "",
     responsible_email: "",
     booked_as: "",
-  };
+  };*/
 
   return (
     <DigitForm
@@ -103,11 +99,11 @@ const NewReservationFrom = ({ onSubmit, start, end }) => {
           {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">
             <DigitText.Subtitle text="*bokningsvillkoren" />
         </a>*/}
-          <DigitButton raised submit text="Submit" />
+          <DigitButton raised submit text={texts.submit} />
         </DigitLayout.Column>
       )}
     />
   );
 };
 
-export default NewReservationFrom;
+export default EventFrom;

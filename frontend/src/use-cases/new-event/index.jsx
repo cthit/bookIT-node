@@ -1,4 +1,3 @@
-import NewReservationFrom from "./new-event.form";
 import {
   DigitDesign,
   DigitLayout,
@@ -9,6 +8,8 @@ import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
 import { formatDT } from "../../utils/utils";
 import transitions from "./new-event.translations.json";
+import EventForm from "../../common/components/event-form";
+import moment from "moment";
 
 const NewReservation = ({
   history: {
@@ -53,16 +54,30 @@ const NewReservation = ({
     });
   };
 
+  const default_begin_date = new Date();
+  const default_end_date = moment(new Date()).add(1, "h").toDate();
+
+  const initialValues = {
+    title: "",
+    phone: "",
+    room: ["BIG_HUB"],
+    start: state ? state.start : default_begin_date,
+    end: state ? state.end : default_end_date,
+    description: "",
+    isActivity: false,
+    permit: false,
+    responsible_name: "",
+    responsible_number: "",
+    responsible_email: "",
+    booked_as: "",
+  };
+
   return (
     <DigitLayout.Center>
       <DigitDesign.Card>
         <DigitDesign.CardBody>
           <DigitDesign.CardTitle text={texts.new_booking} />
-          <NewReservationFrom
-            start={state ? state.start : null}
-            end={state ? state.end : null}
-            onSubmit={handleSubmit}
-          />
+          <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
         </DigitDesign.CardBody>
       </DigitDesign.Card>
     </DigitLayout.Center>
