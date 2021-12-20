@@ -168,3 +168,20 @@ export const createEvent = async (
   }
   return null;
 };
+
+export const deleteEvent = async (
+  db: pg.Pool,
+  id: string,
+  { groups, is_admin }: User,
+) => {
+  const mayDelete = (group: string) => groups.includes(group) || is_admin;
+  const { res, err } = await to(eventRepo.deleteEvent(db, id, mayDelete));
+  if (err) {
+    console.log(err);
+    return {
+      sv: "Misslyckades att radera bokningen",
+      en: "Failed to delete the booking",
+    };
+  }
+  return res;
+};

@@ -54,8 +54,8 @@ const NewReservation = ({
     });
   };
 
-  const default_begin_date = new Date();
-  const default_end_date = moment(new Date()).add(1, "h").toDate();
+  const default_begin_date = new Date().toISOString();
+  const default_end_date = moment(new Date()).add(1, "h").toISOString();
 
   const initialValues = {
     title: "",

@@ -1,5 +1,7 @@
 import { Event } from "../models/event";
 import pg from "pg";
+import { Error } from "../models";
+import { to } from "../utils";
 
 export const getEvents = (db: pg.Pool): Promise<pg.QueryResult<Event[]>> =>
   db.query<Event[]>(
@@ -91,5 +93,53 @@ export const editEvent = (
     ],
   );
 
-export const deleteEvent = (db: pg.Pool, id: string): Promise<pg.QueryResult> =>
-  db.query("DELETE FROM event WHERE id=$1", [id]);
+export const deleteEvent = async (
+  db: pg.Pool,
+  id: string,
+  mayDelete: (group: string) => boolean,
+): Promise<Error | null> => {
+  let res,
+    err = null;
+  const client = await db.connect();
+
+  try {
+    await client.query("BEGIN");
+    res = await client.query(
+      "SELECT party_report_id, booked_as FROM event WHERE id=$1",
+      [id],
+    );
+
+    if (res.rowCount < 1) {
+      await client.query("ROLLBACK");
+      return {
+        sv: "Hittade inte bokningen",
+        en: "The event was not found",
+      };
+    }
+
+    if (!mayDelete(res.rows[0].booked_as)) {
+      await client.query("ROLLBACK");
+      return {
+        sv: "Du får ej radera denna bokning",
+        en: "You may not delete this booking",
+      };
+    }
+
+    if (res.rowCount > 0 && res.rows[0].party_report_id) {
+      await client.query("DELETE FROM party_report WHERE id=$1", [
+        res.rows[0].party_report_id,
+      ]);
+    }
+
+    await client.query("DELETE FROM event WHERE id=$1", [id]);
+
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+
+  return null;
+};

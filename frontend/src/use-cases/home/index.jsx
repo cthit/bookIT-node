@@ -3,8 +3,8 @@ import { useHistory } from "react-router";
 import { getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
 import ROOMS from "../../common/rooms";
-import Calendar from "./calendar.view";
-import DetailedView from "./detailed-view.view";
+import Calendar from "./views/calendar.view";
+import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 
 const getClassName = rooms => {

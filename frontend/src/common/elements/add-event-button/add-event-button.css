@@ -1,6 +1,6 @@
 .add-event-button {
   z-index: 1;
-  position: absolute;
+  position: fixed;
   bottom: 2rem;
   right: 2rem;
   border-radius: 5rem;

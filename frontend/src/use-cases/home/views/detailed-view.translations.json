@@ -3,5 +3,6 @@
   "description": ["Description:", "Beskrivning:"],
   "start": ["Start:", "Börjar:"],
   "end": ["End:", "Slutar:"],
-  "rooms": ["Rooms:", "Rum:"]
+  "rooms": ["Rooms:", "Rum:"],
+  "event_deleted": ["The event was deleted", "Bokningen raderades"]
 }

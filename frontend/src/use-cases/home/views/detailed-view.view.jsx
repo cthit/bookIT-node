@@ -3,17 +3,24 @@ import {
   DigitText,
   DigitButton,
   useDigitTranslations,
+  useDigitToast,
 } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { getEvent } from "../../api/backend.api";
-import ROOMS from "../../common/rooms";
+import { deleteEvent, getEvent } from "../../../api/backend.api";
+import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
+import "./detailed-view.css";
 
-const DetailedView = ({ event_id, onClose }) => {
+const DetailedView = ({ event_id, onClose, onDelete }) => {
   const history = useHistory();
   const [event, setEvent] = useState({});
-  const [texts] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useDigitTranslations(translations);
+  const [openToast] = useDigitToast({
+    duration: 3000,
+    actionText: "Ok",
+    actionHandler: () => {},
+  });
 
   useEffect(() => {
     getEvent(event_id)
@@ -53,13 +60,35 @@ const DetailedView = ({ event_id, onClose }) => {
         }}
         keysOrder={["_booked_by", "description", "start", "end", "room"]}
       />
-      <DigitButton
-        text="Edit"
-        onClick={() => {
-          onClose();
-          history.push(`/edit-event?id=${event_id}`);
-        }}
-      />
+      <div className="container">
+        <DigitButton
+          text="Edit"
+          outlined
+          onClick={() => {
+            onClose();
+            history.push(`/edit-event?id=${event_id}`);
+          }}
+        />
+        <DigitButton
+          text="Delete"
+          outlined
+          onClick={() => {
+            deleteEvent(event_id).then(res => {
+              onClose();
+              if (res) {
+                openToast({
+                  text: res[activeLanguage],
+                });
+              } else {
+                openToast({
+                  text: texts.event_deleted,
+                });
+                window.location.href = "/";
+              }
+            });
+          }}
+        />
+      </div>
     </>
   );
 };

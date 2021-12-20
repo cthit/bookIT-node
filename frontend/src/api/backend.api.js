@@ -13,6 +13,7 @@ import {
   getEvent_query,
   getFullEvent_query,
   editEvent_query,
+  deleteEvent_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -85,6 +86,18 @@ export const editEvent = event =>
     },
     "editEvent",
     "Failed to edit event",
+    () => {},
+  );
+
+export const deleteEvent = id =>
+  request(
+    {
+      query: deleteEvent_query,
+      variables: { id: id },
+      operationName: "DeleteEvent",
+    },
+    "deleteEvent",
+    "Failed to delete event",
     () => {},
   );
 

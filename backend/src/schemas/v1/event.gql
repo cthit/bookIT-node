@@ -37,4 +37,5 @@ input InputEvent {
 type Mutation {
   createEvent(event: InputEvent): Error
   editEvent(event: InputEvent): Error
+  deleteEvent(id: String): Error
 }

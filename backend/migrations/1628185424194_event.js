@@ -14,6 +14,7 @@ exports.up = pgm => {
       foreignKey: true,
       references: "party_report(id)",
       notNull: false,
+      onDelete: "cascade",
     },
     phone: {
       type: "text",

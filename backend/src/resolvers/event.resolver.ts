@@ -4,7 +4,7 @@ import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
 import { User } from "../models/user";
 import pg from "pg";
-import { createEvent, editEvent } from "../services/event.service";
+import { createEvent, editEvent, deleteEvent } from "../services/event.service";
 
 export const getEventQResolvers = ({ db }: Tools) => ({
   events: async () => {
@@ -65,5 +65,12 @@ export const getEventMResolvers = ({ db }: Tools) => ({
     { user }: { user: User },
   ) => {
     return editEvent(db, event, user);
+  },
+  deleteEvent: async (
+    _: any,
+    { id }: { id: string },
+    { user }: { user: User },
+  ) => {
+    return deleteEvent(db, id, user);
   },
 });

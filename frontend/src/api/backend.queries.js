@@ -165,3 +165,12 @@ mutation EditEvent($event: InputEvent) {
   }
 }
 `;
+
+export const deleteEvent_query = `
+mutation DeleteEvent($id: String) {
+  deleteEvent(id: $id) {
+    sv
+    en
+  }
+}
+`;
