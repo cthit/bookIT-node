@@ -4,6 +4,19 @@ import { to } from "../utils";
 import * as partyReportRepo from "../repositories/party_report.repository";
 import { Error } from "../models/error";
 
+export const getPartyReport = async (
+  db: pg.Pool,
+  id: string,
+): Promise<PartyReport | null> => {
+  const { res } = await to<pg.QueryResult<PartyReport>>(
+    partyReportRepo.getPartyReport(db, id),
+  );
+  if (res && res.rowCount >= 0) {
+    return res.rows[0];
+  }
+  return null;
+};
+
 export const createPartyReport = async (
   db: pg.Pool,
   party_report: PartyReport,

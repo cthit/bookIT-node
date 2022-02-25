@@ -4,6 +4,7 @@ import pg from "pg";
 import * as eventRepo from "../repositories/event.repository";
 import { checkRules } from "./rule.service";
 import {
+  getPartyReport,
   createPartyReport,
   deletePartyReport,
   editPartyReport,
@@ -81,22 +82,31 @@ export const editEvent = async (
     };
   }
 
-  let oldReport = event.party_report;
+  let newReport = event.party_report;
+  let oldReport = null;
+
   event = { ...res.rows[0], ...event };
 
-  validEvent(db, event, groups);
+  if (res.rows[0].party_report_id) {
+    oldReport = await getPartyReport(db, res.rows[0].party_report_id);
+  }
+
+  err = await validEvent(db, event, groups);
+  if (err) {
+    return err;
+  }
 
   err = await checkRules(db, event);
   if (err) {
     return err;
   }
 
-  if (oldReport && !event.party_report && oldReport.id) {
+  if (oldReport && !newReport && oldReport.id) {
     err = await deletePartyReport(db, oldReport.id);
     if (!err) return err;
     event.party_report_id = undefined;
-  } else if (!oldReport && event.party_report) {
-    let id = await createPartyReport(db, event.party_report);
+  } else if (!oldReport && newReport) {
+    let id = await createPartyReport(db, newReport);
     if (!id) {
       return {
         sv: "Kunde inte skapa aktivitetsanmälan",
@@ -104,14 +114,10 @@ export const editEvent = async (
       };
     }
     event.party_report_id = id;
-  } else if (
-    !equal(oldReport, event.party_report) &&
-    oldReport &&
-    oldReport.id
-  ) {
+  } else if (!equal(oldReport, newReport) && oldReport && event.party_report) {
     err = await editPartyReport(db, {
       ...oldReport,
-      ...event.party_report,
+      ...newReport,
       id: oldReport.id,
     });
     if (err) return err;

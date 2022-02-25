@@ -44,7 +44,7 @@ const NewReservation = ({
     });
     if (res === null) {
       openToast({
-        text: texts.new_event_created,
+        text: texts.event_edited,
       });
       history.push("/");
       return;
@@ -54,8 +54,8 @@ const NewReservation = ({
     });
   };
 
-  const default_begin_date = new Date().toISOString();
-  const default_end_date = moment(new Date()).add(1, "h").toISOString();
+  const default_begin_date = new Date();
+  const default_end_date = moment(new Date()).add(1, "h");
 
   const initialValues = {
     title: "",
