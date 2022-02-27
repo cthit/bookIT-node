@@ -31,7 +31,7 @@ exports.up = pgm => {
       type: "timestamp",
       notNull: true,
     },
-    end_date: {
+    end: {
       type: "timestamp",
       notNull: true,
     },

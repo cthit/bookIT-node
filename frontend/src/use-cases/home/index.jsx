@@ -21,6 +21,8 @@ const getCalendarEvents = async info => {
     return {
       ...e,
       className: getClassName(e.room.sort()),
+      start: new Date(Number(e.start)),
+      end: new Date(Number(e.end)),
     };
   });
 };

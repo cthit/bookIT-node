@@ -5,6 +5,7 @@ import { setupRoutes } from "./routes";
 import { init } from "./authentication/gamma.strategy";
 import passport from "passport";
 import redis from "redis";
+import { PrismaClient } from "@prisma/client";
 const RedisStore = require("connect-redis")(session);
 
 const app = express();
@@ -39,6 +40,8 @@ const db = new pg.Pool({
   port: Number(process.env.DB_PORT),
 });
 
-setupRoutes(app, { db, passport });
+const prisma = new PrismaClient();
+
+setupRoutes(app, { db, prisma, passport });
 
 app.listen(Number(process.env.PORT) || 8080);

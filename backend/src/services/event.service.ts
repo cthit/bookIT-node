@@ -10,8 +10,13 @@ import {
   editPartyReport,
 } from "./party_report.service";
 import { User, Error } from "../models";
+import { PrismaClient } from "@prisma/client";
 
-const validEvent = async (db: pg.Pool, event: Event, groups: String[]) => {
+const validEvent = async (
+  prisma: PrismaClient,
+  event: Event,
+  groups: String[],
+) => {
   if (new Date(event.start) >= new Date(event.end)) {
     return {
       sv: "Starttid är efter sluttid",
@@ -40,18 +45,16 @@ const validEvent = async (db: pg.Pool, event: Event, groups: String[]) => {
     };
   }
 
-  var { err, res } = await to<pg.QueryResult<Event>>(
-    eventRepo.getOverlapEvent(db, event),
-  );
-  if (err) {
-    console.log(err);
-    return {
-      sv: "Databas error",
-      en: "Database error",
-    };
-  }
+  let overlap_count = await prisma.event.count({
+    where: {
+      end: { gt: new Date(event.start) },
+      start: { lte: new Date(event.end) },
+      room: { hasSome: event.room.map(e => e.toString()) },
+      id: { not: event.id },
+    },
+  });
 
-  if (!res || res?.rowCount > 0) {
+  if (overlap_count > 0) {
     return {
       sv: "Den angivna tiden är upptagen",
       en: "The time slot is already taken",
@@ -62,6 +65,7 @@ const validEvent = async (db: pg.Pool, event: Event, groups: String[]) => {
 };
 
 export const editEvent = async (
+  prisma: PrismaClient,
   db: pg.Pool,
   event: Event,
   { groups }: User,
@@ -91,7 +95,7 @@ export const editEvent = async (
     oldReport = await getPartyReport(db, res.rows[0].party_report_id);
   }
 
-  err = await validEvent(db, event, groups);
+  err = await validEvent(prisma, event, groups);
   if (err) {
     return err;
   }
@@ -143,17 +147,35 @@ export const editEvent = async (
 };
 
 export const createEvent = async (
+  prisma: PrismaClient,
   db: pg.Pool,
   event: Event,
   { groups }: User,
 ): Promise<Error | null> => {
-  validEvent(db, event, groups);
+  let err = await validEvent(prisma, event, groups);
+  if (err) {
+    return err;
+  }
+
   err = await checkRules(db, event);
   if (err) {
     return err;
   }
 
-  if (event.party_report) {
+  await prisma.event.create({
+    data: {
+      title: event.title,
+      start: new Date(event.start),
+      description: event.description,
+      end: new Date(event.end),
+      booked_as: event.booked_as,
+      booked_by: event.booked_by ?? "",
+      phone: event.phone,
+      room: event.room.map(e => e.toString()),
+    },
+  });
+
+  /*if (event.party_report) {
     const id = await createPartyReport(db, event.party_report);
     if (!id) {
       return {
@@ -171,7 +193,7 @@ export const createEvent = async (
       sv: "Databas error",
       en: "Database error",
     };
-  }
+  }*/
   return null;
 };
 
