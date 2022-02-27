@@ -3,6 +3,7 @@ import { PartyReport } from "../models";
 import { to } from "../utils";
 import * as partyReportRepo from "../repositories/party_report.repository";
 import { Error } from "../models/error";
+import { party_report, PrismaClient } from "@prisma/client";
 
 export const getPartyReport = async (
   db: pg.Pool,
@@ -18,17 +19,13 @@ export const getPartyReport = async (
 };
 
 export const createPartyReport = async (
-  db: pg.Pool,
+  prisma: PrismaClient,
   party_report: PartyReport,
 ): Promise<string | null> => {
-  const { err, res } = await to<pg.QueryResult<{ id: string }>>(
-    partyReportRepo.createPartyReport(db, party_report),
-  );
-  if (err) {
-    console.log(err);
-    return null;
-  }
-  return res && res.rows[0] ? res.rows[0].id : null;
+  let report = await prisma.party_report.create({
+    data: <party_report>party_report,
+  });
+  return report.id;
 };
 
 export const deletePartyReport = async (

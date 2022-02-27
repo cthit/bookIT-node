@@ -10,7 +10,7 @@ import {
   editPartyReport,
 } from "./party_report.service";
 import { User, Error } from "../models";
-import { PrismaClient } from "@prisma/client";
+import { party_report, PrismaClient, event as p_event } from "@prisma/client";
 
 const validEvent = async (
   prisma: PrismaClient,
@@ -77,8 +77,10 @@ export const editEvent = async (
     };
   }
 
-  let { err, res } = await to(eventRepo.getEvent(db, event.id));
-  if (err || !res || res.rowCount <= 0) {
+  let old_event = await prisma.event.findFirst({
+    where: { id: event.id },
+  });
+  if (!old_event) {
     console.log("Faild to get event with id: " + event.id);
     return {
       sv: "Kunde inte hämta gamla bokningen",
@@ -86,16 +88,15 @@ export const editEvent = async (
     };
   }
 
-  let newReport = event.party_report;
   let oldReport = null;
 
-  event = { ...res.rows[0], ...event };
-
-  if (res.rows[0].party_report_id) {
-    oldReport = await getPartyReport(db, res.rows[0].party_report_id);
+  if (old_event.party_report_id) {
+    oldReport = await prisma.party_report.findFirst({
+      where: { id: old_event.party_report_id },
+    });
   }
 
-  err = await validEvent(prisma, event, groups);
+  let err = await validEvent(prisma, event, groups);
   if (err) {
     return err;
   }
@@ -105,12 +106,12 @@ export const editEvent = async (
     return err;
   }
 
-  if (oldReport && !newReport && oldReport.id) {
+  if (oldReport && !event.party_report && oldReport.id) {
     err = await deletePartyReport(db, oldReport.id);
     if (!err) return err;
     event.party_report_id = undefined;
-  } else if (!oldReport && newReport) {
-    let id = await createPartyReport(db, newReport);
+  } else if (!oldReport && event.party_report) {
+    let id = await createPartyReport(prisma, event.party_report);
     if (!id) {
       return {
         sv: "Kunde inte skapa aktivitetsanmälan",
@@ -118,29 +119,49 @@ export const editEvent = async (
       };
     }
     event.party_report_id = id;
-  } else if (!equal(oldReport, newReport) && oldReport && event.party_report) {
-    err = await editPartyReport(db, {
-      ...oldReport,
-      ...newReport,
-      id: oldReport.id,
-    });
-    if (err) return err;
+  } else if (
+    !equal(oldReport, event.party_report) &&
+    oldReport &&
+    event.party_report
+  ) {
+    let { err } = await to(
+      prisma.party_report.update({
+        where: { id: oldReport.id },
+        data: <party_report>event.party_report,
+      }),
+    );
+    if (err) {
+      console.log(err);
+      return {
+        sv: "Misslyckades att uppdatera aktivitiesanmälan",
+        en: "Failed to update the party report",
+      };
+    }
     event.party_report_id = oldReport.id;
   } else {
     event.party_report_id = oldReport ? oldReport.id : undefined;
   }
 
-  {
-    let { err, res } = await to<pg.QueryResult<Event>>(
-      eventRepo.editEvent(db, event),
-    );
-    if (err || !res || res.rowCount <= 0) {
-      console.log(err);
-      return {
-        sv: "Misslyckades att uppdatera bokningen",
-        en: "Failed to update the event",
-      };
-    }
+  let res = await prisma.event.update({
+    where: { id: event.id },
+    data: {
+      title: event.title,
+      start: new Date(event.start),
+      description: event.description,
+      end: new Date(event.end),
+      booked_as: event.booked_as,
+      booked_by: event.booked_by ?? "",
+      phone: event.phone,
+      room: event.room.map(e => e.toString()),
+      party_report_id: event.party_report_id,
+    },
+  });
+
+  if (!res) {
+    return {
+      sv: "Misslyckades att uppdatera bokning",
+      en: "Failed to update event",
+    };
   }
 
   return null;
@@ -162,38 +183,40 @@ export const createEvent = async (
     return err;
   }
 
-  await prisma.event.create({
+  if (event.party_report) {
+    let report = await prisma.party_report.create({
+      data: <party_report>event.party_report,
+    });
+    if (!report) {
+      return {
+        sv: "Misslyckades att skapa aktivitetsanmälan",
+        en: "Failed to create party report",
+      };
+    }
+    event.party_report_id = report.id;
+  }
+
+  let res = await prisma.event.create({
     data: {
       title: event.title,
       start: new Date(event.start),
       description: event.description,
       end: new Date(event.end),
       booked_as: event.booked_as,
-      booked_by: event.booked_by ?? "",
+      booked_by: event.booked_by || "",
       phone: event.phone,
       room: event.room.map(e => e.toString()),
+      party_report_id: event.party_report_id,
     },
   });
 
-  /*if (event.party_report) {
-    const id = await createPartyReport(db, event.party_report);
-    if (!id) {
-      return {
-        sv: "Misslyckades att skapa aktivitetsanmälan",
-        en: "Failed to create party report",
-      };
-    }
-    event.party_report_id = id;
+  if (!res) {
+    return {
+      sv: "Misslyckades att skapa bokning",
+      en: "Failed to create event",
+    };
   }
 
-  var { err } = await to<pg.QueryResult<any>>(eventRepo.createEvent(db, event));
-  if (err) {
-    console.log(err);
-    return {
-      sv: "Databas error",
-      en: "Database error",
-    };
-  }*/
   return null;
 };
 

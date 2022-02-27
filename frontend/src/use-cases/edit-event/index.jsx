@@ -17,6 +17,8 @@ const formatEvent = event => {
     ...event,
     ...event.party_report,
     isActivity: event.party_report !== null,
+    start: new Date(Number(event.start)),
+    end: new Date(Number(event.end)),
   };
 };
 
@@ -58,7 +60,6 @@ const EditEvent = () => {
       party_report: !event_.isActivity
         ? null
         : {
-            id: event.party_report.id,
             responsible_name: event_.responsible_name,
             responsible_number: event_.responsible_number,
             responsible_email: event_.responsible_email,

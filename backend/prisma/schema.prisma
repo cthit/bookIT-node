@@ -13,10 +13,10 @@ model event {
   phone           String
   title           String
   description     String?
-  start           DateTime      @db.Timestamp(6)
-  end             DateTime      @db.Timestamp(6)
-  created_at      DateTime      @default(now()) @db.Timestamp(6)
-  updated_at      DateTime      @default(now()) @db.Timestamp(6)
+  start           DateTime      @db.Timestamp(3)
+  end             DateTime      @db.Timestamp(3)
+  created_at      DateTime      @default(now()) @db.Timestamp(3)
+  updated_at      DateTime      @default(now()) @db.Timestamp(3)
   room            String[]
   booked_by       String
   booked_as       String
@@ -39,14 +39,14 @@ model party_report {
 model pgmigrations {
   id     Int      @id @default(autoincrement())
   name   String   @db.VarChar(255)
-  run_on DateTime @db.Timestamp(6)
+  run_on DateTime @db.Timestamp(3)
 }
 
 model rule {
   id          String   @id @default(uuid()) @db.Uuid
   day_mask    Int      @default(0)
-  start_date  DateTime @db.Timestamp(6)
-  end_date    DateTime @db.Timestamp(6)
+  start_date  DateTime @db.Timestamp(3)
+  end_date    DateTime @db.Timestamp(3)
   start_time  String
   end_time    String
   description String
@@ -54,6 +54,6 @@ model rule {
   priority    Int      @default(10)
   title       String
   room        String[]
-  created_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(6)
-  updated_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(6)
+  created_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
+  updated_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
 }

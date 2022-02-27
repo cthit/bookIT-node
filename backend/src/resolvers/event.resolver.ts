@@ -44,6 +44,7 @@ export const getEventMResolvers = ({ db, prisma }: Tools) => ({
     { event }: { event: Event },
     { user }: { user: User },
   ) => {
+    event.booked_by = user.cid;
     return editEvent(prisma, db, event, user);
   },
   deleteEvent: async (

@@ -11,6 +11,7 @@ import { deleteEvent, getEvent } from "../../../api/backend.api";
 import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
+import { formatDT } from "../../../utils/utils";
 
 const DetailedView = ({ event_id, onClose, onDelete }) => {
   const history = useHistory();
@@ -27,6 +28,8 @@ const DetailedView = ({ event_id, onClose, onDelete }) => {
       .then(res =>
         setEvent({
           ...res,
+          start: formatDT(Number(res.start)),
+          end: formatDT(Number(res.end)),
           _booked_by: (
             <>
               <a href={"https://gamma.chalmers.it/users/" + res.booked_by}>
