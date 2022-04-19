@@ -44,7 +44,7 @@ const NewReservation = ({
     });
     if (res === null) {
       openToast({
-        text: texts.event_edited,
+        text: texts.new_event_created,
       });
       history.push("/");
       return;

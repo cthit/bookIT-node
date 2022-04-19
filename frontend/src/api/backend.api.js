@@ -21,7 +21,15 @@ const graphql_endpoint = "/api/graphql/v1";
 const request = (body, dataLabel, errorMessage, onReject = () => null) =>
   new Promise(resolve =>
     Axios.post(graphql_endpoint, body)
-      .then(res => resolve(res.data.data[dataLabel]))
+      .then(res => {
+        if (res.data.errors) {
+          console.log(errorMessage);
+          console.log(res.data.errors);
+          resolve(onReject(res));
+          return;
+        }
+        resolve(res.data.data[dataLabel]);
+      })
       .catch(err => {
         console.log(errorMessage);
         console.log(err);

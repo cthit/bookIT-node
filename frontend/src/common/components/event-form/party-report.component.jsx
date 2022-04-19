@@ -9,7 +9,7 @@ import translations from "./event.form.translations.json";
 
 const PartyReport = ({ init }) => {
   const activityValues = ff("isActivity");
-  const permitValues = ff("permit");
+  const permitValues = ff("serving_permit");
   const repNameValues = ff("responsible_name");
   const repNumberValues = ff("responsible_number");
   const repEmailValues = ff("responsible_email");

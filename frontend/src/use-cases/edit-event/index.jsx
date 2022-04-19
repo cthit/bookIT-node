@@ -17,6 +17,8 @@ const formatEvent = event => {
     ...event,
     ...event.party_report,
     isActivity: event.party_report !== null,
+    start: new Date(Number(event.start)),
+    end: new Date(Number(event.end)),
   };
 };
 
@@ -41,10 +43,6 @@ const EditEvent = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(event);
-  }, [event]);
-
   const handleSubmit = async event_ => {
     const res = await editEvent({
       id: id,
@@ -58,11 +56,10 @@ const EditEvent = () => {
       party_report: !event_.isActivity
         ? null
         : {
-            id: event.party_report.id,
             responsible_name: event_.responsible_name,
             responsible_number: event_.responsible_number,
             responsible_email: event_.responsible_email,
-            serving_permit: event_.permit,
+            serving_permit: event_.serving_permit,
           },
     });
     if (res === null) {
