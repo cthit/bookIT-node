@@ -43,10 +43,6 @@ const EditEvent = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    console.log(event);
-  }, [event]);
-
   const handleSubmit = async event_ => {
     const res = await editEvent({
       id: id,
@@ -63,7 +59,7 @@ const EditEvent = () => {
             responsible_name: event_.responsible_name,
             responsible_number: event_.responsible_number,
             responsible_email: event_.responsible_email,
-            serving_permit: event_.permit,
+            serving_permit: event_.serving_permit,
           },
     });
     if (res === null) {

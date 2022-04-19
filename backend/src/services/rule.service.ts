@@ -11,6 +11,7 @@ export interface MiniRule {
   title: string;
   allow: boolean;
   priority: number;
+  description: string | null;
 }
 
 const sameDay = (d1: Date, d2: Date): boolean => {

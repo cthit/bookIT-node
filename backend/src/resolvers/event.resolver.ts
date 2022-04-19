@@ -1,4 +1,3 @@
-import * as events from "../repositories/event.repository";
 import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
@@ -52,6 +51,6 @@ export const getEventMResolvers = ({ db, prisma }: Tools) => ({
     { id }: { id: string },
     { user }: { user: User },
   ) => {
-    return deleteEvent(db, id, user);
+    return deleteEvent(prisma, db, id, user);
   },
 });

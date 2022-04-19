@@ -1,16 +1,16 @@
 import { Event } from "../models/event";
 import { to, equal } from "../utils";
 import pg from "pg";
-import * as eventRepo from "../repositories/event.repository";
 import { checkRules } from "./rule.service";
-import {
-  getPartyReport,
-  createPartyReport,
-  deletePartyReport,
-  editPartyReport,
-} from "./party_report.service";
+import { createPartyReport, deletePartyReport } from "./party_report.service";
 import { User, Error } from "../models";
-import { party_report, PrismaClient, event as p_event } from "@prisma/client";
+import {
+  party_report,
+  PrismaClient,
+  event as p_event,
+  prisma,
+  event,
+} from "@prisma/client";
 
 const validEvent = async (
   prisma: PrismaClient,
@@ -45,14 +45,19 @@ const validEvent = async (
     };
   }
 
-  let overlap_count = await prisma.event.count({
+  let query: any = {
     where: {
       end: { gt: new Date(event.start) },
       start: { lte: new Date(event.end) },
       room: { hasSome: event.room.map(e => e.toString()) },
-      id: { not: event.id },
     },
-  });
+  };
+
+  if (event.id) {
+    query.where.id = { not: event.id };
+  }
+
+  let overlap_count = await prisma.event.count(query);
 
   if (overlap_count > 0) {
     return {
@@ -150,7 +155,7 @@ export const editEvent = async (
       description: event.description,
       end: new Date(event.end),
       booked_as: event.booked_as,
-      booked_by: event.booked_by ?? "",
+      booked_by: event.booked_by || "",
       phone: event.phone,
       room: event.room.map(e => e.toString()),
       party_report_id: event.party_report_id,
@@ -221,18 +226,53 @@ export const createEvent = async (
 };
 
 export const deleteEvent = async (
+  prisma: PrismaClient,
   db: pg.Pool,
   id: string,
   { groups, is_admin }: User,
 ) => {
-  const mayDelete = (group: string) => groups.includes(group) || is_admin;
-  const { res, err } = await to(eventRepo.deleteEvent(db, id, mayDelete));
+  const event: event | null = await prisma.event.findUnique({
+    where: {
+      id: id,
+    },
+  });
+  if (!event) {
+    return {
+      sv: "Kunde ej hitta bokningen",
+      en: "Could not find the event",
+    };
+  }
+
+  if (!groups.includes(event.booked_as) && !is_admin) {
+    return {
+      sv: "Du får ej radera denna bokning",
+      en: "You may not delete this event",
+    };
+  }
+
+  if (event.party_report_id) {
+    await prisma.party_report.delete({
+      where: {
+        id: event.party_report_id,
+      },
+    });
+  }
+
+  await prisma.event.delete({
+    where: {
+      id: id,
+    },
+  });
+
+  // const mayDelete = (group: string) => groups.includes(group) || is_admin;
+  /*const { res, err } = await to(eventRepo.deleteEvent(db, id, mayDelete));
   if (err) {
     console.log(err);
     return {
       sv: "Misslyckades att radera bokningen",
       en: "Failed to delete the booking",
     };
-  }
-  return res;
+  }*/
+
+  return null;
 };
