@@ -112,7 +112,7 @@ export const editEvent = async (
   }
 
   if (oldReport && !event.party_report && oldReport.id) {
-    err = await deletePartyReport(db, oldReport.id);
+    err = await deletePartyReport(prisma, oldReport.id);
     if (!err) return err;
     event.party_report_id = undefined;
   } else if (!oldReport && event.party_report) {

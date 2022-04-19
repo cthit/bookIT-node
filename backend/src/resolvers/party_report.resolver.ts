@@ -1,56 +1,23 @@
-import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
-import pg from "pg";
-import { PartyReport } from "../models/party_report";
 import { Event } from "../models/event";
-import {
-  getPartyReport,
-  getPartyReports,
-} from "../repositories/party_report.repository";
+import { getPartyReport } from "../services/party_report.service";
 
-export const getPartyReportQResolvers = (tools: Tools) => ({
-  party_reports: async () => {
-    const { err, res } = await to<pg.QueryResult<PartyReport>>(
-      getPartyReports(tools.db),
-    );
-    if (err) {
-      console.log(err);
-      return [];
-    }
-    return res ? res.rows : [];
+export const getPartyReportQResolvers = ({ prisma }: Tools) => ({
+  party_reports: () => {
+    return prisma.party_report.findMany();
   },
   party_report: async (_: any, { id }: { id: string }) => {
-    const { err, res } = await to<pg.QueryResult<PartyReport>>(
-      getPartyReport(tools.db, id),
-    );
-    if (err) {
-      console.log(err);
-      return {};
-    }
-    if (!res || res?.rows.length < 1) {
-      return {};
-    }
-    return res?.rows[0];
+    return getPartyReport(prisma, id);
   },
 });
 
-export const getPartyReportResolvers = (tools: Tools) => ({
+export const getPartyReportResolvers = ({ prisma }: Tools) => ({
   Event: {
     party_report: async ({ party_report_id }: Event, args: any) => {
       if (!party_report_id) {
         return null;
       }
-      const { err, res } = await to<pg.QueryResult<PartyReport>>(
-        getPartyReport(tools.db, party_report_id),
-      );
-      if (err) {
-        console.log(err);
-        return null;
-      }
-      if (!res || res?.rows.length < 1) {
-        return null;
-      }
-      return res.rows[0];
+      return getPartyReport(prisma, party_report_id);
     },
   },
 });
