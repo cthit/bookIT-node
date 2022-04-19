@@ -2,10 +2,9 @@ import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
 import { User } from "../models/user";
-import pg from "pg";
 import { createEvent, editEvent, deleteEvent } from "../services/event.service";
 
-export const getEventQResolvers = ({ db, prisma }: Tools) => ({
+export const getEventQResolvers = ({ prisma }: Tools) => ({
   events: async () => {
     return await prisma.event.findMany();
   },
@@ -29,14 +28,14 @@ export const getEventQResolvers = ({ db, prisma }: Tools) => ({
   },
 });
 
-export const getEventMResolvers = ({ db, prisma }: Tools) => ({
+export const getEventMResolvers = ({ prisma }: Tools) => ({
   createEvent: async (
     _: any,
     { event }: { event: Event },
     { user }: { user: User },
   ) => {
     event.booked_by = user.cid;
-    return createEvent(prisma, db, event, user);
+    return createEvent(prisma, event, user);
   },
   editEvent: async (
     _: any,
@@ -44,13 +43,13 @@ export const getEventMResolvers = ({ db, prisma }: Tools) => ({
     { user }: { user: User },
   ) => {
     event.booked_by = user.cid;
-    return editEvent(prisma, db, event, user);
+    return editEvent(prisma, event, user);
   },
   deleteEvent: async (
     _: any,
     { id }: { id: string },
     { user }: { user: User },
   ) => {
-    return deleteEvent(prisma, db, id, user);
+    return deleteEvent(prisma, id, user);
   },
 });

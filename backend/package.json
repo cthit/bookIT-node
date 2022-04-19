@@ -6,7 +6,6 @@
   "scripts": {
     "start": "ts-node src/index.ts",
     "dev": "ts-node-dev --log-error --unhandled-rejections=none src/index.ts",
-    "migration": "node-pg-migrate",
     "migrate": "prisma db push",
     "test": "mocha -r ts-node/register ./src/tests/*.test.ts",
     "build": "tsc"
@@ -25,10 +24,8 @@
     "express-session": "^1.17.2",
     "graphql": "^15.5.1",
     "js-base64": "^3.6.1",
-    "node-pg-migrate": "^5.10.0",
     "passport": "^0.4.1",
     "passport-gamma": "^0.0.6",
-    "pg": "^8.7.1",
     "qs": "^6.10.1",
     "redis": "^3.1.2",
     "ts-node": "^10.2.0"
@@ -43,7 +40,6 @@
     "@types/mocha": "^9.0.0",
     "@types/node": "^16.4.13",
     "@types/passport": "^1.0.7",
-    "@types/pg": "^8.6.1",
     "@types/redis": "^2.8.31",
     "@typescript-eslint/eslint-plugin": "^4.29.1",
     "@typescript-eslint/parser": "^4.29.1",

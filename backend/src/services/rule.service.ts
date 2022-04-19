@@ -1,7 +1,6 @@
-import pg from "pg";
-import * as ruleRepo from "../repositories/rule.repository";
 import { Event, Rule, Error } from "../models";
 import { to } from "../utils";
+import { PrismaClient, rule } from "@prisma/client";
 
 const ms_24H = 86400000; // == 1000 * 60 * 60 * 24
 
@@ -45,7 +44,7 @@ export const dayApplies = (date: Date, day_mask: number): boolean => {
  * Creates a list of time slots where each rule apply
  */
 export const toMiniRules = (
-  rules: Rule[],
+  rules: rule[],
   from: Date,
   to: Date,
 ): MiniRule[] => {
@@ -92,13 +91,13 @@ export const mergeRules = (rules: MiniRule[]): MiniRule[] => {
   return mergedRules;
 };
 
-const doesObeyRules = (rules: Rule[], event: Event): Error | null => {
+const doesObeyRules = (rules: rule[], event: Event): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
   var mr: MiniRule[] = mergeRules(toMiniRules(rules, start, end));
   for (const i in mr) {
-    if (mr[i].start < end && mr[i].end > start) {
+    if (mr[i].start < end && mr[i].end > start && !mr[i].allow) {
       return {
         sv: "Bokning bryter regel: " + mr[i].title,
         en: "Booking breaks rule: " + mr[i].title,
@@ -108,28 +107,31 @@ const doesObeyRules = (rules: Rule[], event: Event): Error | null => {
   return null;
 };
 
-export const checkRules = async (
-  db: pg.Pool,
-  event: Event,
-): Promise<Error | null> => {
-  const { err, res } = await to<pg.QueryResult<Rule>>(
-    ruleRepo.getRulesByEvent(db, event),
-  );
-  if (err) {
-    console.log(err);
-    return {
-      sv: "Databas error",
-      en: "Database error",
-    };
-  }
-
-  return doesObeyRules(res ? res.rows : [], event);
+export const checkRules = async (prisma: PrismaClient, event: Event) => {
+  const rules = await prisma.rule.findMany({
+    where: {
+      room: {
+        hasSome: event.room,
+      },
+      end_date: {
+        gte: new Date(event.start),
+      },
+      start_date: {
+        lte: new Date(event.end),
+      },
+    },
+  });
+  return doesObeyRules(rules, event);
 };
 
-export const createRule = async (db: pg.Pool, rule: Rule): Promise<boolean> => {
+export const createRule = async (
+  prisma: PrismaClient,
+  rule: Rule,
+): Promise<boolean> => {
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
   if (!start.valueOf() || !end.valueOf() || start >= end) {
+    //TODO: Replace with SvEn Error message
     console.log("Create rule: Invalid date");
     return false;
   }
@@ -142,22 +144,30 @@ export const createRule = async (db: pg.Pool, rule: Rule): Promise<boolean> => {
     console.log("Create rule: Invalid time");
     return false;
   }
-  const { err } = await to(ruleRepo.createRule(db, rule));
-  if (err) {
-    console.log(err);
-    return false;
-  }
+
+  await prisma.rule.create({
+    data: {
+      ...rule,
+      start_date: new Date(rule.start_date),
+      end_date: new Date(rule.end_date),
+    },
+  });
   return true;
 };
 
-export const deleteRule = async (db: pg.Pool, id: String): Promise<Boolean> => {
-  const { err, res } = await to<pg.QueryResult>(ruleRepo.deleteRule(db, id));
+export const deleteRule = async (
+  prisma: PrismaClient,
+  id: string,
+): Promise<Boolean> => {
+  const { err, res } = await to(
+    prisma.rule.delete({
+      where: {
+        id: id,
+      },
+    }),
+  );
   if (err) {
     console.log(err);
-    return false;
-  }
-  if (!res || res?.rowCount <= 0) {
-    console.log("Delete rule: No rule was found");
     return false;
   }
   return true;

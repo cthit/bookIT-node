@@ -36,10 +36,10 @@ model party_report {
   event                 event[]
 }
 
-model pgmigrations {
-  id     Int      @id @default(autoincrement())
-  name   String   @db.VarChar(255)
-  run_on DateTime @db.Timestamp(3)
+enum room {
+  BIG_HUB
+  GROUP_ROOM
+  HASEN
 }
 
 model rule {
@@ -53,7 +53,7 @@ model rule {
   allow       Boolean  @default(true)
   priority    Int      @default(10)
   title       String
-  room        String[]
+  room        room[]
   created_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
   updated_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
 }

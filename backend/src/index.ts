@@ -1,6 +1,5 @@
 import express from "express";
 import session from "express-session";
-import pg from "pg";
 import { setupRoutes } from "./routes";
 import { init } from "./authentication/gamma.strategy";
 import passport from "passport";
@@ -28,20 +27,8 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-pg.types.setTypeParser(1114, function (stringValue) {
-  return stringValue;
-});
-
-const db = new pg.Pool({
-  user: process.env.DB_USER,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASS,
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-});
-
 const prisma = new PrismaClient();
 
-setupRoutes(app, { db, prisma, passport });
+setupRoutes(app, { prisma, passport });
 
 app.listen(Number(process.env.PORT) || 8080);

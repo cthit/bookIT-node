@@ -18,8 +18,8 @@ import translations from "./rules.translations.json";
 const formatRule = r => ({
   ...r,
   _time: `${r.start_time}-${r.end_time}`,
-  start_date: r.start_date.split(" ")[0],
-  end_date: r.end_date.split(" ")[0],
+  start_date: formatDate(Number(r.start_date)),
+  end_date: formatDate(Number(r.end_date)),
   _room: <Rooms rooms={r.room} />,
   _day_mask: <DayMask day_mask={r.day_mask} />,
   _allow: r.allow ? <CheckIcon /> : <CancelIcon />,
@@ -39,7 +39,7 @@ const getRuleFormatted = async id => {
 const createRuleCallback = async rule =>
   createRule({
     description: rule.description,
-    priority: rule.priority,
+    priority: Number(rule.priority),
     title: rule.title,
     allow: rule._allow,
     day_mask: rule._day_mask,

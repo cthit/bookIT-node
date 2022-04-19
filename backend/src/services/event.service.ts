@@ -1,6 +1,5 @@
 import { Event } from "../models/event";
 import { to, equal } from "../utils";
-import pg from "pg";
 import { checkRules } from "./rule.service";
 import { createPartyReport, deletePartyReport } from "./party_report.service";
 import { User, Error } from "../models";
@@ -71,7 +70,6 @@ const validEvent = async (
 
 export const editEvent = async (
   prisma: PrismaClient,
-  db: pg.Pool,
   event: Event,
   { groups }: User,
 ) => {
@@ -106,7 +104,7 @@ export const editEvent = async (
     return err;
   }
 
-  err = await checkRules(db, event);
+  err = await checkRules(prisma, event);
   if (err) {
     return err;
   }
@@ -174,7 +172,6 @@ export const editEvent = async (
 
 export const createEvent = async (
   prisma: PrismaClient,
-  db: pg.Pool,
   event: Event,
   { groups }: User,
 ): Promise<Error | null> => {
@@ -183,7 +180,7 @@ export const createEvent = async (
     return err;
   }
 
-  err = await checkRules(db, event);
+  err = await checkRules(prisma, event);
   if (err) {
     return err;
   }
@@ -227,7 +224,6 @@ export const createEvent = async (
 
 export const deleteEvent = async (
   prisma: PrismaClient,
-  db: pg.Pool,
   id: string,
   { groups, is_admin }: User,
 ) => {
@@ -263,16 +259,5 @@ export const deleteEvent = async (
       id: id,
     },
   });
-
-  // const mayDelete = (group: string) => groups.includes(group) || is_admin;
-  /*const { res, err } = await to(eventRepo.deleteEvent(db, id, mayDelete));
-  if (err) {
-    console.log(err);
-    return {
-      sv: "Misslyckades att radera bokningen",
-      en: "Failed to delete the booking",
-    };
-  }*/
-
   return null;
 };
