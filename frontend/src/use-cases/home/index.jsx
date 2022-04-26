@@ -54,7 +54,13 @@ const Home = () => {
         ...colorVariables,
       }}
     >
-      <div style={{ display: "flex", alignContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          alignContent: "center",
+          marginBottom: "0.25rem",
+        }}
+      >
         {ROOMS.map(r => (
           <div className="chip" style={{ backgroundColor: r.color }}>
             {r.text}
