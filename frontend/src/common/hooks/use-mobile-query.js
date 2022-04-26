@@ -4,7 +4,7 @@ export default function useMobileQuery() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 768px)");
+    const mediaQuery = window.matchMedia("(max-width: 680px)");
     const handleChange = e => {
       setIsMobile(e.matches);
     };
