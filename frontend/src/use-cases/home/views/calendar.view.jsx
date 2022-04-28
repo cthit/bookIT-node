@@ -7,6 +7,7 @@ import momentPlugin from "@fullcalendar/moment";
 import svLocale from "@fullcalendar/core/locales/sv";
 import enLocale from "@fullcalendar/core/locales/en-gb";
 import { useDigitTranslations } from "@cthit/react-digit-components";
+import "./calendar-view.css";
 
 const Calendar = ({ getEvents, eventClick, onSelect, ref }) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));

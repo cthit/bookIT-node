@@ -1,0 +1,14 @@
+.fc .fc-toolbar {
+  flex-wrap: wrap;
+  margin-left: 0.8rem;
+}
+
+@media (max-width: 380px) {
+  .fc .fc-toolbar {
+    margin-left: 0;
+  }
+
+  .fc .fc-toolbar-title {
+    margin-left: 0.8rem;
+  }
+}

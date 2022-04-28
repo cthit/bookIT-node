@@ -6,6 +6,7 @@ import ROOMS from "../../common/rooms";
 import Calendar from "./views/calendar.view";
 import DetailedView from "./views/detailed-view.view";
 import "./index.css";
+import useMobileQuery from "../../common/hooks/use-mobile-query";
 
 const getClassName = rooms => {
   let name = "event";
@@ -41,17 +42,25 @@ const Home = () => {
   const [openDialog, closeDialog] = useDigitCustomDialog({
     title: "Event",
   });
+  const isMobile = useMobileQuery();
+
   return (
     <div
       style={{
         width: "100%",
-        margin: "1rem",
+        margin: `${isMobile ? "1rem 0" : "1rem"}`,
         height: "40rem",
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
         ...colorVariables,
       }}
     >
-      <div style={{ display: "flex", alignContent: "center" }}>
+      <div
+        style={{
+          display: "flex",
+          alignContent: "center",
+          marginBottom: "0.25rem",
+        }}
+      >
         {ROOMS.map(r => (
           <div className="chip" style={{ backgroundColor: r.color }}>
             {r.text}
