@@ -23,6 +23,15 @@ const validEvent = async (
     };
   }
 
+  if (new Date(event.start) > new Date(Date.now()+1000*60*60*24*7*9)) {
+    if(event.booked_as!="superadmin"){
+      return {
+        sv: "Den angivna starttiden är för långt fram i tiden",
+        en: "Start date is too far in the future",
+      };
+    }
+  }
+
   if (!groups.includes(event.booked_as)) {
     return {
       sv: "Bokande grupp ej specificerad",
