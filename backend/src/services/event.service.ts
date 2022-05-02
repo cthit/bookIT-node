@@ -14,12 +14,20 @@ import {
 const validEvent = async (
   prisma: PrismaClient,
   event: Event,
-  groups: String[],
+
+  { groups, is_admin }: User
 ) => {
   if (new Date(event.start) >= new Date(event.end)) {
     return {
       sv: "Starttid är efter sluttid",
       en: "Start date is later than end date",
+    };
+  }
+
+  if ((new Date(event.start) > new Date(Date.now() + 5443200000)) && !is_admin) {
+    return {
+      sv: "Den angivna starttiden är för långt fram i tiden",
+      en: "Start date is too far in the future",
     };
   }
 
@@ -71,8 +79,9 @@ const validEvent = async (
 export const editEvent = async (
   prisma: PrismaClient,
   event: Event,
-  { groups }: User,
+  user: User,
 ) => {
+
   if (event.id == null) {
     return {
       sv: "Inget boknings id",
@@ -99,7 +108,7 @@ export const editEvent = async (
     });
   }
 
-  let err = await validEvent(prisma, event, groups);
+  let err = await validEvent(prisma, event, user);
   if (err) {
     return err;
   }
@@ -173,9 +182,10 @@ export const editEvent = async (
 export const createEvent = async (
   prisma: PrismaClient,
   event: Event,
-  { groups }: User,
+  user: User,
 ): Promise<Error | null> => {
-  let err = await validEvent(prisma, event, groups);
+
+  let err = await validEvent(prisma, event, user);
   if (err) {
     return err;
   }
