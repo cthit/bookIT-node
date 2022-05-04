@@ -1,5 +1,5 @@
 import Axios from "axios";
-import UserContext, { user_default } from "../common/contexts/user-context";
+import { user_default } from "../common/contexts/user-context";
 import {
   getEvents_query,
   createEvent_query,
