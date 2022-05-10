@@ -7,6 +7,7 @@ import Calendar from "./views/calendar.view";
 import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
+import { getIllegalSlots } from "../../api/backend.api";
 
 const getClassName = rooms => {
   let name = "event";
@@ -18,14 +19,26 @@ const getClassName = rooms => {
 
 const getCalendarEvents = async info => {
   const events = await getEvents(info.start, info.end);
-  return events.map(e => {
-    return {
-      ...e,
-      className: getClassName(e.room.sort()),
-      start: new Date(Number(e.start)),
-      end: new Date(Number(e.end)),
-    };
-  });
+  const illegalSlots = await getIllegalSlots(info.start, info.end);
+
+  return [
+    ...events.map(e => {
+      return {
+        ...e,
+        className: getClassName(e.room.sort()),
+        start: new Date(Number(e.start)),
+        end: new Date(Number(e.end)),
+      };
+    }),
+    ...illegalSlots.map(e => {
+      return {
+        backgroundColor: "#EF9A9A",
+        start: new Date(Number(e.start)),
+        end: new Date(Number(e.end)),
+        display: "background",
+      };
+    }),
+  ];
 };
 
 const getColorVariables = () => {
