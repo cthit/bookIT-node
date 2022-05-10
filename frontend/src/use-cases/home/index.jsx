@@ -9,16 +9,29 @@ import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
 
+const style = document.querySelector("#room-styles");
+
 const getClassName = rooms => {
   let name = "event";
   for (const i in rooms) {
     name += "-" + rooms[i].toLowerCase();
+  }
+  if (!(style.innerHTML.includes(name))) {
+    style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
+    let px = 0;
+    for (const i in rooms) {
+      style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
+      px += 10;
+      style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
+    }
+    style.innerHTML = `${style.innerHTML.slice(0, style.innerHTML.length - 1)});}\n`;
   }
   return name;
 };
 
 const getCalendarEvents = async info => {
   const events = await getEvents(info.start, info.end);
+
   const illegalSlots = await getIllegalSlots(info.start, info.end);
 
   return [
