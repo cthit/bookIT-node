@@ -67,9 +67,3 @@
     var(--bg_hasen) 30px
   );
 }
-
-/* Illegal Slot Colors */
-.illegal-slot {
-  border-color: red;
-  background: red;
-}

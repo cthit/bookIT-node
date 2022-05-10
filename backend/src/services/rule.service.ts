@@ -107,6 +107,23 @@ const doesObeyRules = (rules: rule[], event: Event): Error | null => {
   return null;
 };
 
+export const getRulesBetween = async (
+  prisma: PrismaClient,
+  from: Date,
+  to: Date,
+) => {
+  return await prisma.rule.findMany({
+    where: {
+      end_date: {
+        gte: from,
+      },
+      start_date: {
+        lte: to,
+      },
+    },
+  });
+};
+
 export const checkRules = async (prisma: PrismaClient, event: Event) => {
   const rules = await prisma.rule.findMany({
     where: {
