@@ -8,10 +8,22 @@ import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 
+const style=document.querySelector("#room-styles");
+
 const getClassName = rooms => {
   let name = "event";
   for (const i in rooms) {
     name += "-" + rooms[i].toLowerCase();
+  }
+  if(!(style.innerHTML.includes(name))){
+    style.innerHTML+=`.${name}{background: repeating-linear-gradient(45deg,`;
+    let px=0;
+    for(const i in rooms){
+      style.innerHTML+=`var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
+      px+=10;
+      style.innerHTML+=`var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
+    }
+    style.innerHTML=`${style.innerHTML.slice(0, style.innerHTML.length - 1)});}\n`;
   }
   return name;
 };
@@ -19,9 +31,10 @@ const getClassName = rooms => {
 const getCalendarEvents = async info => {
   const events = await getEvents(info.start, info.end);
   return events.map(e => {
+    const sortedRooms = e.room.sort();
     return {
       ...e,
-      className: getClassName(e.room.sort()),
+      className: getClassName(sortedRooms),
       start: new Date(Number(e.start)),
       end: new Date(Number(e.end)),
     };
