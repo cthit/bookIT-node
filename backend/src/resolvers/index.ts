@@ -1,5 +1,6 @@
 import { Tools } from "../utils/commonTypes";
 import { getEventMResolvers, getEventQResolvers } from "./event.resolver";
+import { getIllegalSlotsQResolvers } from "./illegal_slots.resolver";
 import {
   getPartyReportQResolvers,
   getPartyReportResolvers,
@@ -14,6 +15,7 @@ export const getResolvers = (tools: Tools) => {
       ...getEventQResolvers(tools),
       ...getPartyReportQResolvers(tools),
       ...getRuleQResolvers(tools),
+      ...getIllegalSlotsQResolvers(tools),
     },
     Mutation: {
       ...getEventMResolvers(tools),

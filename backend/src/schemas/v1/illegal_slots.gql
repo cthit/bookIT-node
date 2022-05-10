@@ -1,0 +1,8 @@
+type IllegalSlot {
+  start: String!
+  end: String!
+}
+
+type Query {
+  illegalSlots(from: String!, to: String!): [IllegalSlot!]
+}
