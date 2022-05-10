@@ -105,6 +105,15 @@ mutation DeleteRule($id: String!) {
 }
 `;
 
+export const getIllegalSlots_query = `
+query GetIllegalSlots($from: String!, $to: String!) {
+  illegalSlots(from: $from, to: $to) {
+    start
+    end
+  }
+}
+`;
+
 export const getUser_query = `
 {
   user {

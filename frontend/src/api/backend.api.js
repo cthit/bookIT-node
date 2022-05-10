@@ -14,6 +14,7 @@ import {
   getFullEvent_query,
   editEvent_query,
   deleteEvent_query,
+  getIllegalSlots_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -153,6 +154,18 @@ export const deleteRule = id =>
     "deleteRule",
     "Failed to delete rule",
     err => err.message,
+  );
+
+export const getIllegalSlots = (from, to) =>
+  request(
+    {
+      query: getIllegalSlots_query,
+      variables: { from, to },
+      operationName: "GetIllegalSlots",
+    },
+    "illegalSlots",
+    "Failed to fetch illegal slots",
+    () => [],
   );
 
 export const getPartyReports = () =>
