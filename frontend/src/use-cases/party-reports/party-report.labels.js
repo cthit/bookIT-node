@@ -17,6 +17,14 @@ export const detailed_view_keys = [
   "description",
   "created_at",
 ];
+export const undetailed_view_keys=[
+  "title",
+  "location",
+  "rooms",
+  "start",
+  "end",
+  "responsible_name",
+];
 
 export const table_header_keys = [
   "title",
