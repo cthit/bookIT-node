@@ -10,7 +10,7 @@ export const getIllegalSlotsQResolvers = ({ prisma }: Tools) => ({
     const from = new Date(ft.from);
     const to = new Date(ft.to);
 
-    const rules = await getRulesBetween(prisma, from, to);
+    const rules = await (await getRulesBetween(prisma, from, to)).filter(rule => !rule.allow);
 
     return mergeRules(toMiniRules(rules, from, to));
   },
