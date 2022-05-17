@@ -74,7 +74,7 @@ const validEvent = async (
     };
   }
 
-  if(!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(event.phone))){
+  if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(event.phone))) {
     return {
       sv: "Ogiltigt telefonnummer",
       en: "Provided phone number is faulty",
@@ -138,7 +138,11 @@ export const editEvent = async (
         en: "Failed to create party report",
       };
     }
-    event.party_report_id = id;
+    if (id instanceof Error) {
+      return id;
+    }
+    event.party_report_id = id.toString();
+
   } else if (
     !equal(oldReport, event.party_report) &&
     oldReport &&
@@ -203,8 +207,8 @@ export const createEvent = async (
     return err;
   }
   if (event.party_report) {
-    err=validPartyReport(event.party_report);
-    if(err){
+    err = validPartyReport(event.party_report);
+    if (err) {
       return err;
     }
     let report = await prisma.party_report.create({
