@@ -40,6 +40,7 @@ enum room {
   BIG_HUB
   GROUP_ROOM
   HASEN
+  CETAC
 }
 
 model rule {
