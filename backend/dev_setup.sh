@@ -22,3 +22,7 @@ export SESSION_SECRET=secret
 export GRAPHIQL=true
 export MOCK=true
 export ADMIN_AUTHORITY=bookit-admin
+
+export VO_EMAIL=vo@chalmers.it
+export GOTIFY_HOST=http://localhost:1337
+export GOTIFY_KEY=123abc

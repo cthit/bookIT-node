@@ -1,21 +1,19 @@
 import { Event } from "../models/event";
 import { to, equal } from "../utils";
 import { checkRules } from "./rule.service";
-import { createPartyReport, deletePartyReport } from "./party_report.service";
-import { User, Error } from "../models";
 import {
-  party_report,
-  PrismaClient,
-  event as p_event,
-  prisma,
-  event,
-} from "@prisma/client";
+  createPartyReport,
+  deletePartyReport,
+  partyReportCreated,
+} from "./party_report.service";
+import { User, Error } from "../models";
+import { party_report, PrismaClient, event } from "@prisma/client";
 
 const validEvent = async (
   prisma: PrismaClient,
   event: Event,
 
-  { groups, is_admin }: User
+  { groups, is_admin }: User,
 ) => {
   if (new Date(event.start) >= new Date(event.end)) {
     return {
@@ -24,7 +22,7 @@ const validEvent = async (
     };
   }
 
-  if ((new Date(event.start) > new Date(Date.now() + 5443200000)) && !is_admin) {
+  if (new Date(event.start) > new Date(Date.now() + 5443200000) && !is_admin) {
     return {
       sv: "Den angivna starttiden är för långt fram i tiden",
       en: "Start date is too far in the future",
@@ -81,7 +79,6 @@ export const editEvent = async (
   event: Event,
   user: User,
 ) => {
-
   if (event.id == null) {
     return {
       sv: "Inget boknings id",
@@ -131,6 +128,7 @@ export const editEvent = async (
       };
     }
     event.party_report_id = id;
+    await partyReportCreated(event);
   } else if (
     !equal(oldReport, event.party_report) &&
     oldReport &&
@@ -184,7 +182,6 @@ export const createEvent = async (
   event: Event,
   user: User,
 ): Promise<Error | null> => {
-
   let err = await validEvent(prisma, event, user);
   if (err) {
     return err;
@@ -196,16 +193,14 @@ export const createEvent = async (
   }
 
   if (event.party_report) {
-    let report = await prisma.party_report.create({
-      data: <party_report>event.party_report,
-    });
-    if (!report) {
+    let id = await createPartyReport(prisma, event.party_report);
+    if (!id) {
       return {
         sv: "Misslyckades att skapa aktivitetsanmälan",
         en: "Failed to create party report",
       };
     }
-    event.party_report_id = report.id;
+    event.party_report_id = id;
   }
 
   let res = await prisma.event.create({
@@ -227,6 +222,10 @@ export const createEvent = async (
       sv: "Misslyckades att skapa bokning",
       en: "Failed to create event",
     };
+  }
+
+  if (event.party_report_id) {
+    await partyReportCreated({ ...event, id: res.id });
   }
 
   return null;

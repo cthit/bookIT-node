@@ -1,6 +1,8 @@
-import { PartyReport } from "../models";
+import { PartyReport, Event } from "../models";
 import { Error } from "../models/error";
 import { party_report, PrismaClient } from "@prisma/client";
+import { notify } from "./email_sender.service";
+import { to } from "../utils";
 
 export const getPartyReport = async (
   prisma: PrismaClient,
@@ -53,4 +55,27 @@ export const editPartyReport = async (
     data: <party_report>party_report,
   });
   return null;
+};
+
+export const partyReportCreated = async (event: Event) => {
+  let { err } = await to(
+    notify({
+      subject: "bookIT - Ny aktivitetsanmälan",
+      body: `
+    En ny aktivitestsanmälan har skapats i bookIT.
+    Börjar: ${event.start}
+    Slutar: ${event.end}
+    Rum: ${event.room}
+
+    Se anmälan här: https://bookit.chalmers.it/party_reports/${event.id}
+    
+    Mvh bookIT
+    `,
+    }),
+  );
+
+  if (err) {
+    console.log("Failed to send email to VO");
+    console.log(err.message);
+  }
 };
