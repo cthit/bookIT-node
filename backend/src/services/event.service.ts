@@ -52,6 +52,12 @@ const validEvent = async (
       en: "No room specified",
     };
   }
+  if(event.party_report){
+    const err=validPartyReport(event.party_report);
+    if(err){
+      return err;
+    }
+  }
 
   let query: any = {
     where: {
