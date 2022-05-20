@@ -37,31 +37,54 @@ const getStatusIcon = status => {
 
 const readOnePartyReport = async id => {
   const report = await getPartyReport(id);
-  return {
-    data: {
-      ...report,
-      ...report.party_report,
-      start: formatDT(report.start),
-      end: formatDT(report.end),
-      created_at: formatDT(report.created_at),
-      status: getStatusIcon(report.party_report.status),
-      location: "Hubben 2.1",
-      attendees: "75 or less",
-      serving_permit: report.party_report.serving_permit
-        ? "Finns"
-        : "Ej aktuellt",
-    },
-  };
+  if(report.party_report.status){
+    return {
+      data: {
+        ...report,
+        ...report.party_report,
+        start: formatDT(report.start),
+        end: formatDT(report.end),
+        created_at: formatDT(report.created_at),
+        status: getStatusIcon(report.party_report.status),
+        location: "Hubben 2.1",
+        attendees: "75 or less",
+        serving_permit: report.party_report.serving_permit
+          ? "Finns"
+          : "Ej aktuellt",
+      },
+    };
+  }
+  else{
+    return {
+      data:{
+        ...report,
+        responsible_name:report.party_report.responsible_name,
+        start: formatDT(report.start),
+        end: formatDT(report.end),
+        created_at: formatDT(report.created_at),
+      },
+      };
+    }
 };
 
-const formatPartyReport = e => ({
+const formatPartyReport = e => (
+  (e.party_report.status)?
+  {
   ...e,
   ...e.party_report,
   start: formatDT(e.start),
   end: formatDT(e.end),
   created_at: formatDT(e.created_at),
   status: getStatusIcon(e.party_report.status),
-});
+}:{
+  ...e,
+  ...e.party_report,
+  start: formatDT(e.start),
+  end: formatDT(e.end),
+  created_at: formatDT(e.created_at),
+}
+
+);
 
 const PartyReports = () => {
   const history = useHistory();
@@ -70,13 +93,6 @@ const PartyReports = () => {
   const readAllPartyReports = async () =>
     (await getPartyReports()).map(e => ({
       ...formatPartyReport(e),
-      details: (
-        <DigitButton
-          text="Details"
-          label="Hello there"
-          onClick={() => history.push("/party_reports/" + e.party_report.id)}
-        />
-      ),
     }));
 
   return (
@@ -96,7 +112,7 @@ const PartyReports = () => {
           startRowsPerPage: 10,
         }}
         backButtonText={texts.back}
-        detailsButtonText="Details"
+        detailsButtonText={"Details"}
         detailsTitle={data => data.title}
         readOneProps={{ style: { maxWidth: "40rem" } }}
       />
