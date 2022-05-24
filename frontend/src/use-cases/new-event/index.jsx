@@ -41,6 +41,7 @@ const NewReservation = ({
             responsible_email: event.responsible_email,
             serving_permit: event.permit,
           },
+      booking_terms: event.booking_terms,
     });
     if (res === null) {
       openToast({

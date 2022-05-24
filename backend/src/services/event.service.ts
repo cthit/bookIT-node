@@ -15,7 +15,7 @@ const validEvent = async (
   prisma: PrismaClient,
   event: Event,
 
-  { groups, is_admin }: User
+  { groups, is_admin }: User,
 ) => {
   if (new Date(event.start) >= new Date(event.end)) {
     return {
@@ -24,7 +24,7 @@ const validEvent = async (
     };
   }
 
-  if ((new Date(event.start) > new Date(Date.now() + 5443200000)) && !is_admin) {
+  if (new Date(event.start) > new Date(Date.now() + 5443200000) && !is_admin) {
     return {
       sv: "Den angivna starttiden är för långt fram i tiden",
       en: "Start date is too far in the future",
@@ -73,6 +73,13 @@ const validEvent = async (
     };
   }
 
+  if (!event.booking_terms) {
+    return {
+      sv: "Du måste godkänna bokningsvillkoren",
+      en: "You must accept the booking terms and conditions",
+    };
+  }
+
   return null;
 };
 
@@ -81,7 +88,6 @@ export const editEvent = async (
   event: Event,
   user: User,
 ) => {
-
   if (event.id == null) {
     return {
       sv: "Inget boknings id",
@@ -184,7 +190,6 @@ export const createEvent = async (
   event: Event,
   user: User,
 ): Promise<Error | null> => {
-
   let err = await validEvent(prisma, event, user);
   if (err) {
     return err;
