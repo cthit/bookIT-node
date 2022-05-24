@@ -28,6 +28,11 @@ const whenTrue = {
   otherwise: yup.string(),
 };
 
+const regexStrings = {
+  phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
+  email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+};
+
 const EventFrom = ({ onSubmit, initialValues }) => {
   const [openToast] = useDigitToast({
     duration: 3000,
@@ -44,7 +49,10 @@ const EventFrom = ({ onSubmit, initialValues }) => {
 
   const validationSchema = yup.object().shape({
     title: yup.string().required(texts.title_required),
-    phone: yup.string().required(texts.phone_required),
+    phone: yup
+      .string()
+      .matches(regexStrings.phone, texts.phone_invalid)
+      .required(texts.phone_required),
     room: yup.array().min(1, texts.room_required),
     description: yup.string(),
     start: yup.date().required(),
@@ -52,8 +60,14 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     isActivity: yup.bool().required(),
     permit: yup.bool(),
     responsible_name: yup.string().when("isActivity", whenTrue),
-    responsible_number: yup.string().when("isActivity", whenTrue),
-    responsible_email: yup.string().when("isActivity", whenTrue),
+    responsible_number: yup
+      .string()
+      .matches(regexStrings.phone, texts.phone_invalid)
+      .when("isActivity", whenTrue),
+    responsible_email: yup
+      .string()
+      .matches(regexStrings.email, texts.email_invalid)
+      .when("isActivity", whenTrue),
   });
 
   return (
