@@ -22,16 +22,23 @@ import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
 import propTypes from "prop-types";
 
+const regexStrings = {
+  phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
+  email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+};
+
 const whenTrue = {
   is: true,
   then: yup.string().required(),
   otherwise: yup.string(),
 };
 
-const regexStrings = {
-  phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
-  email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-};
+const whenTrueMatch = (regex, error) => {
+  return {
+    is: true,
+    then: yup.string().matches(regex, error)
+  }
+}
 
 const EventFrom = ({ onSubmit, initialValues }) => {
   const [openToast] = useDigitToast({
@@ -62,11 +69,11 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     responsible_name: yup.string().when("isActivity", whenTrue),
     responsible_number: yup
       .string()
-      .matches(regexStrings.phone, texts.phone_invalid)
+      .when("isActivity", whenTrueMatch(regexStrings.phone, texts.phone_invalid))
       .when("isActivity", whenTrue),
     responsible_email: yup
       .string()
-      .matches(regexStrings.email, texts.email_invalid)
+      .when("isActivity", whenTrueMatch(regexStrings.email, texts.email_invalid))
       .when("isActivity", whenTrue),
   });
 
