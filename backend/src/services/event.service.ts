@@ -1,7 +1,7 @@
 import { Event } from "../models/event";
 import { to, equal } from "../utils";
 import { checkRules } from "./rule.service";
-import { createPartyReport, deletePartyReport } from "./party_report.service";
+import { createPartyReport, deletePartyReport, validPartyReport } from "./party_report.service";
 import { User, Error } from "../models";
 import {
   party_report,
@@ -17,6 +17,7 @@ const validEvent = async (
 
   { groups, is_admin }: User
 ) => {
+
   if (new Date(event.start) >= new Date(event.end)) {
     return {
       sv: "Starttid är efter sluttid",
@@ -51,6 +52,12 @@ const validEvent = async (
       en: "No room specified",
     };
   }
+  if(event.party_report){
+    const err=validPartyReport(event.party_report);
+    if(err){
+      return err;
+    }
+  }
 
   let query: any = {
     where: {
@@ -70,6 +77,13 @@ const validEvent = async (
     return {
       sv: "Den angivna tiden är upptagen",
       en: "The time slot is already taken",
+    };
+  }
+
+  if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(event.phone))) {
+    return {
+      sv: "Ogiltigt telefonnummer",
+      en: "Provided phone number is faulty",
     };
   }
 
@@ -130,7 +144,11 @@ export const editEvent = async (
         en: "Failed to create party report",
       };
     }
-    event.party_report_id = id;
+    if (id instanceof Error) {
+      return id;
+    }
+    event.party_report_id = id.toString();
+
   } else if (
     !equal(oldReport, event.party_report) &&
     oldReport &&
@@ -194,8 +212,11 @@ export const createEvent = async (
   if (err) {
     return err;
   }
-
   if (event.party_report) {
+    err = validPartyReport(event.party_report);
+    if (err) {
+      return err;
+    }
     let report = await prisma.party_report.create({
       data: <party_report>event.party_report,
     });
