@@ -24,11 +24,23 @@ import translations from "./event.form.translations.json";
 import propTypes from "prop-types";
 import BookingTerms from "./elements/booking-terms.element";
 
+const regexStrings = {
+  phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
+  email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+};
+
 const whenTrue = {
   is: true,
   then: yup.string().required(),
   otherwise: yup.string(),
 };
+
+const whenTrueMatch = (regex, error) => {
+  return {
+    is: true,
+    then: yup.string().matches(regex, error)
+  }
+}
 
 const EventFrom = ({ onSubmit, initialValues }) => {
   const [openToast] = useDigitToast({
@@ -46,7 +58,10 @@ const EventFrom = ({ onSubmit, initialValues }) => {
 
   const validationSchema = yup.object().shape({
     title: yup.string().required(texts.title_required),
-    phone: yup.string().required(texts.phone_required),
+    phone: yup
+      .string()
+      .matches(regexStrings.phone, texts.phone_invalid)
+      .required(texts.phone_required),
     room: yup.array().min(1, texts.room_required),
     description: yup.string(),
     start: yup.date().required(),
@@ -54,8 +69,14 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     isActivity: yup.bool().required(),
     permit: yup.bool(),
     responsible_name: yup.string().when("isActivity", whenTrue),
-    responsible_number: yup.string().when("isActivity", whenTrue),
-    responsible_email: yup.string().when("isActivity", whenTrue),
+    responsible_number: yup
+      .string()
+      .when("isActivity", whenTrueMatch(regexStrings.phone, texts.phone_invalid))
+      .when("isActivity", whenTrue),
+    responsible_email: yup
+      .string()
+      .when("isActivity", whenTrueMatch(regexStrings.email, texts.email_invalid))
+      .when("isActivity", whenTrue),
     booking_terms: yup.bool().required(texts.booking_terms_required),
   });
 
