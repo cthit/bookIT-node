@@ -1,4 +1,4 @@
-import { PartyReport } from "../models";
+import { PartyReport, User } from "../models";
 import { Error } from "../models/error";
 import { party_report, PrismaClient } from "@prisma/client";
 
@@ -23,12 +23,32 @@ export const validPartyReport = (
 export const getPartyReport = async (
   prisma: PrismaClient,
   id: string,
+  user: User | null,
 ): Promise<PartyReport | null> => {
-  return prisma.party_report.findUnique({
+  const report = await prisma.party_report.findUnique({
     where: {
       id: id,
     },
   });
+  if (!report) {
+    return null;
+  }
+  else if (user?.is_admin) {
+    return report;
+  }
+  else {
+    return {
+      id: null,
+      responsible_name: report.responsible_name,
+      responsible_number: "",
+      responsible_email: "",
+      co_responsible_name: report.co_responsible_name,
+      co_responsible_number: null,
+      co_responsible_email: null,
+      serving_permit: null,
+      status: null
+    };
+  }
 };
 
 export const createPartyReport = async (
