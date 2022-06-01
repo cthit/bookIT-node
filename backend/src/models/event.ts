@@ -15,4 +15,5 @@ export interface Event {
   phone: string;
   booked_by: string;
   booked_as: string;
+  booking_terms: boolean;
 }

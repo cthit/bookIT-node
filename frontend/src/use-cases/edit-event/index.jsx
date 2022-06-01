@@ -19,6 +19,7 @@ const formatEvent = event => {
     isActivity: event.party_report !== null,
     start: new Date(Number(event.start)),
     end: new Date(Number(event.end)),
+    booking_terms: true,
   };
 };
 
@@ -61,6 +62,7 @@ const EditEvent = () => {
             responsible_email: event_.responsible_email,
             serving_permit: event_.serving_permit,
           },
+      booking_terms: event_.booking_terms,
     });
     if (res === null) {
       openToast({

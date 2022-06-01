@@ -13,6 +13,8 @@
   "responsible_email": ["Event responsible e-mail", "Arransvarigs e-post"],
   "booked_as": ["Booking as", "Bokas som"],
   "new_event_created": ["A new event was created", "Ett nytt event skapades"],
+  "booking_terms": ["booking terms and conditions", "bokningsvilkoren"],
+  "pre_booking_terms": ["I accept the ", "Jag godkänner "],
   "title_required": [
     "You need to provide a title for the event",
     "Du måste ange en title för bokningen"
@@ -24,6 +26,10 @@
   "room_required": [
     "You need to select at least one room",
     "Du måste välja minst ett rum"
+  ],
+  "booking_terms_required": [
+    "You need to accept the booking terms and conditions",
+    "Du måste godkänna bokningsvillkoren"
   ],
   "submit": ["Submit", "Skicka"]
 }
