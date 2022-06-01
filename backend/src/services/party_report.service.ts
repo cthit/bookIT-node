@@ -24,7 +24,7 @@ export const getPartyReport = async (
       responsible_name: report.responsible_name,
       responsible_number: "",
       responsible_email: "",
-      co_responsible_name: null,
+      co_responsible_name: report.co_responsible_name,
       co_responsible_number: null,
       co_responsible_email: null,
       serving_permit: null,
