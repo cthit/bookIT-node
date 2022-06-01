@@ -6,6 +6,7 @@ import {
   DigitButton,
   useDigitToast,
   useDigitTranslations,
+  DigitCheckbox,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
 import {
@@ -21,6 +22,7 @@ import UserContext from "../../contexts/user-context";
 import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
 import propTypes from "prop-types";
+import BookingTerms from "./elements/booking-terms.element";
 
 const regexStrings = {
   phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
@@ -75,6 +77,7 @@ const EventFrom = ({ onSubmit, initialValues }) => {
       .string()
       .when("isActivity", whenTrueMatch(regexStrings.email, texts.email_invalid))
       .when("isActivity", whenTrue),
+    booking_terms: yup.bool().required(texts.booking_terms_required),
   });
 
   return (
@@ -116,6 +119,12 @@ const EventFrom = ({ onSubmit, initialValues }) => {
               {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">
             <DigitText.Subtitle text="*bokningsvillkoren" />
         </a>*/}
+
+              <BookingTerms
+                preLinkLabel={texts.pre_booking_terms}
+                linkLabel={texts.booking_terms}
+              />
+
               <DigitButton raised submit text={texts.submit} />
             </DigitLayout.Column>
           )}
