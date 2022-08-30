@@ -1,3 +1,4 @@
+import { event, party_report } from "@prisma/client";
 import Axios from "axios";
 import { Event } from "../models";
 import { to } from "../utils";
@@ -91,6 +92,55 @@ export const eventUpdated = async (old_event: Event, event: Event) => {
     
     Mvh bookIT
     `,
+    }),
+  );
+
+  if (err) {
+    console.log("Failed to send email to VO");
+    console.log(err.message);
+  }
+};
+
+const svStatusMessage = (event: event, status: string) => `
+    Aktivitetsanmälan för '${event.title}' har blivit ${
+  status === "ACCEPTED" ? "Godkänd" : "Nekad"
+}!
+
+    Mvh bookIT
+`;
+
+const enStatusMessage = (event: event, status: string) => `
+    The party report for '${event.title}' has been ${
+  status === "ACCEPTED" ? "Accepted" : "Denied"
+}!
+
+    BR bookIT
+`;
+
+/**
+ * Notifies the user that an event has been accepted
+ */
+export const statusChanged = async (
+  event: event,
+  report: party_report,
+  status: string,
+  language: string,
+) => {
+  let subject = "";
+  if (language === "sv") {
+    subject =
+      "Aktivitetsanmälan " + (status == "ACCEPTED" ? "Godkänd!" : "Nekad!");
+  } else {
+    subject =
+      "Party Report " + (status == "ACCEPTED" ? "Accepted!" : "Denied!");
+  }
+
+  const bodyMessage = language === "sv" ? svStatusMessage : enStatusMessage;
+  let { err } = await to(
+    notify({
+      subject: "bookIT - " + subject,
+      body: bodyMessage(event, status),
+      to: report.responsible_email,
     }),
   );
 

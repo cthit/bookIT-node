@@ -4,3 +4,8 @@
   padding-top: 2rem;
   width: 100%;
 }
+
+.status-buttons {
+  display: flex;
+  justify-content: space-around;
+}

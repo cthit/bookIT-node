@@ -183,3 +183,12 @@ mutation DeleteEvent($id: String) {
   }
 }
 `;
+
+export const set_report_status_query = `
+mutation SetStatus($status: InputStatus!) {
+  set_report_status(status: $status) {
+    sv
+    en
+  }
+}
+`;

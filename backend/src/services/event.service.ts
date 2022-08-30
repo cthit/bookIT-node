@@ -190,6 +190,7 @@ export const editEvent = async (
     event.party_report
   ) {
     event.party_report.id = oldReport.id;
+    event.party_report.status = oldReport.status;
     const err = await editPartyReport(prisma, event.party_report);
 
     if (err) {

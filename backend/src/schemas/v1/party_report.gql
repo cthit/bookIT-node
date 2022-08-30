@@ -28,7 +28,16 @@ input InputPartyReport {
   status: RegistrationStatus
 }
 
+input InputStatus {
+  id: String!
+  status: RegistrationStatus!
+}
+
 type Query {
   party_reports: [PartyReport]
   party_report(id: String): PartyReport
+}
+
+type Mutation {
+  set_report_status(status: InputStatus): Error
 }
