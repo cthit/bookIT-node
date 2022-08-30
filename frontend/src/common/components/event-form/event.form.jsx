@@ -6,7 +6,6 @@ import {
   DigitButton,
   useDigitToast,
   useDigitTranslations,
-  DigitCheckbox,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
 import {
@@ -25,7 +24,9 @@ import propTypes from "prop-types";
 import BookingTerms from "./elements/booking-terms.element";
 
 const regexStrings = {
+  // eslint-disable-next-line
   phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
+  // eslint-disable-next-line
   email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
 };
 
@@ -38,9 +39,9 @@ const whenTrue = {
 const whenTrueMatch = (regex, error) => {
   return {
     is: true,
-    then: yup.string().matches(regex, error)
-  }
-}
+    then: yup.string().matches(regex, error),
+  };
+};
 
 const EventFrom = ({ onSubmit, initialValues }) => {
   const [openToast] = useDigitToast({
@@ -71,11 +72,17 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     responsible_name: yup.string().when("isActivity", whenTrue),
     responsible_number: yup
       .string()
-      .when("isActivity", whenTrueMatch(regexStrings.phone, texts.phone_invalid))
+      .when(
+        "isActivity",
+        whenTrueMatch(regexStrings.phone, texts.phone_invalid),
+      )
       .when("isActivity", whenTrue),
     responsible_email: yup
       .string()
-      .when("isActivity", whenTrueMatch(regexStrings.email, texts.email_invalid))
+      .when(
+        "isActivity",
+        whenTrueMatch(regexStrings.email, texts.email_invalid),
+      )
       .when("isActivity", whenTrue),
     booking_terms: yup.bool().required(texts.booking_terms_required),
   });
