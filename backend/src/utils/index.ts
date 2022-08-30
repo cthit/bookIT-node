@@ -14,3 +14,5 @@ export const equal = (a: any, b: any) => {
 
   return true;
 };
+
+export const formatDT = (date: Date) => date.toLocaleString("se").slice(0, -3);

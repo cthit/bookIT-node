@@ -1,24 +1,29 @@
-import { PartyReport } from "../models";
-import { Error } from "../models/error";
+import { PartyReport, Error } from "../models";
 import { party_report, PrismaClient } from "@prisma/client";
 
-export const validPartyReport = (
-  party_report: PartyReport,
-) => {
-  if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(party_report.responsible_number))) {
+export const validPartyReport = (party_report: PartyReport) => {
+  if (
+    !/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(
+      party_report.responsible_number,
+    )
+  ) {
     return {
       sv: "Ogiltiga tecken i arransvarigs telefonnummer",
       en: "Illegal characters or faulty formatting of phone number",
     };
   }
-  if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(party_report.responsible_email))) {
+  if (
+    !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+      party_report.responsible_email,
+    )
+  ) {
     return {
       sv: "Ogiltiga tecken i arransvarigs mailadress",
       en: "Illegal characters in event responsible e-mail",
     };
   }
   return null;
-}
+};
 
 export const getPartyReport = async (
   prisma: PrismaClient,
@@ -34,10 +39,10 @@ export const getPartyReport = async (
 export const createPartyReport = async (
   prisma: PrismaClient,
   party_report: PartyReport,
-): Promise<string | null | Error> => {
+): Promise<string> => {
   let err = validPartyReport(party_report);
   if (err) {
-    return err;
+    throw err;
   }
   let report = await prisma.party_report.create({
     data: <party_report>party_report,
