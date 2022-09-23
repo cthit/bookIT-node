@@ -36,6 +36,6 @@ type Query {
 }
 
 type Mutation {
-  createRule(rule: InputRule): Boolean
+  createRule(rule: InputRule): Error
   deleteRule(id: String): Boolean
 }

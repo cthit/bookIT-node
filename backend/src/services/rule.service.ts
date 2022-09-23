@@ -1,4 +1,4 @@
-import { Event, Rule, Error } from "../models";
+import { Event, Rule, Error, User } from "../models";
 import { to } from "../utils";
 import { PrismaClient, rule } from "@prisma/client";
 
@@ -144,13 +144,15 @@ export const checkRules = async (prisma: PrismaClient, event: Event) => {
 export const createRule = async (
   prisma: PrismaClient,
   rule: Rule,
-): Promise<boolean> => {
+  {groups, is_admin}: User,
+): Promise<Error| null> => {
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
   if (!start.valueOf() || !end.valueOf() || start >= end) {
-    //TODO: Replace with SvEn Error message
-    console.log("Create rule: Invalid date");
-    return false;
+    return {
+      sv: "Ogiltigt datum",
+      en: "Invalid date",
+    };
   }
   rule.start_date = day(start);
   rule.end_date = day(end);
@@ -158,18 +160,32 @@ export const createRule = async (
   const start_time = new Date(rule.start_date + "T" + rule.start_time);
   const end_time = new Date(rule.start_date + "T" + rule.end_time);
   if (!start_time.valueOf() || !end_time.valueOf() || start_time >= end_time) {
-    console.log("Create rule: Invalid time");
-    return false;
+    return {
+      sv: "Ogiltig tid",
+      en: "Invalid time",
+    };
+    }
+  if (!(is_admin) && !groups.includes("P.R.I.T")) {
+    return {
+      sv: "Du har inte behörighet att skapa regler",
+      en: "You do not have permission to create rules",
+    };
   }
-
-  await prisma.rule.create({
+  console.log("creating rule");
+  let res = await prisma.rule.create({
     data: {
       ...rule,
       start_date: new Date(rule.start_date),
       end_date: new Date(rule.end_date),
     },
   });
-  return true;
+  if (!res){
+    return {
+      sv: "Kunde inte skapa regel",
+      en: "Could not create rule",
+    };
+  }
+  return null;
 };
 
 export const deleteRule = async (

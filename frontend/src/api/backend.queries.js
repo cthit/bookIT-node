@@ -1,5 +1,5 @@
 export const getEvents_query = `
-query GetEvents($from: String!, $to: String!){ 
+query GetEvents($from: String!, $to: String!){
   eventsFT(from: $from, to: $to) {
     start
     end
@@ -95,13 +95,16 @@ query GetRule($id: String!) {
 
 export const createRule_query = `
 mutation CreateRule($rule: InputRule!) {
-  createRule(rule: $rule)
+  createRule(rule: $rule) {
+    sv
+    en
+  }
 }
 `;
 
 export const deleteRule_query = `
 mutation DeleteRule($id: String!) {
-  deleteRule(id: $id) 
+  deleteRule(id: $id)
 }
 `;
 

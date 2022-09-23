@@ -1,4 +1,4 @@
-import { Rule } from "../models";
+import { Rule, User } from "../models";
 import { createRule, deleteRule } from "../services/rule.service";
 import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
@@ -17,12 +17,17 @@ export const getRuleQResolvers = ({ prisma }: Tools) => ({
 });
 
 export const getRuleMResolvers = ({ prisma }: Tools) => ({
-  createRule: async (_: any, { rule }: { rule: Rule }) => {
-    const { res, err } = await to(createRule(prisma, rule));
-    if (err) {
-      console.log(err);
-    }
-    return res;
+  createRule: async (
+    _: any,
+    { rule }: { rule: Rule },
+    {user}: { user: User},
+    ) => {
+    return createRule(prisma, rule, user);
   },
-  deleteRule: async (_: any, { id }: { id: string }) => deleteRule(prisma, id),
+  deleteRule: async (
+    _: any,
+     { id }: { id: string }
+     ) => {
+      return deleteRule(prisma, id);
+     },
 });
