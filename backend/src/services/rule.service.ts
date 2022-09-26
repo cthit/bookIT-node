@@ -145,8 +145,12 @@ export const checkRules = async (prisma: PrismaClient, event: Event) => {
 export const createRule = async (
   prisma: PrismaClient,
   rule: Rule,
-  { groups, is_admin }: User,
+  user: User,
 ): Promise<Error | null> => {
+  let error = await allowedToModifyRule(prisma, rule, user);
+  if (error) {
+    return error;
+  }
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
   if (!start.valueOf() || !end.valueOf() || start >= end) {
@@ -225,6 +229,8 @@ const allowedToModifyRule = async (
 
   { groups, is_admin }: User,
 ): Promise<Error | null> => {
+  console.log(groups);
+  console.log(is_admin);
   if (!is_admin && !groups.includes("prit")) {
     return {
       sv: "Du har inte behörighet att skapa regler",

@@ -1,3 +1,4 @@
+import { useContext } from "react";
 import { DigitCRUD, useDigitTranslations } from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
@@ -14,6 +15,7 @@ import { formatDate, formatDT, formatTime } from "../../utils/utils";
 import { detailed_view_keys, table_header_keys } from "./rules.labels";
 import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
+import UserContext from "../../common/contexts/user-context";
 
 const formatRule = r => ({
   ...r,
@@ -52,13 +54,14 @@ const createRuleCallback = async rule =>
 
 const Rules = () => {
   const [texts] = useDigitTranslations(translations);
+  const [user] = useContext(UserContext);
 
   return (
     <div className="container">
       <DigitCRUD
         readAllRequest={getRulesFormatted}
         readOneRequest={getRuleFormatted}
-        createRequest={createRuleCallback}
+        createRequest={user.is_admin || user.groups.includes("prit") ? createRuleCallback : null}
         deleteRequest={deleteRule}
         path="/rules"
         idProp="id"
