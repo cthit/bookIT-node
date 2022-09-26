@@ -113,12 +113,21 @@ export const editEvent = async (
     where: { id: event.id },
   });
   if (!old_event) {
-    console.log("Faild to get event with id: " + event.id);
+    console.log("Failed to get event with id: " + event.id);
     return {
       sv: "Kunde inte hämta gamla bokningen",
       en: "Failed to get event",
     };
   }
+
+  if (!(user.groups.includes(old_event.booked_as))) {
+    return {
+      sv: "Du har inte behörighet att redigera denna bokning",
+      en: "You do not have permission to edit this event",
+    };
+  }
+
+
 
   let oldReport = null;
 
@@ -275,7 +284,7 @@ export const deleteEvent = async (
     };
   }
 
-  if (!groups.includes(event.booked_as) && !is_admin) {
+  if (!groups.includes(event.booked_as) && !is_admin && !groups.includes("prit")) {
     return {
       sv: "Du får ej radera denna bokning",
       en: "You may not delete this event",
