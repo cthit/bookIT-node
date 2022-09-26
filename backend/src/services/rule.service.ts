@@ -198,7 +198,7 @@ export const deleteRule = async (
       en: "Could not find rule",
     };
   }
-  let error = await validRuleModifier(prisma, rule, user);
+  let error = await allowedToModifyRule(prisma, rule, user);
   if (error) {
     return error;
   }
@@ -219,13 +219,13 @@ export const deleteRule = async (
   return null;
 };
 
-const validRuleModifier = async (
+const allowedToModifyRule = async (
   prisma: PrismaClient,
   rule: Rule | dbRule,
 
   { groups, is_admin }: User,
 ): Promise<Error | null> => {
-  if (!is_admin && !groups.includes("P.R.I.T")) {
+  if (!is_admin && !groups.includes("prit")) {
     return {
       sv: "Du har inte behörighet att skapa regler",
       en: "You do not have permission to create rules",
