@@ -145,8 +145,8 @@ export const checkRules = async (prisma: PrismaClient, event: Event) => {
 export const createRule = async (
   prisma: PrismaClient,
   rule: Rule,
-  {groups, is_admin}: User,
-): Promise<Error| null> => {
+  { groups, is_admin }: User,
+): Promise<Error | null> => {
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
   if (!start.valueOf() || !end.valueOf() || start >= end) {
@@ -165,7 +165,7 @@ export const createRule = async (
       sv: "Ogiltig tid",
       en: "Invalid time",
     };
-    }
+  }
 
   console.log("creating rule");
   let res = await prisma.rule.create({
@@ -175,7 +175,7 @@ export const createRule = async (
       end_date: new Date(rule.end_date),
     },
   });
-  if (!res){
+  if (!res) {
     return {
       sv: "Kunde inte skapa regel",
       en: "Could not create rule",
@@ -187,19 +187,19 @@ export const createRule = async (
 export const deleteRule = async (
   prisma: PrismaClient,
   id: string,
-  user: User
-): Promise<Error| null> => {
-  const rule:dbRule|null = await prisma.rule.findUnique({where: {id: id}});
-  if (!rule){
-    return(
-      {
-        sv: "Kunde inte hitta regel",
-        en: "Could not find rule",
-      }
-    );
+  user: User,
+): Promise<Error | null> => {
+  const rule: dbRule | null = await prisma.rule.findUnique({
+    where: { id: id },
+  });
+  if (!rule) {
+    return {
+      sv: "Kunde inte hitta regel",
+      en: "Could not find rule",
+    };
   }
   let error = await validRuleModifier(prisma, rule, user);
-  if (error){
+  if (error) {
     return error;
   }
   const { err, res } = await to(
@@ -211,24 +211,21 @@ export const deleteRule = async (
   );
   if (err) {
     console.log(err);
-    return (
-      {
-        sv: "Kunde inte ta bort regel",
-        en: "Could not delete rule",
-      }
-    );
-
+    return {
+      sv: "Kunde inte ta bort regel",
+      en: "Could not delete rule",
+    };
   }
   return null;
 };
 
 const validRuleModifier = async (
   prisma: PrismaClient,
-  rule: Rule|dbRule,
+  rule: Rule | dbRule,
 
   { groups, is_admin }: User,
-): Promise<Error|null> =>{
-  if (!(is_admin) && !groups.includes("P.R.I.T")) {
+): Promise<Error | null> => {
+  if (!is_admin && !groups.includes("P.R.I.T")) {
     return {
       sv: "Du har inte behörighet att skapa regler",
       en: "You do not have permission to create rules",
