@@ -55,14 +55,14 @@ const createRuleCallback = async rule =>
 const Rules = () => {
   const [texts] = useDigitTranslations(translations);
   const [user] = useContext(UserContext);
-
+  console.log(user);
   return (
     <div className="container">
       <DigitCRUD
         readAllRequest={getRulesFormatted}
         readOneRequest={getRuleFormatted}
-        createRequest={user.is_admin || user.groups.includes("prit") ? createRuleCallback : null}
-        deleteRequest={deleteRule}
+        createRequest={user.is_admin ? createRuleCallback : null}
+        deleteRequest={user.is_admin ? deleteRule : null}
         path="/rules"
         idProp="id"
         keysOrder={detailed_view_keys}

@@ -120,12 +120,13 @@ export const editEvent = async (
     };
   }
 
-  if (!(user.groups.includes(old_event.booked_as))) {
+  if (!(user.groups.includes(old_event.booked_as) || user.is_admin)) {
     return {
       sv: "Du har inte behörighet att redigera denna bokning",
       en: "You do not have permission to edit this event",
     };
   }
+
 
 
 
@@ -194,7 +195,7 @@ export const editEvent = async (
       start: new Date(event.start),
       description: event.description,
       end: new Date(event.end),
-      booked_as: event.booked_as,
+      booked_as: old_event.booked_as,
       booked_by: event.booked_by || "",
       phone: event.phone,
       room: event.room.map(e => e.toString()),
@@ -284,7 +285,7 @@ export const deleteEvent = async (
     };
   }
 
-  if (!groups.includes(event.booked_as) && !is_admin && !groups.includes("prit")) {
+  if (!groups.includes(event.booked_as) && !is_admin) {
     return {
       sv: "Du får ej radera denna bokning",
       en: "You may not delete this event",
