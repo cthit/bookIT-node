@@ -1,6 +1,7 @@
 import { Event, Rule, Error, User } from "../models";
 import { to } from "../utils";
 import { PrismaClient, rule } from "@prisma/client";
+import { dbRule } from "../models/rule";
 
 const ms_24H = 86400000; // == 1000 * 60 * 60 * 24
 
@@ -165,12 +166,7 @@ export const createRule = async (
       en: "Invalid time",
     };
     }
-  if (!(is_admin) && !groups.includes("P.R.I.T")) {
-    return {
-      sv: "Du har inte behörighet att skapa regler",
-      en: "You do not have permission to create rules",
-    };
-  }
+
   console.log("creating rule");
   let res = await prisma.rule.create({
     data: {
@@ -191,7 +187,21 @@ export const createRule = async (
 export const deleteRule = async (
   prisma: PrismaClient,
   id: string,
-): Promise<Boolean> => {
+  user: User
+): Promise<Error| null> => {
+  const rule:dbRule|null = await prisma.rule.findUnique({where: {id: id}});
+  if (!rule){
+    return(
+      {
+        sv: "Kunde inte hitta regel",
+        en: "Could not find rule",
+      }
+    );
+  }
+  let error = await validRuleModifier(prisma, rule, user);
+  if (error){
+    return error;
+  }
   const { err, res } = await to(
     prisma.rule.delete({
       where: {
@@ -201,7 +211,28 @@ export const deleteRule = async (
   );
   if (err) {
     console.log(err);
-    return false;
+    return (
+      {
+        sv: "Kunde inte ta bort regel",
+        en: "Could not delete rule",
+      }
+    );
+
   }
-  return true;
+  return null;
+};
+
+const validRuleModifier = async (
+  prisma: PrismaClient,
+  rule: Rule|dbRule,
+
+  { groups, is_admin }: User,
+): Promise<Error|null> =>{
+  if (!(is_admin) && !groups.includes("P.R.I.T")) {
+    return {
+      sv: "Du har inte behörighet att skapa regler",
+      en: "You do not have permission to create rules",
+    };
+  }
+  return null;
 };

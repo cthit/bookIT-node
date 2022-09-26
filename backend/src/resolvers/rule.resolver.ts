@@ -26,8 +26,9 @@ export const getRuleMResolvers = ({ prisma }: Tools) => ({
   },
   deleteRule: async (
     _: any,
-     { id }: { id: string }
+     { id }: { id: string },
+      {user}: { user: User},
      ) => {
-      return deleteRule(prisma, id);
+      return deleteRule(prisma, id, user);
      },
 });
