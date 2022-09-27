@@ -12,6 +12,9 @@ const default_options = {
 };
 
 const isAdmin = (authorities: Authority[], groups: String[]): boolean => {
+  if(process.env.MOCK && groups.includes("superadmin")){
+    return true;
+  }
   for (const i in authorities) {
     if (authorities[i].authority == process.env.ADMIN_AUTHORITY || groups.includes("prit")) {
       return true;
