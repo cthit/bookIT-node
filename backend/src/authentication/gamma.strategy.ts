@@ -12,10 +12,6 @@ const default_options = {
 };
 
 const isAdmin = (authorities: Authority[]): boolean => {
-  if (process.env.MOCK == "true") {
-    return true;
-  }
-
   for (const i in authorities) {
     if (authorities[i].authority == process.env.ADMIN_AUTHORITY) {
       return true;

@@ -20,6 +20,9 @@ import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
+import { useContext } from "react";
+import UserContext from "../../common/contexts/user-context";
+import { useEffect } from "react";
 
 const getStatusIcon = status => {
   var icon = <HelpIcon />;
@@ -71,6 +74,12 @@ const formatPartyReport = e => ({
 const PartyReports = () => {
   const history = useHistory();
   const [texts] = useDigitTranslations(translations);
+  const [user] = useContext(UserContext);
+
+  useEffect(() => {
+    console.log(user);
+    if (!user.is_admin) history.push("/");
+  });
 
   const readAllPartyReports = async () =>
     (await getPartyReports()).map(e => ({
