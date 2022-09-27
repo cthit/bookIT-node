@@ -1,5 +1,9 @@
 import { useContext } from "react";
-import { DigitCRUD, useDigitTranslations } from "@cthit/react-digit-components";
+import {
+  DigitCRUD,
+  useDigitTranslations,
+  useDigitToast,
+} from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
 import CancelIcon from "@material-ui/icons/Cancel";
@@ -38,24 +42,36 @@ const getRuleFormatted = async id => {
   return { data: formatRule(await getRule(id)) };
 };
 
-const createRuleCallback = async rule =>
-  createRule({
-    description: rule.description,
-    priority: Number(rule.priority),
-    title: rule.title,
-    allow: rule._allow,
-    day_mask: rule._day_mask,
-    room: rule._room,
-    start_date: formatDate(rule.start_date),
-    end_date: formatDate(rule.end_date),
-    start_time: formatTime(rule.start_time),
-    end_time: formatTime(rule.end_time),
-  });
-
 const Rules = () => {
-  const [texts] = useDigitTranslations(translations);
+  const [openToast] = useDigitToast({
+    duration: 3000,
+    actionText: "Ok",
+    actionHandler: () => {},
+  });
+  const [texts, activeLanguage] = useDigitTranslations(translations);
   const [user] = useContext(UserContext);
-  console.log(user);
+
+  const createRuleCallback = async rule => {
+    const res = await createRule({
+      description: rule.description,
+      priority: Number(rule.priority),
+      title: rule.title,
+      allow: rule._allow,
+      day_mask: rule._day_mask,
+      room: rule._room,
+      start_date: formatDate(rule.start_date),
+      end_date: formatDate(rule.end_date),
+      start_time: formatTime(rule.start_time),
+      end_time: formatTime(rule.end_time),
+    });
+    if (res === null) {
+      return true;
+    }
+    openToast({
+      text: res[activeLanguage],
+    });
+  };
+
   return (
     <div className="container">
       <DigitCRUD
