@@ -3,8 +3,13 @@ import {
   DigitCRUD,
   DigitTooltip,
   useDigitTranslations,
+  DigitLayout,
 } from "@cthit/react-digit-components";
-import { getPartyReport, getPartyReports } from "../../api/backend.api";
+import {
+  getPartyReport,
+  getPartyReports,
+  setPartyReportStatus,
+} from "../../api/backend.api";
 import { formatDT } from "../../utils/utils";
 import "./index.css";
 import { useHistory } from "react-router";
@@ -79,6 +84,16 @@ const PartyReports = () => {
       ),
     }));
 
+  const setStatus = async (event, status) => {
+    const res = await setPartyReportStatus(event.party_report.id, status);
+    console.log(res);
+    if (!res) {
+      history.push("/party_reports");
+      return;
+    }
+    console.log("Failed!");
+  };
+
   return (
     <div className="container">
       <DigitCRUD
@@ -86,7 +101,7 @@ const PartyReports = () => {
         readOneRequest={readOnePartyReport}
         path="/party_reports"
         idProp="id"
-        keysOrder={detailed_view_keys}
+        keysOrder={[...detailed_view_keys, "edit_status"]}
         keysText={texts}
         tableProps={{
           columnsOrder: table_header_keys,
@@ -99,6 +114,23 @@ const PartyReports = () => {
         detailsButtonText="Details"
         detailsTitle={data => data.title}
         readOneProps={{ style: { maxWidth: "40rem" } }}
+        customDetailsRenders={{
+          edit_status: event => (
+            <DigitLayout.Row className="status-buttons">
+              <DigitButton
+                text={texts.accept}
+                primary
+                raised
+                onClick={() => setStatus(event, "ACCEPTED")}
+              />
+              <DigitButton
+                text={texts.deny}
+                raised
+                onClick={() => setStatus(event, "DENIED")}
+              />
+            </DigitLayout.Row>
+          ),
+        }}
       />
     </div>
   );

@@ -74,5 +74,13 @@
   "back": [
     "Back",
     "Tillbaka"
+  ],
+  "accept": [
+    "Godkänn",
+    "Accept"
+  ],
+  "deny": [
+    "Avslå",
+    "Deny"
   ]
 }

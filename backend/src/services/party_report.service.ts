@@ -1,17 +1,24 @@
-import { PartyReport } from "../models";
-import { Error } from "../models/error";
+import { PartyReport, Error, User } from "../models";
 import { party_report, PrismaClient } from "@prisma/client";
+import { to } from "../utils";
+import { statusChanged } from "./email_sender.service";
 
-export const validPartyReport = (
-  party_report: PartyReport,
-) => {
-  if (!(/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(party_report.responsible_number))) {
+export const validPartyReport = (party_report: PartyReport) => {
+  if (
+    !/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(
+      party_report.responsible_number,
+    )
+  ) {
     return {
       sv: "Ogiltiga tecken i arransvarigs telefonnummer",
       en: "Illegal characters or faulty formatting of phone number",
     };
   }
-  if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(party_report.responsible_email))) {
+  if (
+    !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
+      party_report.responsible_email,
+    )
+  ) {
     return {
       sv: "Ogiltiga tecken i arransvarigs mailadress",
       en: "Illegal characters in event responsible e-mail",
@@ -24,7 +31,7 @@ export const validPartyReport = (
     };
   }
   return null;
-}
+};
 
 export const getPartyReport = async (
   prisma: PrismaClient,
@@ -40,11 +47,12 @@ export const getPartyReport = async (
 export const createPartyReport = async (
   prisma: PrismaClient,
   party_report: PartyReport,
-): Promise<string | null | Error> => {
+): Promise<string> => {
   let err = validPartyReport(party_report);
   if (err) {
-    return err;
+    throw err;
   }
+  party_report.status = undefined;
   let report = await prisma.party_report.create({
     data: <party_report>party_report,
   });
@@ -85,4 +93,42 @@ export const editPartyReport = async (
     data: <party_report>party_report,
   });
   return null;
+};
+
+export const setPartyReportStatus = async (
+  prisma: PrismaClient,
+  id: string,
+  status: string,
+  language: string,
+) => {
+  await prisma.party_report.update({
+    where: { id: id },
+    data: { status: status },
+  });
+
+  const report = await prisma.party_report.findFirst({
+    where: { id },
+  });
+
+  if (!report) {
+    console.log("Error: No report found id: " + id);
+    return;
+  }
+
+  const event = await prisma.event.findFirst({
+    where: {
+      party_report: {
+        id: id,
+      },
+    },
+  });
+
+  if (!event) {
+    console.log(
+      "Error: No event found connected with party report with id: " + id,
+    );
+    return;
+  }
+
+  await statusChanged(event, report, status, language);
 };

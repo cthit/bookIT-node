@@ -15,6 +15,7 @@ import {
   editEvent_query,
   deleteEvent_query,
   getIllegalSlots_query,
+  set_report_status_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -188,6 +189,21 @@ export const getPartyReport = id =>
     "event",
     "Unable to fetch event with party report",
     () => {},
+  );
+
+export const setPartyReportStatus = (id, status) =>
+  request(
+    {
+      query: set_report_status_query,
+      variables: { status: { id, status } },
+      operationName: "SetStatus",
+    },
+    "set_report_status",
+    "Unable to set status of party report",
+    err => ({
+      sv: "Error: Misslyckades att ändra status",
+      err: "Error: Failed to set status",
+    }),
   );
 
 export const getUser = () =>
