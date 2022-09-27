@@ -17,6 +17,12 @@ export const validPartyReport = (
       en: "Illegal characters in event responsible e-mail",
     };
   }
+  if (party_report.status == "ACCEPTED"){
+    return {
+      sv: "Du kan inte ändra en godkänd bokning",
+      en: "You can't edit an accepted booking",
+    };
+  }
   return null;
 }
 
