@@ -26,7 +26,7 @@ const PartyReport = ({ init }) => {
         <>
           <DigitCheckbox {...permitValues} label={texts.permit} />
 
-          <DigitLayout.Row>
+          <DigitLayout.Column>
             <DigitTextField
               {...repNameValues}
               upperLabel={texts.responsible_name}
@@ -39,7 +39,7 @@ const PartyReport = ({ init }) => {
               {...repEmailValues}
               upperLabel={texts.responsible_email}
             />
-          </DigitLayout.Row>
+          </DigitLayout.Column>
         </>
       )}
     </>
