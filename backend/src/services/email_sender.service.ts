@@ -7,13 +7,13 @@ const gotify_host = process.env.GOTIFY_HOST;
 const gotify_key = process.env.GOTIFY_KEY;
 const vo_email = process.env.VO_EMAIL || "";
 
-interface EmialOptions {
+interface EmailOptions {
   to: string;
   subject: string;
   body: string;
 }
 
-const sendEmail = (email: EmialOptions) =>
+const sendEmail = (email: EmailOptions) =>
   Axios.post(
     `${gotify_host}/mail`,
     {

@@ -180,7 +180,6 @@ export const editEvent = async (
         en: "Failed to create party report",
       };
     }
-    await partyReportCreated(event);
     event.party_report_id = res;
   }
   // If the party report has been updated
@@ -256,6 +255,7 @@ export const createEvent = async (
       createPartyReport(prisma, <party_report>event.party_report),
     );
     if (err || !res) {
+      // If prisma error create new error
       if (!(err instanceof Error)) {
         return err;
       }
@@ -265,7 +265,6 @@ export const createEvent = async (
         en: "Failed to create party report",
       };
     }
-    await partyReportCreated(event);
     event.party_report_id = res;
   }
 
@@ -273,6 +272,13 @@ export const createEvent = async (
   let res = await prisma.event.create({
     data: toEvent(event),
   });
+
+  if (res.party_report_id) {
+    await partyReportCreated({
+      ...event,
+      id: res.id,
+    });
+  }
 
   if (!res) {
     return {
