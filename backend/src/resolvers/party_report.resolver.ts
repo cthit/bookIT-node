@@ -1,6 +1,11 @@
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
-import { getPartyReport } from "../services/party_report.service";
+import {
+  getPartyReport,
+  setPartyReportStatus,
+} from "../services/party_report.service";
+import { Error, User } from "../models";
+import { to } from "../utils";
 
 export const getPartyReportQResolvers = ({ prisma }: Tools) => ({
   party_reports: () => {
@@ -8,6 +13,33 @@ export const getPartyReportQResolvers = ({ prisma }: Tools) => ({
   },
   party_report: async (_: any, { id }: { id: string }) => {
     return getPartyReport(prisma, id);
+  },
+});
+
+export const getPartyReportMResolvers = ({ prisma }: Tools) => ({
+  set_report_status: async (
+    _: any,
+    { status }: { status: { id: string; status: string } },
+    { user }: { user: User },
+  ): Promise<Error | null> => {
+    if (!user.is_admin) {
+      return {
+        sv: "Åtkomst nekad: Du måste vara admin för att ändra status",
+        en: "Permission denied: You must be admin to change status",
+      };
+    }
+
+    const { err } = await to(
+      setPartyReportStatus(prisma, status.id, status.status, user.language),
+    );
+    if (err) {
+      console.log(err);
+      return {
+        sv: "Misslyckades att ändra status",
+        en: "Failed to change status",
+      };
+    }
+    return null;
   },
 });
 
