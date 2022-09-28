@@ -85,6 +85,19 @@ const EventFrom = ({ onSubmit, initialValues }) => {
       )
       .when("isActivity", whenTrue),
     booking_terms: yup.bool().required(texts.booking_terms_required),
+    co_responsible_name: yup.string().when("isActivity", whenTrue),
+    co_responsible_number: yup
+      .string()
+      .when(
+        "isActivity",
+        whenTrueMatch(regexStrings.phone, texts.phone_invalid),
+      ),
+    co_responsible_email: yup
+      .string()
+      .when(
+        "isActivity",
+        whenTrueMatch(regexStrings.email, texts.email_invalid),
+      ),
   });
 
   return (
