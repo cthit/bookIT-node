@@ -77,7 +77,6 @@ const PartyReports = () => {
   const [user] = useContext(UserContext);
 
   useEffect(() => {
-    console.log(user);
     if (!user.is_admin) history.push("/");
   });
 
