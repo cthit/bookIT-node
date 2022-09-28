@@ -8,9 +8,11 @@ import { Error, User } from "../models";
 import { to } from "../utils";
 
 export const getPartyReportQResolvers = ({ prisma }: Tools) => ({
-  party_reports: () => {
+  // Where is this used???
+  party_reports: (_: any) => {
     return prisma.party_report.findMany();
   },
+  // Where is this used as well???
   party_report: async (_: any, { id }: { id: string }) => {
     return getPartyReport(prisma, id);
   },

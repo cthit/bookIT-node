@@ -21,7 +21,11 @@ export const getEventQResolvers = ({ prisma }: Tools) => ({
       where: { id: id },
     });
   },
-  party_events: async () => {
+  party_events: async (_: any, __: any, { user }: { user: User }) => {
+    if (!user.is_admin) {
+      return [];
+    }
+
     return await prisma.event.findMany({
       where: { party_report_id: { not: null } },
     });
