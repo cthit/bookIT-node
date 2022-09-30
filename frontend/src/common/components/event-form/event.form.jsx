@@ -85,19 +85,21 @@ const EventFrom = ({ onSubmit, initialValues }) => {
       )
       .when("isActivity", whenTrue),
     booking_terms: yup.bool().required(texts.booking_terms_required),
-    co_responsible_name: yup.string().when("isActivity", whenTrue),
+    co_responsible_name: yup.string().when("useCoResponsible", whenTrue),
     co_responsible_number: yup
       .string()
       .when(
-        "isActivity",
+        "useCoResponsible",
         whenTrueMatch(regexStrings.phone, texts.phone_invalid),
-      ),
+      )
+      .when("useCoResponsible", whenTrue),
     co_responsible_email: yup
       .string()
       .when(
-        "isActivity",
+        "useCoResponsible",
         whenTrueMatch(regexStrings.email, texts.email_invalid),
-      ),
+      )
+      .when("useCoResponsible", whenTrue),
   });
 
   return (
@@ -167,6 +169,10 @@ EventFrom.propTypes = {
     responsible_name: propTypes.string,
     responsible_number: propTypes.string,
     responsible_email: propTypes.string,
+    useCoResponsible: propTypes.bool,
+    co_responsible_name: propTypes.string,
+    co_responsible_number: propTypes.string,
+    co_responsible_email: propTypes.string,
     booked_as: propTypes.string,
   }),
 };
