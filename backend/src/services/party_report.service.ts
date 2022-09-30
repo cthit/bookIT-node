@@ -4,6 +4,7 @@ import { to } from "../utils";
 import { statusChanged } from "./email_sender.service";
 
 export const validPartyReport = (party_report: PartyReport) => {
+  console.log(party_report);
   if (!validPhoneNumber(party_report.responsible_number)) {
     return {
       sv: "Ogiltiga tecken i arransvarigs telefonnummer",
@@ -34,12 +35,13 @@ export const validPartyReport = (party_report: PartyReport) => {
         en: "Illegal characters in event responsible e-mail",
       };
     }
-    
-  if (party_report.status == "ACCEPTED"){
-    return {
-      sv: "Du kan inte ändra en godkänd bokning",
-      en: "You can't edit an accepted booking",
-    };
+
+    if (party_report.status == "ACCEPTED") {
+      return {
+        sv: "Du kan inte ändra en godkänd bokning",
+        en: "You can't edit an accepted booking",
+      };
+    }
   }
   return null;
 };
