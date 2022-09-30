@@ -12,8 +12,10 @@ import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
 import { formatDT } from "../../../utils/utils";
+import { useContext } from "react";
+import UserContext from "../../../common/contexts/user-context";
 
-const DetailedView = ({ event_id, onClose, onDelete }) => {
+const DetailedView = ({ event_id, onClose, onDelete, user }) => {
   const history = useHistory();
   const [event, setEvent] = useState({});
   const [texts, activeLanguage] = useDigitTranslations(translations);
@@ -63,35 +65,37 @@ const DetailedView = ({ event_id, onClose, onDelete }) => {
         }}
         keysOrder={["_booked_by", "description", "start", "end", "room"]}
       />
-      <div className="container">
-        <DigitButton
-          text="Edit"
-          outlined
-          onClick={() => {
-            onClose();
-            history.push(`/edit-event?id=${event_id}`);
-          }}
-        />
-        <DigitButton
-          text="Delete"
-          outlined
-          onClick={() => {
-            deleteEvent(event_id).then(res => {
+      {user.groups.includes(event.booked_as) || user.is_admin ? (
+        <div className="container">
+          <DigitButton
+            text="Edit"
+            outlined
+            onClick={() => {
               onClose();
-              if (res) {
-                openToast({
-                  text: res[activeLanguage],
-                });
-              } else {
-                openToast({
-                  text: texts.event_deleted,
-                });
-                window.location.href = "/";
-              }
-            });
-          }}
-        />
-      </div>
+              history.push(`/edit-event?id=${event_id}`);
+            }}
+          />
+          <DigitButton
+            text="Delete"
+            outlined
+            onClick={() => {
+              deleteEvent(event_id).then(res => {
+                onClose();
+                if (res) {
+                  openToast({
+                    text: res[activeLanguage],
+                  });
+                } else {
+                  openToast({
+                    text: texts.event_deleted,
+                  });
+                  window.location.href = "/";
+                }
+              });
+            }}
+          />
+        </div>
+      ) : null}
     </>
   );
 };

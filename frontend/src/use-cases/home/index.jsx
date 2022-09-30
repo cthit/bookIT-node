@@ -8,6 +8,8 @@ import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
+import { useContext } from "react";
+import UserContext from "../../common/contexts/user-context";
 
 const style = document.querySelector("#room-styles");
 
@@ -64,6 +66,7 @@ const getColorVariables = () => {
 const colorVariables = getColorVariables();
 
 const Home = () => {
+  const [user] = useContext(UserContext);
   const history = useHistory();
   const [openDialog, closeDialog] = useDigitCustomDialog({
     title: "Event",
@@ -102,6 +105,8 @@ const Home = () => {
               <DetailedView
                 event_id={value.event._def.publicId}
                 onClose={closeDialog}
+                // This should not be needed, but context does not work in the detailed view
+                user={user}
               />
             ),
           })

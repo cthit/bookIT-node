@@ -11,13 +11,12 @@ const default_options = {
   callbackURL: "http://localhost:3001/auth/account/callback",
 };
 
-const isAdmin = (authorities: Authority[]): boolean => {
-  if (process.env.MOCK == "true") {
+const isAdmin = (authorities: Authority[], groups: String[]): boolean => {
+  if(process.env.MOCK && groups.includes("superadmin")){
     return true;
   }
-
   for (const i in authorities) {
-    if (authorities[i].authority == process.env.ADMIN_AUTHORITY) {
+    if (authorities[i].authority == process.env.ADMIN_AUTHORITY || groups.includes("prit")) {
       return true;
     }
   }
@@ -36,15 +35,16 @@ export const init = (pass: passport.PassportStatic) => {
       callbackURL: process.env.GAMMA_CALLBACK_URL || "",
     },
     (accessToken, profile, cb: (_: any, __: User, ___: any) => void) => {
+      const groups = profile.groups
+      .filter(g => g.superGroup.type != "ALUMNI")
+      .map(g => g.superGroup.name)
       cb(
         null,
         {
           cid: profile.cid,
           phone: profile.phone,
-          is_admin: isAdmin(profile.authorities),
-          groups: profile.groups
-            .filter(g => g.superGroup.type != "ALUMNI")
-            .map(g => g.superGroup.name),
+          is_admin: isAdmin(profile.authorities, groups),
+          groups: groups,
           language: profile.language ?? "en",
           accessToken: accessToken,
         },
