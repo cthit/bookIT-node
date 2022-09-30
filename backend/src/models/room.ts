@@ -1,1 +1,1 @@
-export type Room = "BIG_HUB" | "GROUP_ROOM" | "HASEN" | "CETAC";
+export type Room = "BIG_HUB" | "GROUP_ROOM" | "CETAC";
