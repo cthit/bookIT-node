@@ -23,6 +23,14 @@
     "You need to provide a title for the event",
     "Du måste ange en title för bokningen"
   ],
+  "name_required":[
+    "You need to provide a name",
+    "Du måste ange ett namn"
+  ],
+  "email_required":[
+    "You need to provide an e-mail",
+    "Du måste ange en e-post"
+  ],
   "phone_required": [
     "You need to provide a phone number",
     "Du måste ange ett telefonnummer"

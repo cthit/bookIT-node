@@ -30,10 +30,12 @@ const regexStrings = {
   email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
 };
 
-const whenTrue = {
-  is: true,
-  then: yup.string().required(),
-  otherwise: yup.string(),
+const whenTrue = error => {
+  return {
+    is: true,
+    then: yup.string().required(error),
+    otherwise: yup.string(),
+  };
 };
 
 const whenTrueMatch = (regex, error) => {
@@ -69,37 +71,41 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     end: yup.date().required(),
     isActivity: yup.bool().required(),
     permit: yup.bool(),
-    responsible_name: yup.string().when("isActivity", whenTrue),
+    responsible_name: yup
+      .string()
+      .when("isActivity", whenTrue(texts.name_required)),
     responsible_number: yup
       .string()
       .when(
         "isActivity",
         whenTrueMatch(regexStrings.phone, texts.phone_invalid),
       )
-      .when("isActivity", whenTrue),
+      .when("isActivity", whenTrue(texts.phone_required)),
     responsible_email: yup
       .string()
       .when(
         "isActivity",
         whenTrueMatch(regexStrings.email, texts.email_invalid),
       )
-      .when("isActivity", whenTrue),
+      .when("isActivity", whenTrue(texts.email_required)),
     booking_terms: yup.bool().required(texts.booking_terms_required),
-    co_responsible_name: yup.string().when("useCoResponsible", whenTrue),
+    co_responsible_name: yup
+      .string()
+      .when("useCoResponsible", whenTrue(texts.name_required)),
     co_responsible_number: yup
       .string()
       .when(
         "useCoResponsible",
         whenTrueMatch(regexStrings.phone, texts.phone_invalid),
       )
-      .when("useCoResponsible", whenTrue),
+      .when("useCoResponsible", whenTrue(texts.phone_required)),
     co_responsible_email: yup
       .string()
       .when(
         "useCoResponsible",
         whenTrueMatch(regexStrings.email, texts.email_invalid),
       )
-      .when("useCoResponsible", whenTrue),
+      .when("useCoResponsible", whenTrue(texts.email_required)),
   });
 
   return (
