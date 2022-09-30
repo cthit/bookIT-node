@@ -15,3 +15,18 @@ export interface Rule {
   updated_at: string;
   room: Room[];
 }
+export interface dbRule {
+  id: string;
+  day_mask: number;
+  start_date: Date;
+  end_date: Date;
+  start_time: string;
+  end_time: string;
+  description: string;
+  allow: boolean;
+  priority: number;
+  title: string;
+  created_at: Date;
+  updated_at: Date;
+  room: Room[];
+}

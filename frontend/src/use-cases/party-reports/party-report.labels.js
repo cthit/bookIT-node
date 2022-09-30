@@ -23,5 +23,5 @@ export const table_header_keys = [
   "created_at",
   "start",
   "end",
-  "status" /*, "details"*/,
+  "status",
 ];

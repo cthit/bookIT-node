@@ -16,7 +16,7 @@ const isAdmin = (authorities: Authority[], groups: String[]): boolean => {
     return true;
   }
   for (const i in authorities) {
-    if (authorities[i].authority == process.env.ADMIN_AUTHORITY) {
+    if (authorities[i].authority == process.env.ADMIN_AUTHORITY || groups.includes("prit")) {
       return true;
     }
   }

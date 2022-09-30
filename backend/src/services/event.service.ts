@@ -146,14 +146,20 @@ export const editEvent = async (
     where: { id: event.id },
   });
   if (!old_event) {
-    console.log("Faild to get event with id: " + event.id);
+    console.log("Failed to get event with id: " + event.id);
     return {
       sv: "Kunde inte hämta gamla bokningen",
       en: "Failed to get event",
     };
   }
+  
+  if (!(user.groups.includes(old_event.booked_as) || user.is_admin)) {
+    return {
+      sv: "Du har inte behörighet att redigera denna bokning",
+      en: "You do not have permission to edit this event",
+    };
+  }
 
-  // Getting old party report
   let oldReport = null;
   if (old_event.party_report_id) {
     oldReport = await prisma.party_report.findFirst({
