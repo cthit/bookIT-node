@@ -29,7 +29,8 @@ const PartyReport = ({ init }) => {
 
       {activityValues.value && (
         <>
-          <DigitLayout.Row>
+
+          <DigitLayout.Row display="flex" flexWrap="wrap">
             <DigitCheckbox
               {...permitValues}
               label={texts.permit}
