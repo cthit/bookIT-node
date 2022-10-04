@@ -33,8 +33,8 @@ const regexStrings = {
 const whenTrue = error => {
   return {
     is: true,
-    then: yup.string().required(error),
-    otherwise: yup.string(),
+    then: yup.string().nullable().required(error),
+    otherwise: yup.string().nullable(),
   };
 };
 
