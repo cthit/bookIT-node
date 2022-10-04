@@ -11,6 +11,10 @@
   "responsible_name": ["Event responsible name", "Arransvarigs namn"],
   "responsible_number": ["Event responsible phone", "Arransvarigs telefon"],
   "responsible_email": ["Event responsible e-mail", "Arransvarigs e-post"],
+  "use_co_responsible": ["Add co-responsible", "Lägg till medansvarig"],
+  "co_responsible_name": ["Co-responsible name",    "Medansvarigs namn"],
+  "co_responsible_number": ["Co-responsible phone", "Medansvarigs telefon"],
+  "co_responsible_email": ["Co-responsible e-mail", "Medansvarigs e-post"],
   "booked_as": ["Booking as", "Bokas som"],
   "new_event_created": ["A new event was created", "Ett nytt event skapades"],
   "booking_terms": ["booking terms and conditions", "bokningsvilkoren"],
@@ -18,6 +22,14 @@
   "title_required": [
     "You need to provide a title for the event",
     "Du måste ange en title för bokningen"
+  ],
+  "name_required":[
+    "You need to provide a name",
+    "Du måste ange ett namn"
+  ],
+  "email_required":[
+    "You need to provide an e-mail",
+    "Du måste ange en e-post"
   ],
   "phone_required": [
     "You need to provide a phone number",

@@ -4,33 +4,60 @@ import { to } from "../utils";
 import { statusChanged } from "./email_sender.service";
 
 export const validPartyReport = (party_report: PartyReport) => {
-  if (
-    !/^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(
-      party_report.responsible_number,
-    )
-  ) {
+  if (!validPhoneNumber(party_report.responsible_number)) {
     return {
       sv: "Ogiltiga tecken i arransvarigs telefonnummer",
       en: "Illegal characters or faulty formatting of phone number",
     };
   }
-  if (
-    !/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(
-      party_report.responsible_email,
-    )
-  ) {
+  if (!validMail(party_report.responsible_email)) {
     return {
       sv: "Ogiltiga tecken i arransvarigs mailadress",
       en: "Illegal characters in event responsible e-mail",
     };
   }
-  if (party_report.status == "ACCEPTED"){
-    return {
-      sv: "Du kan inte ändra en godkänd bokning",
-      en: "You can't edit an accepted booking",
-    };
+
+  if (
+    party_report.co_responsible_name ||
+    party_report.co_responsible_email ||
+    party_report.co_responsible_number
+  ) {
+    if (!validPhoneNumber(party_report.co_responsible_number)) {
+      return {
+        sv: "Ogiltiga tecken i medarransvarigs telefonnummer",
+        en: "Illegal characters or faulty formatting of phone number",
+      };
+    }
+    if (!validMail(party_report.co_responsible_email)) {
+      return {
+        sv: "Ogiltiga tecken i medarransvarigs mailadress",
+        en: "Illegal characters in event responsible e-mail",
+      };
+    }
+
+    if (party_report.status == "ACCEPTED") {
+      return {
+        sv: "Du kan inte ändra en godkänd bokning",
+        en: "You can't edit an accepted booking",
+      };
+    }
   }
   return null;
+};
+
+const validPhoneNumber = (number: string | null) => {
+  if (!number) return false;
+  return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(
+    number,
+  )
+    ? true
+    : false;
+};
+const validMail = (mail: string | null) => {
+  if (!mail) return false;
+  return /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(mail)
+    ? true
+    : false;
 };
 
 export const getPartyReport = async (

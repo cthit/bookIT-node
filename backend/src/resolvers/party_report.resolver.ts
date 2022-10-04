@@ -35,7 +35,6 @@ export const getPartyReportMResolvers = ({ prisma }: Tools) => ({
       setPartyReportStatus(prisma, status.id, status.status, user.language),
     );
     if (err) {
-      console.log(err);
       return {
         sv: "Misslyckades att ändra status",
         en: "Failed to change status",

@@ -13,6 +13,10 @@ const PartyReport = ({ init }) => {
   const repNameValues = ff("responsible_name");
   const repNumberValues = ff("responsible_number");
   const repEmailValues = ff("responsible_email");
+  const useCoResponsibleValues = ff("useCoResponsible");
+  const co_repNameValues = ff("co_responsible_name");
+  const co_repNumberValues = ff("co_responsible_number");
+  const co_repEmailValues = ff("co_responsible_email");
   const [texts] = useDigitTranslations(translations);
 
   return (
@@ -22,23 +26,54 @@ const PartyReport = ({ init }) => {
         label={texts.isActivity}
         size={{ width: "100%" }}
       />
+
       {activityValues.value && (
         <>
-          <DigitCheckbox {...permitValues} label={texts.permit} />
 
           <DigitLayout.Row display="flex" flexWrap="wrap">
-            <DigitTextField
-              {...repNameValues}
-              upperLabel={texts.responsible_name}
+            <DigitCheckbox
+              {...permitValues}
+              label={texts.permit}
+              size={{ width: "50%" }}
             />
-            <DigitTextField
-              {...repNumberValues}
-              upperLabel={texts.responsible_number}
+            <DigitCheckbox
+              {...useCoResponsibleValues}
+              label={texts.use_co_responsible}
+              size={{ width: "50%" }}
             />
-            <DigitTextField
-              {...repEmailValues}
-              upperLabel={texts.responsible_email}
-            />
+          </DigitLayout.Row>
+
+          <DigitLayout.Row>
+            <DigitLayout.Column>
+              <DigitTextField
+                {...repNameValues}
+                upperLabel={texts.responsible_name}
+              />
+              <DigitTextField
+                {...repNumberValues}
+                upperLabel={texts.responsible_number}
+              />
+              <DigitTextField
+                {...repEmailValues}
+                upperLabel={texts.responsible_email}
+              />
+            </DigitLayout.Column>
+            {useCoResponsibleValues.value && (
+              <DigitLayout.Column>
+                <DigitTextField
+                  {...co_repNameValues}
+                  upperLabel={texts.co_responsible_name}
+                />
+                <DigitTextField
+                  {...co_repNumberValues}
+                  upperLabel={texts.co_responsible_number}
+                />
+                <DigitTextField
+                  {...co_repEmailValues}
+                  upperLabel={texts.co_responsible_email}
+                />
+              </DigitLayout.Column>
+            )}
           </DigitLayout.Row>
         </>
       )}

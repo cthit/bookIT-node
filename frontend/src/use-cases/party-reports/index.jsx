@@ -94,7 +94,6 @@ const PartyReports = () => {
 
   const setStatus = async (event, status) => {
     const res = await setPartyReportStatus(event.party_report.id, status);
-    console.log(res);
     if (!res) {
       history.push("/party_reports");
       return;
