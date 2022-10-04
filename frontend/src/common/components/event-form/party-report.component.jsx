@@ -13,7 +13,7 @@ const PartyReport = ({ init }) => {
   const repNameValues = ff("responsible_name");
   const repNumberValues = ff("responsible_number");
   const repEmailValues = ff("responsible_email");
-  const useCoResponsible = ff("useCoResponsible");
+  const useCoResponsibleValues = ff("useCoResponsible");
   const co_repNameValues = ff("co_responsible_name");
   const co_repNumberValues = ff("co_responsible_number");
   const co_repEmailValues = ff("co_responsible_email");
@@ -36,7 +36,7 @@ const PartyReport = ({ init }) => {
               size={{ width: "50%" }}
             />
             <DigitCheckbox
-              {...useCoResponsible}
+              {...useCoResponsibleValues}
               label={texts.use_co_responsible}
               size={{ width: "50%" }}
             />
@@ -57,7 +57,7 @@ const PartyReport = ({ init }) => {
                 upperLabel={texts.responsible_email}
               />
             </DigitLayout.Column>
-            {useCoResponsible.value && (
+            {useCoResponsibleValues.value && (
               <DigitLayout.Column>
                 <DigitTextField
                   {...co_repNameValues}
