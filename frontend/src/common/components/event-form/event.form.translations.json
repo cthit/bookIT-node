@@ -11,7 +11,7 @@
   "responsible_name": ["Event responsible name", "Arransvarigs namn"],
   "responsible_number": ["Event responsible phone", "Arransvarigs telefon"],
   "responsible_email": ["Event responsible e-mail", "Arransvarigs e-post"],
-  "use_co_responsible": ["Add a co-responsible", "Lägg till en medansvarig"],
+  "use_co_responsible": ["Add co-responsible", "Lägg till medansvarig"],
   "co_responsible_name": ["Co-responsible name",    "Medansvarigs namn"],
   "co_responsible_number": ["Co-responsible phone", "Medansvarigs telefon"],
   "co_responsible_email": ["Co-responsible e-mail", "Medansvarigs e-post"],
