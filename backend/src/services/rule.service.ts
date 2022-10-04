@@ -171,7 +171,6 @@ export const createRule = async (
     };
   }
 
-  console.log("creating rule");
   let res = await prisma.rule.create({
     data: {
       ...rule,
@@ -229,8 +228,6 @@ const allowedToModifyRule = async (
 
   { groups, is_admin }: User,
 ): Promise<Error | null> => {
-  console.log(groups);
-  console.log(is_admin);
   if (!is_admin && !groups.includes("prit")) {
     return {
       sv: "Du har inte behörighet att skapa regler",

@@ -4,7 +4,6 @@ import { to } from "../utils";
 import { statusChanged } from "./email_sender.service";
 
 export const validPartyReport = (party_report: PartyReport) => {
-  console.log(party_report);
   if (!validPhoneNumber(party_report.responsible_number)) {
     return {
       sv: "Ogiltiga tecken i arransvarigs telefonnummer",

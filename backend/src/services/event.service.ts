@@ -152,7 +152,7 @@ export const editEvent = async (
       en: "Failed to get event",
     };
   }
-  
+
   if (!(user.groups.includes(old_event.booked_as) || user.is_admin)) {
     return {
       sv: "Du har inte behörighet att redigera denna bokning",

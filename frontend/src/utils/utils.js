@@ -1,7 +1,6 @@
 import moment from "moment";
 
 export const formatDT = date => {
-	console.log(date);
 	if(Number.isNaN(Number.parseInt(date)))
 		return moment(date).format("yyyy-MM-DD HH:mm");
 	return moment(Date(Number.parseInt(date))).format("yyyy-MM-DD HH:mm");
