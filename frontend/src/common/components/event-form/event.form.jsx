@@ -106,16 +106,16 @@ const EventFrom = ({ onSubmit, initialValues }) => {
               );
           }}
           render={() => (
-            <DigitLayout.Column>
+            <DigitLayout.Column size={{ maxWidth: "100%" }}>
               {/*<DigitText.Text text={`Bokare: ${me ? me.cid : ""}`} />*/}
-              <Title label={texts.title} />
+              <Title label={texts.title} size={{ width: "100%" }} />
               <PhoneNumber
                 name="phone"
                 label={texts.phone}
-                size={{ width: "20rem" }}
+                size={{ width: "100%" }}
               />
               <Rooms label={texts.room} rooms={ROOMS} />
-              <DigitLayout.Row>
+              <DigitLayout.Row flexWrap="wrap" display="flex">
                 <TimeAndTimePicker name="start" label={texts.start} />
                 <TimeAndTimePicker name="end" label={texts.end} />
               </DigitLayout.Row>
@@ -123,16 +123,18 @@ const EventFrom = ({ onSubmit, initialValues }) => {
               <BookAs label={texts.booked_as} groups={user.groups} />
 
               <PartyReport init={initialValues || {}} />
-              {/*<a href="https://prit.chalmers.it/Bokningsvillkor.pdf">
-            <DigitText.Subtitle text="*bokningsvillkoren" />
-        </a>*/}
 
               <BookingTerms
                 preLinkLabel={texts.pre_booking_terms}
                 linkLabel={texts.booking_terms}
               />
 
-              <DigitButton raised submit text={texts.submit} />
+              <DigitButton
+                raised
+                submit
+                size={{ maxWidth: "100%" }}
+                text={texts.submit}
+              />
             </DigitLayout.Column>
           )}
         />

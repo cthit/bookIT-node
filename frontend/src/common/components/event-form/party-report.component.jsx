@@ -26,7 +26,7 @@ const PartyReport = ({ init }) => {
         <>
           <DigitCheckbox {...permitValues} label={texts.permit} />
 
-          <DigitLayout.Row>
+          <DigitLayout.Row display="flex" flexWrap="wrap">
             <DigitTextField
               {...repNameValues}
               upperLabel={texts.responsible_name}

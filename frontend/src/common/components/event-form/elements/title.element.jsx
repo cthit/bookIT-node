@@ -8,7 +8,7 @@ const Title = ({ label }) => {
   return (
     <DigitTextField
       {...titleValues}
-      size={{ width: "20rem" }}
+      size={{ width: "100%" }}
       upperLabel={label}
     />
   );
