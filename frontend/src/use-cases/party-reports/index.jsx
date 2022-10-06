@@ -16,10 +16,10 @@ import { useHistory } from "react-router";
 import { detailed_view_keys, table_header_keys } from "./party-report.labels";
 import translations from "./party-report.translations.json";
 
-import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
+import WatchLaterIcon from "@material-ui/icons/WatchLater";
 import { useContext } from "react";
 import UserContext from "../../common/contexts/user-context";
 import { useEffect } from "react";
@@ -28,15 +28,13 @@ const getStatusIcon = status => {
   var icon = <HelpIcon />;
   switch (status) {
     case "PENDING":
-      icon = (
-        <FiberManualRecordIcon fontSize="large" style={{ color: "orange" }} />
-      );
+      icon = <WatchLaterIcon fontSize="large" style={{ color: "orange" }} />;
       break;
     case "ACCEPTED":
-      icon = <CheckCircleIcon style={{ color: "green" }} />;
+      icon = <CheckCircleIcon fontSize="large" style={{ color: "green" }} />;
       break;
     case "DENIED":
-      icon = <CancelIcon style={{ color: "red" }} />;
+      icon = <CancelIcon fontSize="large" style={{ color: "red" }} />;
       break;
     default:
   }
