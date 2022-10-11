@@ -6,6 +6,8 @@ import {
   DigitButton,
   useDigitToast,
   useDigitTranslations,
+  useDigitCustomDialog,
+  DigitText,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
 import {
@@ -15,6 +17,7 @@ import {
   Rooms,
   PhoneNumber,
   BookAs,
+  GDPR,
 } from "./elements";
 import PartyReport from "./party-report.component";
 import UserContext from "../../contexts/user-context";
@@ -22,6 +25,8 @@ import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
 import propTypes from "prop-types";
 import BookingTerms from "./elements/booking-terms.element";
+import GDPRAgreement from "./gdpr-agreement";
+import "./event.form.css";
 
 const regexStrings = {
   // eslint-disable-next-line
@@ -52,8 +57,11 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     actionHandler: () => {},
   });
   const [user] = useContext(UserContext);
-  const [texts] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useDigitTranslations(translations);
   const [loading, setLoading] = useState(true);
+  const [openDialog] = useDigitCustomDialog({
+    title: texts.gdpr_agreement,
+  });
 
   useEffect(() => {
     setLoading(initialValues === null);
@@ -88,7 +96,8 @@ const EventFrom = ({ onSubmit, initialValues }) => {
         whenTrueMatch(regexStrings.email, texts.email_invalid),
       )
       .when("isActivity", whenTrue(texts.email_required)),
-    booking_terms: yup.bool().required(texts.booking_terms_required),
+    booking_terms: yup.bool().isTrue().required(texts.booking_terms_required),
+    gdpr: yup.bool().isTrue().required(texts.gdpr_required),
     co_responsible_name: yup
       .string()
       .when("useCoResponsible", whenTrue(texts.name_required)),
@@ -146,8 +155,27 @@ const EventFrom = ({ onSubmit, initialValues }) => {
               <PartyReport init={initialValues || {}} />
 
               <BookingTerms
-                preLinkLabel={texts.pre_booking_terms}
+                preLinkLabel={texts.i_accept}
                 linkLabel={texts.booking_terms}
+              />
+
+              <GDPR
+                preLinkLabel={texts.i_accept}
+                linkLabel={texts.gdpr_agreement}
+                onLinkClick={() =>
+                  openDialog({
+                    renderMain: () => (
+                      <div className="gdpr-text">
+                        {GDPRAgreement[activeLanguage].split("\n").map(t => (
+                          <div>
+                            <DigitText.Text text={t} />
+                            <br />
+                          </div>
+                        ))}
+                      </div>
+                    ),
+                  })
+                }
               />
 
               <DigitButton
