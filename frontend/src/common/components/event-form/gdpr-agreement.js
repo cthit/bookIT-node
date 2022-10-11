@@ -8,7 +8,7 @@ The Software Engineering Student Division (IT) will store the data collected in 
 this booking. Phone numbers, names, CID and e-mail addresses are collected in order \
 for IT and Cubsec to identify you and contact you regarding matters related to \
 the booking. Phone numbers and e-mail addresses will only be accessed by the vice \
-chairperson at IT, P.R.I.T. the system administrator(s) of IT. The CID of the user \
+chairperson at IT, P.R.I.T. and the system administrator(s) of IT. The CID of the user \
 booking will be visible for any IT student. All personal data will be deleted no \
 later than two weeks after the booking has ended. Non-personal data will be stored \
 indefinitely.\n\
