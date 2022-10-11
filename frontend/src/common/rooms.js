@@ -10,8 +10,8 @@ const ROOMS = [
     color: "#B23CFD",
   },
   {
-    value: "CETAC",
-    text: "CETAC",
+    value: "CTC",
+    text: "CTC",
     color: "#FF0000",
   },
 ];
