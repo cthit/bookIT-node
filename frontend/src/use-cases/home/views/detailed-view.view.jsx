@@ -12,8 +12,6 @@ import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
 import { formatDT } from "../../../utils/utils";
-import { useContext } from "react";
-import UserContext from "../../../common/contexts/user-context";
 
 const DetailedView = ({ event_id, onClose, onDelete, user }) => {
   const history = useHistory();
