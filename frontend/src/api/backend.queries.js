@@ -1,5 +1,5 @@
 export const getEvents_query = `
-query GetEvents($from: String!, $to: String!){ 
+query GetEvents($from: String!, $to: String!){
   eventsFT(from: $from, to: $to) {
     start
     end
@@ -9,9 +9,51 @@ query GetEvents($from: String!, $to: String!){
   }
 }`;
 
+export const getEvent_query = `
+query GetEvent($id: String!) {
+  event(id: $id) {
+    title
+    description
+    start
+    end
+    booked_as
+    booked_by
+    created_at
+    room
+  }
+}
+`;
+
+export const getFullEvent_query = `
+query GetFullEvent($id: String) {
+  event(id: $id) {
+    start
+    end
+    description
+    title
+    party_report {
+      id
+      responsible_name
+      responsible_email
+      responsible_number
+      co_responsible_name
+      co_responsible_email
+      co_responsible_number
+      serving_permit
+    }
+    room
+    phone
+    booked_as
+  }
+}
+`;
+
 export const createEvent_query = `
 mutation CreateEvent($event: InputEvent!) {
-  createEvent(event: $event)
+  createEvent(event: $event) {
+    sv
+    en
+  }
 }`;
 
 export const getRules_query = `
@@ -53,13 +95,25 @@ query GetRule($id: String!) {
 
 export const createRule_query = `
 mutation CreateRule($rule: InputRule!) {
-  createRule(rule: $rule)
+  createRule(rule: $rule) {
+    sv
+    en
+  }
 }
 `;
 
 export const deleteRule_query = `
 mutation DeleteRule($id: String!) {
-  deleteRule(id: $id) 
+  deleteRule(id: $id)
+}
+`;
+
+export const getIllegalSlots_query = `
+query GetIllegalSlots($from: String!, $to: String!) {
+  illegalSlots(from: $from, to: $to) {
+    start
+    end
+  }
 }
 `;
 
@@ -111,6 +165,33 @@ query GetEvent($id: String) {
       co_responsible_email
       serving_permit
     }
+  }
+}
+`;
+
+export const editEvent_query = `
+mutation EditEvent($event: InputEvent) {
+  editEvent(event: $event) {
+    sv
+    en
+  }
+}
+`;
+
+export const deleteEvent_query = `
+mutation DeleteEvent($id: String) {
+  deleteEvent(id: $id) {
+    sv
+    en
+  }
+}
+`;
+
+export const set_report_status_query = `
+mutation SetStatus($status: InputStatus!) {
+  set_report_status(status: $status) {
+    sv
+    en
   }
 }
 `;

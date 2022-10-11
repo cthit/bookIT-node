@@ -1,62 +1,59 @@
-import * as events from "../repositories/event.repository";
 import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
 import { User } from "../models/user";
-import pg from "pg";
-import { createEvent } from "../services/event.service";
+import { createEvent, editEvent, deleteEvent } from "../services/event.service";
 
-export const getEventQResolvers = ({ db }: Tools) => ({
+export const getEventQResolvers = ({ prisma }: Tools) => ({
   events: async () => {
-    const { err, res } = await to<pg.QueryResult<Event[]>>(
-      events.getEvents(db),
-    );
-    if (err) {
-      console.log(err);
-      return [];
-    }
-    return res?.rows;
+    return await prisma.event.findMany();
   },
   eventsFT: async (_: any, ft: { from: string; to: string }) => {
-    const { err, res } = await to<pg.QueryResult<Event[]>>(
-      events.getEventsFT(db, ft.from, ft.to),
-    );
-    if (err) {
-      console.log(err);
-      return [];
-    }
-    return res?.rows;
+    return await prisma.event.findMany({
+      where: {
+        end: { gte: new Date(ft.from) },
+        start: { lte: new Date(ft.to) },
+      },
+    });
   },
   event: async (_: any, { id }: { id: string }) => {
-    const { err, res } = await to<pg.QueryResult<Event>>(
-      events.getEvent(db, id),
-    );
-    if (err) {
-      console.log(err);
-      return {};
-    }
-    if (!res || res?.rows.length < 1) return {};
-    return res?.rows[0];
+    return await prisma.event.findFirst({
+      where: { id: id },
+    });
   },
-  party_events: async () => {
-    const { err, res } = await to<pg.QueryResult<Event>>(
-      events.getPartyEvents(db),
-    );
-    if (err) {
-      console.log(err);
+  party_events: async (_: any, __: any, { user }: { user: User }) => {
+    if (!user.is_admin) {
       return [];
     }
-    return res ? res.rows : [];
+
+    return await prisma.event.findMany({
+      where: { party_report_id: { not: null } },
+    });
   },
 });
 
-export const getEventMResolvers = ({ db }: Tools) => ({
+export const getEventMResolvers = ({ prisma }: Tools) => ({
   createEvent: async (
     _: any,
     { event }: { event: Event },
     { user }: { user: User },
   ) => {
     event.booked_by = user.cid;
-    return createEvent(db, event, user);
+    return createEvent(prisma, event, user);
+  },
+  editEvent: async (
+    _: any,
+    { event }: { event: Event },
+    { user }: { user: User },
+  ) => {
+    event.booked_by = user.cid;
+    return editEvent(prisma, event, user);
+  },
+  deleteEvent: async (
+    _: any,
+    { id }: { id: string },
+    { user }: { user: User },
+  ) => {
+    return deleteEvent(prisma, id, user);
   },
 });

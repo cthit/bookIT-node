@@ -15,6 +15,25 @@ services:
     ports:
       - 6379:6379
 
+  gotify:
+    image: cthit/gotify
+    environment:
+      GOTIFY_PRE-SHARED-KEY: 123abc
+      GOTIFY_MOCK-MODE: "true"
+    ports:
+      - 1337:8080
+
+  db-scripts: # Deletes personal data from database
+    build:
+      context: ./db-scripts
+      dockerfile: Dockerfile
+    environment:
+      PGPASSWORD: password
+      DB_USER: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bookit
+
   ################## Gamma ##################
   gamma-frontend:
     image: cthit/gamma-frontend:development

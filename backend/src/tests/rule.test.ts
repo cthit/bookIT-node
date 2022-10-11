@@ -1,4 +1,3 @@
-import { Rule } from "../models";
 import assert from "assert";
 import {
   toMiniRules,
@@ -7,20 +6,21 @@ import {
   dayApplies,
   mergeRules,
 } from "../services/rule.service";
+import { rule } from "@prisma/client";
 
-const defaultRule: Rule = {
+const defaultRule: rule = {
   id: "",
   day_mask: 0b1111111,
-  start_date: "",
-  end_date: "",
+  start_date: new Date(),
+  end_date: new Date(),
   start_time: "",
   end_time: "",
   description: "",
   allow: false,
   priority: 10,
   title: "",
-  created_at: "",
-  updated_at: "",
+  created_at: new Date(),
+  updated_at: new Date(),
   room: [],
 };
 
@@ -30,19 +30,19 @@ const defaultMiniRule: MiniRule = {
   end: new Date(),
 };
 
-const dummyRules: Rule[] = [
+const dummyRules: rule[] = [
   {
     ...defaultRule,
-    start_date: "2001-01-01",
-    end_date: "2030-12-31",
+    start_date: new Date("2001-01-01"),
+    end_date: new Date("2030-12-31"),
     start_time: "08:00",
     end_time: "17:00",
     day_mask: 0b0011101,
   },
   {
     ...defaultRule,
-    start_date: "2001-01-01",
-    end_date: "2030-12-31",
+    start_date: new Date("2001-01-01"),
+    end_date: new Date("2030-12-31"),
     start_time: "07:00",
     end_time: "10:00",
     priority: 9,
@@ -199,18 +199,18 @@ describe("Merge rules", () => {
    * +++-------
    */
   it("Two overlapping rules v1", () => {
-    const rules = [
+    const rules: rule[] = [
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "08:00",
         end_time: "17:00",
       },
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "07:00",
         end_time: "10:00",
         priority: 9,
@@ -243,18 +243,18 @@ describe("Merge rules", () => {
    *  --+++----
    */
   it("Two overlapping rules v2", () => {
-    const rules = [
+    const rules: rule[] = [
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "08:00",
         end_time: "17:00",
       },
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "10:00",
         end_time: "13:00",
         priority: 9,
@@ -294,19 +294,19 @@ describe("Merge rules", () => {
    *  --+++----++
    */
   it("Three overlapping rules", () => {
-    const rules = [
+    const rules: rule[] = [
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "08:00",
         end_time: "17:00",
         priority: 9,
       },
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "10:00",
         end_time: "13:00",
         priority: 8,
@@ -314,8 +314,8 @@ describe("Merge rules", () => {
       },
       {
         ...defaultRule,
-        start_date: "2001-01-01",
-        end_date: "2030-12-31",
+        start_date: new Date("2001-01-01"),
+        end_date: new Date("2030-12-31"),
         start_time: "15:00",
         end_time: "19:00",
         allow: true,

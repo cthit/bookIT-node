@@ -10,6 +10,12 @@ import {
   deleteRule_query,
   getUser_query,
   getPartyReport_query,
+  getEvent_query,
+  getFullEvent_query,
+  editEvent_query,
+  deleteEvent_query,
+  getIllegalSlots_query,
+  set_report_status_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -17,7 +23,15 @@ const graphql_endpoint = "/api/graphql/v1";
 const request = (body, dataLabel, errorMessage, onReject = () => null) =>
   new Promise(resolve =>
     Axios.post(graphql_endpoint, body)
-      .then(res => resolve(res.data.data[dataLabel]))
+      .then(res => {
+        if (res.data.errors) {
+          console.log(errorMessage);
+          console.log(res.data.errors);
+          resolve(onReject(res));
+          return;
+        }
+        resolve(res.data.data[dataLabel]);
+      })
       .catch(err => {
         console.log(errorMessage);
         console.log(err);
@@ -37,6 +51,30 @@ export const getEvents = (from, to) =>
     () => [],
   );
 
+export const getEvent = id =>
+  request(
+    {
+      query: getEvent_query,
+      variables: { id: id },
+      operationName: "GetEvent",
+    },
+    "event",
+    "Failed to fetch event: " + id,
+    () => {},
+  );
+
+export const getFullEvent = id =>
+  request(
+    {
+      query: getFullEvent_query,
+      variables: { id: id },
+      operationName: "GetFullEvent",
+    },
+    "event",
+    "Failed to fetch event: " + id,
+    () => {},
+  );
+
 export const createEvent = event =>
   request(
     {
@@ -47,6 +85,30 @@ export const createEvent = event =>
     "createEvent",
     "Failed to create event",
     err => err.message,
+  );
+
+export const editEvent = event =>
+  request(
+    {
+      query: editEvent_query,
+      variables: { event: event },
+      operationName: "EditEvent",
+    },
+    "editEvent",
+    "Failed to edit event",
+    () => {},
+  );
+
+export const deleteEvent = id =>
+  request(
+    {
+      query: deleteEvent_query,
+      variables: { id: id },
+      operationName: "DeleteEvent",
+    },
+    "deleteEvent",
+    "Failed to delete event",
+    () => {},
   );
 
 export const getRules = () =>
@@ -95,6 +157,18 @@ export const deleteRule = id =>
     err => err.message,
   );
 
+export const getIllegalSlots = (from, to) =>
+  request(
+    {
+      query: getIllegalSlots_query,
+      variables: { from, to },
+      operationName: "GetIllegalSlots",
+    },
+    "illegalSlots",
+    "Failed to fetch illegal slots",
+    () => [],
+  );
+
 export const getPartyReports = () =>
   request(
     {
@@ -115,6 +189,21 @@ export const getPartyReport = id =>
     "event",
     "Unable to fetch event with party report",
     () => {},
+  );
+
+export const setPartyReportStatus = (id, status) =>
+  request(
+    {
+      query: set_report_status_query,
+      variables: { status: { id, status } },
+      operationName: "SetStatus",
+    },
+    "set_report_status",
+    "Unable to set status of party report",
+    err => ({
+      sv: "Error: Misslyckades att ändra status",
+      err: "Error: Failed to set status",
+    }),
   );
 
 export const getUser = () =>

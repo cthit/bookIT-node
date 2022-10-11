@@ -1,4 +1,4 @@
-FROM node:latest as build
+FROM node:lts as build
 
 COPY package.json package-lock.json ./
 

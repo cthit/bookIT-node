@@ -32,8 +32,11 @@ input InputEvent {
   room: [Room]!
   phone: String!
   booked_as: String!
+  booking_terms: Boolean!
 }
 
 type Mutation {
-  createEvent(event: InputEvent): Boolean
+  createEvent(event: InputEvent): Error
+  editEvent(event: InputEvent): Error
+  deleteEvent(id: String): Error
 }

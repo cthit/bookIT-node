@@ -10,9 +10,9 @@ const ROOMS = [
     color: "#B23CFD",
   },
   {
-    value: "HASEN",
-    text: "HASen",
-    color: "#FFA900",
+    value: "CTC",
+    text: "CTC",
+    color: "#FF0000",
   },
 ];
 

@@ -51,6 +51,7 @@ Go to http://localhost:3000 to view the website
 - [NodeJs](https://nodejs.org/en/) used to power the backend and frontend
 - [TypeScript](https://www.typescriptlang.org/) to enforce strict typing
 - [ExpressJs](http://expressjs.com/) to create backend endpoints
+- [Prisma](https://www.prisma.io/docs/) to query the database and manage database migrations
 - [GraphQL](https://graphql.org/) to create a flexible web API
 - [ReactJs](https://reactjs.org/) framework to create the frontend
 - [Redis](https://redis.io/) to store user sessions

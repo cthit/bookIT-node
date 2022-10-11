@@ -9,6 +9,7 @@ import NewReservation from "./use-cases/new-event";
 import Rules from "./use-cases/rules";
 import PartyReports from "./use-cases/party-reports";
 import Callback from "./use-cases/auth";
+import EditEvent from "./use-cases/edit-event";
 
 const API = () => {
   useEffect(() => {
@@ -24,6 +25,7 @@ const App = () => (
         <Switch>
           <Route exact path="/" component={Home} />
           <Route exact path="/new-event" component={NewReservation} />
+          <Route path="/edit-event" component={EditEvent} />
           <Route path="/rules" component={Rules} />
           <Route path="/party_reports" component={PartyReports} />
           <Route path="/auth/callback" component={Callback} />

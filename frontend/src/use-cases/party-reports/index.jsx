@@ -3,32 +3,38 @@ import {
   DigitCRUD,
   DigitTooltip,
   useDigitTranslations,
+  DigitLayout,
 } from "@cthit/react-digit-components";
-import { getPartyReport, getPartyReports } from "../../api/backend.api";
+import {
+  getPartyReport,
+  getPartyReports,
+  setPartyReportStatus,
+} from "../../api/backend.api";
 import { formatDT } from "../../utils/utils";
 import "./index.css";
 import { useHistory } from "react-router";
 import { detailed_view_keys, table_header_keys } from "./party-report.labels";
 import translations from "./party-report.translations.json";
 
-import FiberManualRecordIcon from "@material-ui/icons/FiberManualRecord";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CancelIcon from "@material-ui/icons/Cancel";
 import HelpIcon from "@material-ui/icons/Help";
+import WatchLaterIcon from "@material-ui/icons/WatchLater";
+import { useContext } from "react";
+import UserContext from "../../common/contexts/user-context";
+import { useEffect } from "react";
 
 const getStatusIcon = status => {
   var icon = <HelpIcon />;
   switch (status) {
     case "PENDING":
-      icon = (
-        <FiberManualRecordIcon fontSize="large" style={{ color: "orange" }} />
-      );
+      icon = <WatchLaterIcon fontSize="large" style={{ color: "orange" }} />;
       break;
     case "ACCEPTED":
-      icon = <CheckCircleIcon style={{ color: "green" }} />;
+      icon = <CheckCircleIcon fontSize="large" style={{ color: "green" }} />;
       break;
     case "DENIED":
-      icon = <CancelIcon style={{ color: "red" }} />;
+      icon = <CancelIcon fontSize="large" style={{ color: "red" }} />;
       break;
     default:
   }
@@ -66,6 +72,11 @@ const formatPartyReport = e => ({
 const PartyReports = () => {
   const history = useHistory();
   const [texts] = useDigitTranslations(translations);
+  const [user] = useContext(UserContext);
+
+  useEffect(() => {
+    if (!user.is_admin) history.push("/");
+  });
 
   const readAllPartyReports = async () =>
     (await getPartyReports()).map(e => ({
@@ -79,6 +90,15 @@ const PartyReports = () => {
       ),
     }));
 
+  const setStatus = async (event, status) => {
+    const res = await setPartyReportStatus(event.party_report.id, status);
+    if (!res) {
+      history.push("/party_reports");
+      return;
+    }
+    console.log("Failed!");
+  };
+
   return (
     <div className="container">
       <DigitCRUD
@@ -86,7 +106,7 @@ const PartyReports = () => {
         readOneRequest={readOnePartyReport}
         path="/party_reports"
         idProp="id"
-        keysOrder={detailed_view_keys}
+        keysOrder={[...detailed_view_keys, "edit_status"]}
         keysText={texts}
         tableProps={{
           columnsOrder: table_header_keys,
@@ -99,6 +119,23 @@ const PartyReports = () => {
         detailsButtonText="Details"
         detailsTitle={data => data.title}
         readOneProps={{ style: { maxWidth: "40rem" } }}
+        customDetailsRenders={{
+          edit_status: event => (
+            <DigitLayout.Row className="status-buttons">
+              <DigitButton
+                text={texts.accept}
+                primary
+                raised
+                onClick={() => setStatus(event, "ACCEPTED")}
+              />
+              <DigitButton
+                text={texts.deny}
+                raised
+                onClick={() => setStatus(event, "DENIED")}
+              />
+            </DigitLayout.Row>
+          ),
+        }}
       />
     </div>
   );

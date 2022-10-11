@@ -1,0 +1,59 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model event {
+  id              String        @id @default(uuid()) @db.Uuid
+  party_report_id String?       @db.Uuid
+  phone           String
+  title           String
+  description     String?
+  start           DateTime      @db.Timestamp(3)
+  end             DateTime      @db.Timestamp(3)
+  created_at      DateTime      @default(now()) @db.Timestamp(3)
+  updated_at      DateTime      @default(now()) @db.Timestamp(3)
+  room            String[]
+  booked_by       String
+  booked_as       String
+  party_report    party_report? @relation(fields: [party_report_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
+}
+
+model party_report {
+  id                    String   @id @default(uuid()) @db.Uuid
+  responsible_name      String
+  responsible_number    String
+  responsible_email     String
+  co_responsible_name   String?
+  co_responsible_number String?
+  co_responsible_email  String?
+  serving_permit        Boolean? @default(false)
+  status                String?  @default("PENDING")
+  event                 event[]
+}
+
+enum room {
+  BIG_HUB
+  GROUP_ROOM
+  CTC
+}
+
+model rule {
+  id          String   @id @default(uuid()) @db.Uuid
+  day_mask    Int      @default(0)
+  start_date  DateTime @db.Timestamp(3)
+  end_date    DateTime @db.Timestamp(3)
+  start_time  String
+  end_time    String
+  description String
+  allow       Boolean  @default(true)
+  priority    Int      @default(10)
+  title       String
+  room        room[]
+  created_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
+  updated_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
+}

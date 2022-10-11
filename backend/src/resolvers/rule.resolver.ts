@@ -1,34 +1,34 @@
-import pg from "pg";
-import { Rule } from "../models";
-import { getRuleById, getRules } from "../repositories/rule.repository";
+import { Rule, User } from "../models";
 import { createRule, deleteRule } from "../services/rule.service";
 import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 
-export const getRuleQResolvers = ({ db }: Tools) => ({
-  rules: async (): Promise<Rule[]> => {
-    const { err, res } = await to<pg.QueryResult<Rule>>(getRules(db));
-    if (err) {
-      console.log(err);
-      return [];
-    }
-    return res ? res?.rows : [];
+export const getRuleQResolvers = ({ prisma }: Tools) => ({
+  rules: () => {
+    return prisma.rule.findMany();
   },
-  rule: async (_: any, { id }: { id: string }): Promise<Rule | null> => {
-    const { err, res } = await to<pg.QueryResult<Rule>>(getRuleById(db, id));
-    if (err) {
-      console.log(err);
-      return null;
-    }
-    if (!res || res.rowCount <= 0) {
-      console.log("Rule not found");
-      return null;
-    }
-    return res.rows[0];
+  rule: (_: any, { id }: { id: string }) => {
+    return prisma.rule.findUnique({
+      where: {
+        id: id,
+      },
+    });
   },
 });
 
-export const getRuleMResolvers = ({ db }: Tools) => ({
-  createRule: async (_: any, { rule }: { rule: Rule }) => createRule(db, rule),
-  deleteRule: async (_: any, { id }: { id: String }) => deleteRule(db, id),
+export const getRuleMResolvers = ({ prisma }: Tools) => ({
+  createRule: async (
+    _: any,
+    { rule }: { rule: Rule },
+    {user}: { user: User},
+    ) => {
+    return createRule(prisma, rule, user);
+  },
+  deleteRule: async (
+    _: any,
+     { id }: { id: string },
+      {user}: { user: User},
+     ) => {
+      return deleteRule(prisma, id, user);
+     },
 });
