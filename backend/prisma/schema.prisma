@@ -39,7 +39,7 @@ model party_report {
 enum room {
   BIG_HUB
   GROUP_ROOM
-  CETAC
+  CTC
 }
 
 model rule {

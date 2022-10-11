@@ -31,6 +31,7 @@ const validEvent = async (
   }
 
   if (new Date(event.start) > new Date(Date.now() + 5443200000) && !is_admin) {
+    // 5443200000 = 63 days or 9 weeks
     return {
       sv: "Den angivna starttiden är för långt fram i tiden",
       en: "Start date is too far in the future",
