@@ -1,6 +1,8 @@
 type IllegalSlot {
   start: String!
   end: String!
+  description: String
+  title: String!
 }
 
 type Query {
