@@ -136,12 +136,10 @@ export const editEvent = async (
   if (err) {
     return err;
   }
-
   err = await checkRules(prisma, event);
   if (err) {
     return err;
   }
-
   // Getting old event
   let old_event = await prisma.event.findFirst({
     where: { id: event.id },
@@ -160,51 +158,54 @@ export const editEvent = async (
       en: "You do not have permission to edit this event",
     };
   }
-
   let oldReport = null;
   if (old_event.party_report_id) {
     oldReport = await prisma.party_report.findFirst({
       where: { id: old_event.party_report_id },
     });
   }
+  if (oldReport || event.party_report) {
+    // If report has been deleted
+    if (oldReport && oldReport.id && !event.party_report) {
+      err = await deletePartyReport(prisma, oldReport.id);
+      if (!err) return err;
+      event.party_report_id = undefined;
+    }
+    // If report has been created
+    else if (!oldReport && event.party_report) {
+      let { res, err } = await to(
+        createPartyReport(prisma, event.party_report),
+      );
+      if (err || !res) {
+        if (!(err instanceof Error)) {
+          return err;
+        }
+        console.log(err);
+        return {
+          sv: "Kunde inte skapa aktivitetsanmälan",
+          en: "Failed to create party report",
+        };
+      }
+      event.party_report_id = res;
+    }
+    // If the party report has been updated
+    else if (
+      !equal(oldReport, { ...event.party_report, id: oldReport?.id }) &&
+      oldReport &&
+      event.party_report
+    ) {
+      console.log("if 3 entered");
+      event.party_report.id = oldReport.id;
+      event.party_report.status = oldReport.status;
+      const err = await editPartyReport(prisma, event.party_report);
 
-  // If report has been deleted
-  if (oldReport && oldReport.id && !event.party_report) {
-    err = await deletePartyReport(prisma, oldReport.id);
-    if (!err) return err;
-    event.party_report_id = undefined;
-  }
-  // If report has been created
-  else if (!oldReport && event.party_report) {
-    let { res, err } = await to(createPartyReport(prisma, event.party_report));
-    if (err || !res) {
-      if (!(err instanceof Error)) {
+      if (err) {
         return err;
       }
-      console.log(err);
-      return {
-        sv: "Kunde inte skapa aktivitetsanmälan",
-        en: "Failed to create party report",
-      };
+      event.party_report_id = oldReport.id;
+      console.log("if 3 exited");
     }
-    event.party_report_id = res;
   }
-  // If the party report has been updated
-  else if (
-    !equal(oldReport, { ...event.party_report, id: oldReport?.id }) &&
-    oldReport &&
-    event.party_report
-  ) {
-    event.party_report.id = oldReport.id;
-    event.party_report.status = oldReport.status;
-    const err = await editPartyReport(prisma, event.party_report);
-
-    if (err) {
-      return err;
-    }
-    event.party_report_id = oldReport.id;
-  }
-
   // Updates event in the database
   let res = await prisma.event.update({
     where: { id: event.id },

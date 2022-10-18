@@ -7,12 +7,12 @@ const ROOMS = [
   {
     value: "GROUP_ROOM",
     text: "Grupprummet",
-    color: "#B23CFD",
+    color: "#C200FB",
   },
   {
     value: "CTC",
     text: "CTC",
-    color: "#FF0000",
+    color: "#E15554",
   },
 ];
 
