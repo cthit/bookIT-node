@@ -25,7 +25,8 @@ const formatEvent = event => {
     ...event,
     ...event.party_report,
     isActivity: event.party_report !== null,
-    useCoResponsible: isCoResponsible(event.party_report),
+    useCoResponsible:
+      event.party_report !== null ? isCoResponsible(event.party_report) : false,
     start: new Date(Number(event.start)),
     end: new Date(Number(event.end)),
     booking_terms: true,
