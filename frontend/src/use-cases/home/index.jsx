@@ -18,7 +18,7 @@ const getClassName = rooms => {
   for (const i in rooms) {
     name += "-" + rooms[i].toLowerCase();
   }
-  if (!(style.innerHTML.includes(name))) {
+  if (!style.innerHTML.includes(name)) {
     style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
     let px = 0;
     for (const i in rooms) {
@@ -26,7 +26,10 @@ const getClassName = rooms => {
       px += 10;
       style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
     }
-    style.innerHTML = `${style.innerHTML.slice(0, style.innerHTML.length - 1)});}\n`;
+    style.innerHTML = `${style.innerHTML.slice(
+      0,
+      style.innerHTML.length - 1,
+    )});}\n`;
   }
   return name;
 };
@@ -51,6 +54,8 @@ const getCalendarEvents = async info => {
         start: new Date(Number(e.start)),
         end: new Date(Number(e.end)),
         display: "background",
+        overlap: false,
+        title: e.title + (e.description ? ` - ` + e.description : ""),
       };
     }),
   ];
