@@ -194,7 +194,6 @@ export const editEvent = async (
       oldReport &&
       event.party_report
     ) {
-      console.log("if 3 entered");
       event.party_report.id = oldReport.id;
       event.party_report.status = oldReport.status;
       const err = await editPartyReport(prisma, event.party_report);
@@ -203,7 +202,6 @@ export const editEvent = async (
         return err;
       }
       event.party_report_id = oldReport.id;
-      console.log("if 3 exited");
     }
   }
   // Updates event in the database
