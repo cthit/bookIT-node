@@ -10,6 +10,7 @@ import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
 import { useContext } from "react";
 import UserContext from "../../common/contexts/user-context";
+import useBigSreenQuery from "../../common/hooks/use-big-screen";
 
 const style = document.querySelector("#room-styles");
 
@@ -77,13 +78,14 @@ const Home = () => {
     title: "Event",
   });
   const isMobile = useMobileQuery();
+  const isBigScreen = useBigSreenQuery();
 
   return (
     <div
       style={{
         width: "100%",
         margin: `${isMobile ? "1rem 0" : "1rem"}`,
-        height: "40rem",
+        height: `${isBigScreen ? window.innerHeight - 250 + "px" : "40rem"}`,
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
         ...colorVariables,
       }}
