@@ -8,6 +8,7 @@ RUN apk update
 RUN apk add vim postgresql-client
 
 COPY .jobber ./
+RUN chmod 744 .jobber
 COPY delete-data.sql ./
 
 ENV PGPASSWORD=password
