@@ -85,7 +85,6 @@ const Home = () => {
       style={{
         width: "100%",
         margin: `${isMobile ? "1rem 0" : "1rem"}`,
-        height: `${isBigScreen ? window.innerHeight - 250 + "px" : "40rem"}`,
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
         ...colorVariables,
       }}
