@@ -8,8 +8,9 @@ import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
-import { useContext } from "react";
+import { useContext, useCallback, useState } from "react";
 import UserContext from "../../common/contexts/user-context";
+import { overlap } from "../../utils/utils";
 
 const style = document.querySelector("#room-styles");
 
@@ -34,33 +35,6 @@ const getClassName = rooms => {
   return name;
 };
 
-const getCalendarEvents = async info => {
-  const events = await getEvents(info.start, info.end);
-
-  const illegalSlots = await getIllegalSlots(info.start, info.end);
-
-  return [
-    ...events.map(e => {
-      return {
-        ...e,
-        className: getClassName(e.room.sort()),
-        start: new Date(Number(e.start)),
-        end: new Date(Number(e.end)),
-      };
-    }),
-    ...illegalSlots.map(e => {
-      return {
-        backgroundColor: "#EF9A9A",
-        start: new Date(Number(e.start)),
-        end: new Date(Number(e.end)),
-        display: "background",
-        overlap: false,
-        title: e.title + (e.description ? ` - ` + e.description : ""),
-      };
-    }),
-  ];
-};
-
 const getColorVariables = () => {
   let variables = {};
   for (const i in ROOMS) {
@@ -77,6 +51,45 @@ const Home = () => {
     title: "Event",
   });
   const isMobile = useMobileQuery();
+  const [filters, setFilters] = useState(ROOMS.map(r => r.value));
+
+  const getCalendarEvents = async info => {
+    const events = await getEvents(info.start, info.end);
+
+    const illegalSlots = await getIllegalSlots(info.start, info.end);
+
+    return [
+      ...events
+        .filter(e => overlap(e.room, filters))
+        .map(e => {
+          return {
+            ...e,
+            className: getClassName(e.room.sort()),
+            start: new Date(Number(e.start)),
+            end: new Date(Number(e.end)),
+          };
+        }),
+      ...illegalSlots.map(e => {
+        return {
+          backgroundColor: "#EF9A9A",
+          start: new Date(Number(e.start)),
+          end: new Date(Number(e.end)),
+          display: "background",
+          overlap: false,
+          title: e.title + (e.description ? ` - ` + e.description : ""),
+        };
+      }),
+    ];
+  };
+
+  const getCalendarEventsCallback = useCallback(getCalendarEvents, [filters]);
+  const toggleChip = room => {
+    if (filters.includes(room)) {
+      setFilters(filters.filter(f => f !== room));
+    } else {
+      setFilters([...filters, room]);
+    }
+  };
 
   return (
     <div
@@ -96,13 +109,19 @@ const Home = () => {
         }}
       >
         {ROOMS.map(r => (
-          <div className="chip" style={{ backgroundColor: r.color }}>
+          <div
+            className="chip"
+            style={{
+              backgroundColor: filters.includes(r.value) ? r.color : "gray",
+            }}
+            onClick={() => toggleChip(r.value)}
+          >
             {r.text}
           </div>
         ))}
       </div>
       <Calendar
-        getEvents={getCalendarEvents}
+        getEvents={getCalendarEventsCallback}
         eventClick={value =>
           openDialog({
             title: value.event._def.title,
