@@ -6,6 +6,8 @@ query GetEvents($from: String!, $to: String!){
     id
     title
     room
+    booked_as
+    phone
   }
 }`;
 

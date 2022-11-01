@@ -1,6 +1,10 @@
-import { useDigitCustomDialog } from "@cthit/react-digit-components";
+import {
+  useDigitCustomDialog,
+  useDigitToast,
+  useDigitTranslations,
+} from "@cthit/react-digit-components";
 import { useHistory } from "react-router";
-import { getEvents } from "../../api/backend.api";
+import { editEvent, getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
 import ROOMS from "../../common/rooms";
 import Calendar from "./views/calendar.view";
@@ -11,6 +15,7 @@ import { getIllegalSlots } from "../../api/backend.api";
 import { useContext, useCallback, useState } from "react";
 import UserContext from "../../common/contexts/user-context";
 import { overlap } from "../../utils/utils";
+import transitions from "./home.translations.json";
 
 const style = document.querySelector("#room-styles");
 
@@ -52,11 +57,18 @@ const Home = () => {
   });
   const isMobile = useMobileQuery();
   const [filters, setFilters] = useState(ROOMS.map(r => r.value));
+  const [texts, activeLanguage] = useDigitTranslations(transitions);
+  const [openToast] = useDigitToast({
+    duration: 7000,
+    actionText: "Ok",
+    actionHandler: () => {},
+  });
 
   const getCalendarEvents = async info => {
     const events = await getEvents(info.start, info.end);
 
     const illegalSlots = await getIllegalSlots(info.start, info.end);
+    console.log(events.filter(r => r.title === "asdfa")[0]);
 
     return [
       ...events
@@ -67,6 +79,8 @@ const Home = () => {
             className: getClassName(e.room.sort()),
             start: new Date(Number(e.start)),
             end: new Date(Number(e.end)),
+            editable: user.groups.includes(e.booked_as) || user.is_admin,
+            durationEditable: false,
           };
         }),
       ...illegalSlots.map(e => {
@@ -75,20 +89,47 @@ const Home = () => {
           start: new Date(Number(e.start)),
           end: new Date(Number(e.end)),
           display: "background",
-          overlap: false,
           title: e.title + (e.description ? ` - ` + e.description : ""),
         };
       }),
     ];
   };
 
-  const getCalendarEventsCallback = useCallback(getCalendarEvents, [filters]);
+  const getCalendarEventsCallback = useCallback(getCalendarEvents, [
+    filters,
+    user,
+  ]);
   const toggleChip = room => {
     if (filters.includes(room)) {
       setFilters(filters.filter(f => f !== room));
     } else {
       setFilters([...filters, room]);
     }
+  };
+
+  const onEventDrop = ({ event, revert }) => {
+    editEvent({
+      id: event.id,
+      start: event.start,
+      end: event.end,
+      //Required by backend
+      title: event.title,
+      room: event._def.extendedProps.room,
+      phone: event._def.extendedProps.phone,
+      booked_as: event._def.extendedProps.booked_as,
+      booking_terms: true,
+    }).then(err => {
+      if (err) {
+        revert();
+        openToast({
+          text: err[activeLanguage],
+        });
+      } else {
+        openToast({
+          text: texts.event_edited,
+        });
+      }
+    });
   };
 
   return (
@@ -138,6 +179,7 @@ const Home = () => {
         onSelect={value =>
           history.push("/new-event", { start: value.start, end: value.end })
         }
+        onEventDrop={onEventDrop}
       />
       <AddEventButton />
     </div>
