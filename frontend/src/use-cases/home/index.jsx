@@ -16,8 +16,12 @@ const style = document.querySelector("#room-styles");
 
 const getClassName = rooms => {
   let name = "event";
-  for (const i in rooms) {
-    name += "-" + rooms[i].toLowerCase();
+  if (rooms.length === 1) {
+    name += "-" + rooms[0].toLowerCase() + "Alone";
+  } else {
+    for (const i in rooms) {
+      name += "-" + rooms[i].toLowerCase();
+    }
   }
   if (!style.innerHTML.includes(name)) {
     style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
