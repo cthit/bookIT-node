@@ -5,7 +5,6 @@ export DB_PORT=5432
 export DB_NAME=bookit
 
 export DATABASE_URL=postgres://$DB_USER:$DB_PASS@$DB_HOST:$DB_PORT/$DB_NAME
-npm run migrate
 
 export GAMMA_AUTH_URL=http://localhost:8081/api/oauth/authorize
 export GAMMA_TOKEN_URL=http://localhost:8081/api/oauth/token
@@ -26,3 +25,4 @@ export ADMIN_AUTHORITY=bookit-admin
 export VO_EMAIL=vo@chalmers.it
 export GOTIFY_HOST=http://localhost:1337
 export GOTIFY_KEY=123abc
+npm run migrate
