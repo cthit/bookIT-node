@@ -9,7 +9,7 @@ import enLocale from "@fullcalendar/core/locales/en-gb";
 import { useDigitTranslations } from "@cthit/react-digit-components";
 import "./calendar-view.css";
 
-const Calendar = ({ getEvents, eventClick, onSelect, ref }) => {
+const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));
   eventClick = eventClick ?? (() => {});
   onSelect = onSelect ?? (() => {});
@@ -57,6 +57,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, ref }) => {
       scrollTime={"17:00:00"}
       scrollTimeReset={false}
       events={getEvents}
+      eventDrop={onEventDrop}
     />
   );
 };

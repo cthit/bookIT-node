@@ -6,6 +6,8 @@ query GetEvents($from: String!, $to: String!){
     id
     title
     room
+    booked_as
+    phone
   }
 }`;
 
@@ -113,6 +115,8 @@ query GetIllegalSlots($from: String!, $to: String!) {
   illegalSlots(from: $from, to: $to) {
     start
     end
+    title
+    description
   }
 }
 `;
