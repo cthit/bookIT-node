@@ -38,7 +38,7 @@ const validEvent = async (
     };
   }
 
-  if (!groups.includes(event.booked_as)) {
+  if (!groups.includes(event.booked_as) && !is_admin) {
     return {
       sv: "Bokande grupp ej specificerad",
       en: "Booking group not specified",
