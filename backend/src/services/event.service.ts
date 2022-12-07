@@ -1,21 +1,7 @@
 import { Event } from "../models/event";
-import { to, equal, formatDT } from "../utils";
 import { checkRules } from "./rule.service";
-import {
-  createPartyReport,
-  deletePartyReport,
-  editPartyReport,
-  validPartyReport,
-} from "./party_report.service";
 import { User, Error } from "../models";
-import {
-  party_report,
-  PrismaClient,
-  event as p_event,
-  prisma,
-  event,
-} from "@prisma/client";
-import { eventUpdated, partyReportCreated } from "./email_sender.service";
+import { PrismaClient, event } from "@prisma/client";
 
 const validEvent = async (
   prisma: PrismaClient,
@@ -57,12 +43,6 @@ const validEvent = async (
       sv: "Inget rum specificerat",
       en: "No room specified",
     };
-  }
-  if (event.party_report) {
-    const err = validPartyReport(event.party_report);
-    if (err) {
-      return err;
-    }
   }
 
   let query: any = {
@@ -116,7 +96,6 @@ const toEvent = (event: Event) => ({
   booked_by: event.booked_by || "",
   phone: event.phone,
   room: event.room.map(e => e.toString()),
-  party_report_id: event.party_report_id,
 });
 
 export const editEvent = async (
@@ -158,76 +137,11 @@ export const editEvent = async (
       en: "You do not have permission to edit this event",
     };
   }
-  let oldReport = null;
-  if (old_event.party_report_id) {
-    oldReport = await prisma.party_report.findFirst({
-      where: { id: old_event.party_report_id },
-    });
-  }
-  if (oldReport || event.party_report) {
-    // If report has been deleted
-    if (oldReport && oldReport.id && !event.party_report) {
-      err = await deletePartyReport(prisma, oldReport.id);
-      if (!err) return err;
-      event.party_report_id = undefined;
-    }
-    // If report has been created
-    else if (!oldReport && event.party_report) {
-      let { res, err } = await to(
-        createPartyReport(prisma, event.party_report),
-      );
-      if (err || !res) {
-        if (!(err instanceof Error)) {
-          return err;
-        }
-        console.log(err);
-        return {
-          sv: "Kunde inte skapa aktivitetsanmälan",
-          en: "Failed to create party report",
-        };
-      }
-      event.party_report_id = res;
-    }
-    // If the party report has been updated
-    else if (
-      !equal(oldReport, { ...event.party_report, id: oldReport?.id }) &&
-      oldReport &&
-      event.party_report
-    ) {
-      event.party_report.id = oldReport.id;
-      event.party_report.status = oldReport.status;
-      const err = await editPartyReport(prisma, event.party_report);
-
-      if (err) {
-        return err;
-      }
-      event.party_report_id = oldReport.id;
-    }
-  }
   // Updates event in the database
   let res = await prisma.event.update({
     where: { id: event.id },
     data: toEvent(event),
   });
-
-  // Notifies VO
-  if (
-    oldReport &&
-    event.party_report_id === oldReport.id &&
-    oldReport.status === "ACCEPTED"
-  ) {
-    await eventUpdated(
-      <Event>{
-        ...old_event,
-        booking_terms: true,
-        start: formatDT(old_event.start),
-        end: formatDT(old_event.end),
-        created_at: formatDT(old_event.created_at),
-        updated_at: formatDT(old_event.updated_at),
-      },
-      event,
-    );
-  }
 
   if (!res) {
     return {
@@ -255,36 +169,10 @@ export const createEvent = async (
     return err;
   }
 
-  // Create party report
-  if (event.party_report) {
-    let { res, err } = await to(
-      createPartyReport(prisma, <party_report>event.party_report),
-    );
-    if (err || !res) {
-      // If prisma error create new error
-      if (!(err instanceof Error)) {
-        return err;
-      }
-      console.log(err);
-      return {
-        sv: "Misslyckades att skapa aktivitetsanmälan",
-        en: "Failed to create party report",
-      };
-    }
-    event.party_report_id = res;
-  }
-
   // Adds event in the database
   let res = await prisma.event.create({
     data: toEvent(event),
   });
-
-  if (res.party_report_id) {
-    await partyReportCreated({
-      ...event,
-      id: res.id,
-    });
-  }
 
   if (!res) {
     return {
@@ -318,14 +206,6 @@ export const deleteEvent = async (
       sv: "Du får ej radera denna bokning",
       en: "You may not delete this event",
     };
-  }
-
-  if (event.party_report_id) {
-    await prisma.party_report.delete({
-      where: {
-        id: event.party_report_id,
-      },
-    });
   }
 
   await prisma.event.delete({
