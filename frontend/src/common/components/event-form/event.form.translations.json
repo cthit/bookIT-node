@@ -6,7 +6,6 @@
   "start": ["Begins at", "Börjar"],
   "end": ["Ends at", "Slutar"],
   "description": ["Description", "Beskrivning"],
-  "isActivity": ["Submit party report", "Skapa aktivitetsanmäl"],
   "permit": ["Serving permit", "Serveringstillstånd"],
   "responsible_name": ["Event responsible name", "Arransvarigs namn"],
   "responsible_number": ["Event responsible phone", "Arransvarigs telefon"],

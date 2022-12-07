@@ -19,7 +19,6 @@ import {
   BookAs,
   GDPR,
 } from "./elements";
-import PartyReport from "./party-report.component";
 import UserContext from "../../contexts/user-context";
 import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
@@ -33,21 +32,6 @@ const regexStrings = {
   phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
   // eslint-disable-next-line
   email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-};
-
-const whenTrue = error => {
-  return {
-    is: true,
-    then: yup.string().nullable().required(error),
-    otherwise: yup.string().nullable(),
-  };
-};
-
-const whenTrueMatch = (regex, error) => {
-  return {
-    is: true,
-    then: yup.string().matches(regex, error),
-  };
 };
 
 const EventFrom = ({ onSubmit, initialValues }) => {
@@ -77,44 +61,9 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     description: yup.string(),
     start: yup.date().required(),
     end: yup.date().required(),
-    isActivity: yup.bool().required(),
     permit: yup.bool(),
-    responsible_name: yup
-      .string()
-      .when("isActivity", whenTrue(texts.name_required)),
-    responsible_number: yup
-      .string()
-      .when(
-        "isActivity",
-        whenTrueMatch(regexStrings.phone, texts.phone_invalid),
-      )
-      .when("isActivity", whenTrue(texts.phone_required)),
-    responsible_email: yup
-      .string()
-      .when(
-        "isActivity",
-        whenTrueMatch(regexStrings.email, texts.email_invalid),
-      )
-      .when("isActivity", whenTrue(texts.email_required)),
     booking_terms: yup.bool().isTrue().required(texts.booking_terms_required),
     gdpr: yup.bool().isTrue().required(texts.gdpr_required),
-    co_responsible_name: yup
-      .string()
-      .when("useCoResponsible", whenTrue(texts.name_required)),
-    co_responsible_number: yup
-      .string()
-      .when(
-        "useCoResponsible",
-        whenTrueMatch(regexStrings.phone, texts.phone_invalid),
-      )
-      .when("useCoResponsible", whenTrue(texts.phone_required)),
-    co_responsible_email: yup
-      .string()
-      .when(
-        "useCoResponsible",
-        whenTrueMatch(regexStrings.email, texts.email_invalid),
-      )
-      .when("useCoResponsible", whenTrue(texts.email_required)),
   });
 
   return (
@@ -151,8 +100,6 @@ const EventFrom = ({ onSubmit, initialValues }) => {
               </DigitLayout.Row>
               <Description label={texts.description} />
               <BookAs label={texts.booked_as} groups={user.groups} />
-
-              <PartyReport init={initialValues || {}} />
 
               <BookingTerms
                 preLinkLabel={texts.i_accept}
