@@ -43,9 +43,11 @@ const DetailedView = ({ event_id, onClose, onDelete, user }) => {
               </a>
             </>
           ),
-          room: res.room.map(r => (
-            <DigitText.Text text={ROOMS.find(e => e.value === r).text} />
-          )),
+          room: res.room
+            .sort()
+            .map(r => (
+              <DigitText.Text text={ROOMS.find(e => e.value === r).text} />
+            )),
         }),
       )
       .catch(() => {});

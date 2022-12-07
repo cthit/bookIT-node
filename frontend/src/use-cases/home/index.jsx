@@ -85,6 +85,7 @@ const Home = () => {
             end: new Date(Number(e.end)),
             editable: user.groups.includes(e.booked_as) || user.is_admin,
             durationEditable: false,
+            room: e.room.sort(),
           };
         }),
       ...illegalSlots.map(e => {
