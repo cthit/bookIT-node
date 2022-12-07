@@ -61,7 +61,6 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     description: yup.string(),
     start: yup.date().required(),
     end: yup.date().required(),
-    permit: yup.bool(),
     booking_terms: yup.bool().isTrue().required(texts.booking_terms_required),
     gdpr: yup.bool().isTrue().required(texts.gdpr_required),
   });
@@ -147,15 +146,6 @@ EventFrom.propTypes = {
     start: propTypes.objectOf(Date),
     end: propTypes.objectOf(Date),
     description: propTypes.string,
-    isActivity: propTypes.bool,
-    permit: propTypes.bool,
-    responsible_name: propTypes.string,
-    responsible_number: propTypes.string,
-    responsible_email: propTypes.string,
-    useCoResponsible: propTypes.bool,
-    co_responsible_name: propTypes.string,
-    co_responsible_number: propTypes.string,
-    co_responsible_email: propTypes.string,
     booked_as: propTypes.string,
   }),
 };

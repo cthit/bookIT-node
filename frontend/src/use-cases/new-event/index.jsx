@@ -57,11 +57,6 @@ const NewReservation = ({
     start: state ? state.start : default_begin_date,
     end: state ? state.end : default_end_date,
     description: "",
-    isActivity: false,
-    permit: false,
-    responsible_name: "",
-    responsible_number: "",
-    responsible_email: "",
     booked_as: "",
   };
 
