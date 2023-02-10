@@ -1,0 +1,20 @@
+type APIKey {
+  id: String
+  name: String!
+  description: String
+  key: String
+}
+
+input InputAPIKey {
+  name: String!
+  description: String
+}
+
+type Query {
+  api_keys: [APIKey]
+}
+
+type Mutation {
+  createAPIKey(api_key: InputAPIKey): APIKey
+  deleteAPIKey(id: String): Error
+}

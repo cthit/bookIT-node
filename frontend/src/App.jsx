@@ -9,6 +9,7 @@ import NewReservation from "./use-cases/new-event";
 import Rules from "./use-cases/rules";
 import Callback from "./use-cases/auth";
 import EditEvent from "./use-cases/edit-event";
+import APIKeys from "./use-cases/api-keys";
 
 const API = () => {
   useEffect(() => {
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/edit-event" component={EditEvent} />
           <Route path="/rules" component={Rules} />
           <Route path="/auth/callback" component={Callback} />
+          <Route path="/api-keys" component={APIKeys} />
           <Route path="/api" component={API} />
           <Route path="/" component={() => <h1>Page not found</h1>} />
         </Switch>

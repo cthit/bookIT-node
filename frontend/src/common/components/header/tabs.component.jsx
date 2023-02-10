@@ -1,17 +1,23 @@
 import { DigitTabs } from "@cthit/react-digit-components";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import { useDigitTranslations } from "@cthit/react-digit-components";
 import translations from "./tabs.translations.json";
+import UserContext from "../../contexts/user-context";
 
 const tabs = [
   {
-    text: "Calendar",
+    id: "calendar",
     value: "",
   },
   {
-    text: "Rules",
+    id: "rules",
     value: "rules",
+  },
+  {
+    id: "api-keys",
+    value: "api-keys",
+    require_admin_access: true,
   },
 ];
 
@@ -19,6 +25,7 @@ const Tabs = () => {
   const [activeTab, setActiveTab] = useState("");
   const history = useHistory();
   const [texts] = useDigitTranslations(translations);
+  const [user] = useContext(UserContext);
 
   useEffect(() => {
     const value = window.location.pathname.split("/")[1];
@@ -37,7 +44,9 @@ const Tabs = () => {
       centered
       selected={activeTab}
       fullwidth
-      tabs={tabs.map(t => ({ ...t, text: texts[t.text] }))}
+      tabs={tabs
+        .filter(t => (t.require_admin_access ? user.is_admin : true))
+        .map(t => ({ ...t, text: texts[t.id] }))}
     />
   );
 };

@@ -13,6 +13,9 @@ import {
   editEvent_query,
   deleteEvent_query,
   getIllegalSlots_query,
+  create_api_key_query,
+  get_api_keys_query,
+  delete_api_key_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -164,6 +167,40 @@ export const getIllegalSlots = (from, to) =>
     "illegalSlots",
     "Failed to fetch illegal slots",
     () => [],
+  );
+
+export const createAPIKey = api_key =>
+  request(
+    {
+      query: create_api_key_query,
+      variables: { api_key },
+      operationName: "CreateAPIKey",
+    },
+    "createAPIKey",
+    "Failed to create API key",
+    () => {},
+  );
+
+export const getAPIKeys = () =>
+  request(
+    {
+      query: get_api_keys_query,
+    },
+    "api_keys",
+    "Unable to fetch API-keys",
+    () => [],
+  );
+
+export const deleteAPIKey = id =>
+  request(
+    {
+      query: delete_api_key_query,
+      variables: { id },
+      operationName: "DeleteAPIKey",
+    },
+    "deleteAPIKey",
+    "Unable to delete API key",
+    () => {},
   );
 
 export const getUser = () =>

@@ -1,4 +1,5 @@
 {
-  "Calendar": ["Calendar", "Kalender"],
-  "Rules": ["Rules", "Regler"]
+  "calendar": ["Calendar", "Kalender"],
+  "rules": ["Rules", "Regler"],
+  "api-keys": ["API Keys", "API Nycklar"]
 }

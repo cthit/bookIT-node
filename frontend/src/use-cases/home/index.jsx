@@ -156,6 +156,7 @@ const Home = () => {
       >
         {ROOMS.map(r => (
           <div
+            key={r.text}
             className="chip"
             style={{
               backgroundColor: filters.includes(r.value) ? r.color : "gray",

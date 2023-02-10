@@ -148,3 +148,33 @@ mutation SetStatus($status: InputStatus!) {
   }
 }
 `;
+
+export const get_api_keys_query = `
+{
+  api_keys {
+    id
+    name
+    description
+  }
+}
+`;
+
+export const create_api_key_query = `
+mutation CreateAPIKey($api_key: APIKey!) {
+  createAPIKey(api_key: $api_key) {
+    id
+    name
+    description
+    key
+  }
+}
+`;
+
+export const delete_api_key_query = `
+mutation DeleteAPIKey($id: String!) {
+  deleteAPIKey(id: $id) {
+    sv
+    en
+  }
+}
+`;
