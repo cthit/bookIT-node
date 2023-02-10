@@ -26,7 +26,7 @@ const formatRule = r => ({
   _time: `${r.start_time}-${r.end_time}`,
   start_date: formatDate(Number(r.start_date)),
   end_date: formatDate(Number(r.end_date)),
-  _room: <Rooms rooms={r.room} />,
+  _room: <Rooms rooms={r.room.sort()} />,
   _day_mask: <DayMask day_mask={r.day_mask} />,
   _allow: r.allow ? <CheckIcon /> : <CancelIcon />,
   created_at: formatDT(r.created_at),

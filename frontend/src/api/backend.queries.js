@@ -33,16 +33,6 @@ query GetFullEvent($id: String) {
     end
     description
     title
-    party_report {
-      id
-      responsible_name
-      responsible_email
-      responsible_number
-      co_responsible_name
-      co_responsible_email
-      co_responsible_number
-      serving_permit
-    }
     room
     phone
     booked_as
@@ -128,47 +118,6 @@ export const getUser_query = `
     groups
     is_admin
     language
-  }
-}
-`;
-
-export const getPartyReports_query = `
-{
-	party_events {
-    id
-    start
-    end
-    title
-    created_at
-    party_report {
-      status
-    }
-  }
-}
-`;
-
-export const getPartyReport_query = `
-query GetEvent($id: String) {
-  event(id: $id) {
-    id
-    start
-    end
-    description
-    title
-    created_at
-    phone
-    room
-    party_report {
-      id
-      status
-      responsible_name
-      responsible_number
-      responsible_email
-      co_responsible_name
-      co_responsible_number
-      co_responsible_email
-      serving_permit
-    }
   }
 }
 `;

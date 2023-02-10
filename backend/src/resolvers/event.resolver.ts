@@ -1,4 +1,3 @@
-import { to } from "../utils";
 import { Tools } from "../utils/commonTypes";
 import { Event } from "../models/event";
 import { User } from "../models/user";
@@ -19,15 +18,6 @@ export const getEventQResolvers = ({ prisma }: Tools) => ({
   event: async (_: any, { id }: { id: string }) => {
     return await prisma.event.findFirst({
       where: { id: id },
-    });
-  },
-  party_events: async (_: any, __: any, { user }: { user: User }) => {
-    if (!user.is_admin) {
-      return [];
-    }
-
-    return await prisma.event.findMany({
-      where: { party_report_id: { not: null } },
     });
   },
 });

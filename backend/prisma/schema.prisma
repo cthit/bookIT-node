@@ -9,7 +9,6 @@ datasource db {
 
 model event {
   id              String        @id @default(uuid()) @db.Uuid
-  party_report_id String?       @db.Uuid
   phone           String
   title           String
   description     String?
@@ -20,20 +19,6 @@ model event {
   room            String[]
   booked_by       String
   booked_as       String
-  party_report    party_report? @relation(fields: [party_report_id], references: [id], onDelete: SetNull, onUpdate: NoAction)
-}
-
-model party_report {
-  id                    String   @id @default(uuid()) @db.Uuid
-  responsible_name      String
-  responsible_number    String
-  responsible_email     String
-  co_responsible_name   String?
-  co_responsible_number String?
-  co_responsible_email  String?
-  serving_permit        Boolean? @default(false)
-  status                String?  @default("PENDING")
-  event                 event[]
 }
 
 enum room {
