@@ -31,7 +31,7 @@ sparas tills vidare.\n\
 Du har rätt att få tillbaka och att radera din persondata som sparas av IT, och att \
 klaga till Integritetsskyddsmyndigheten om du är missnöjd av hur din data hanteras. \
 Om du har någon fråga om GDPR kan du kontakta styrelsen för IT (styrIT) via \
-styrit@chalmers.it, eller de som under håller denna sida, digIT, via digit@chalmers.it.",
+styrit@chalmers.it, eller de som underhåller denna sida, digIT, via digit@chalmers.it.",
 };
 
 export default GDPRAgreement;
