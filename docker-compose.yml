@@ -15,14 +15,6 @@ services:
     ports:
       - 6379:6379
 
-  gotify:
-    image: cthit/gotify
-    environment:
-      GOTIFY_PRE-SHARED-KEY: 123abc
-      GOTIFY_MOCK-MODE: "true"
-    ports:
-      - 1337:8080
-
   db-scripts: # Deletes personal data from database
     build:
       context: ./db-scripts

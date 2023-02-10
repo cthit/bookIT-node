@@ -6,7 +6,6 @@ type Event {
   title: String!
   created_at: String
   updated_at: String
-  party_report: PartyReport
   room: [Room]!
   phone: String!
   booked_as: String!
@@ -17,7 +16,6 @@ type Query {
   events: [Event]
   event(id: String): Event
   eventsFT(from: String!, to: String!): [Event]
-  party_events: [Event]
 }
 
 input InputEvent {
@@ -28,7 +26,6 @@ input InputEvent {
   title: String!
   created_at: String
   updated_at: String
-  party_report: InputPartyReport
   room: [Room]!
   phone: String!
   booked_as: String!

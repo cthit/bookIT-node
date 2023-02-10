@@ -12,21 +12,9 @@ import { formatDT } from "../../utils/utils.js";
 import { editEvent } from "../../api/backend.api";
 import transitions from "./edit-event.translations.json";
 
-const isCoResponsible = party_report => {
-  return (
-    party_report?.co_responsible_name !== null &&
-    party_report?.co_responsible_number !== null &&
-    party_report?.co_responsible_email !== null
-  );
-};
-
 const formatEvent = event => {
   return {
     ...event,
-    ...event.party_report,
-    isActivity: event.party_report !== null,
-    useCoResponsible:
-      event.party_report !== null ? isCoResponsible(event.party_report) : false,
     start: new Date(Number(event.start)),
     end: new Date(Number(event.end)),
     booking_terms: true,
@@ -65,23 +53,6 @@ const EditEvent = () => {
       end: formatDT(event_.end),
       description: event_.description,
       booked_as: event_.booked_as,
-      party_report: !event_.isActivity
-        ? null
-        : {
-            responsible_name: event_.responsible_name,
-            responsible_number: event_.responsible_number,
-            responsible_email: event_.responsible_email,
-            co_responsible_name: event_.useCoResponsible
-              ? event_.co_responsible_name
-              : null,
-            co_responsible_number: event_.useCoResponsible
-              ? event_.co_responsible_number
-              : null,
-            co_responsible_email: event_.useCoResponsible
-              ? event_.co_responsible_email
-              : null,
-            serving_permit: event_.serving_permit,
-          },
       booking_terms: event_.booking_terms,
     });
     if (res === null) {

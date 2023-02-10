@@ -33,23 +33,6 @@ const NewReservation = ({
       end: formatDT(event.end),
       description: event.description,
       booked_as: event.booked_as,
-      party_report: event.isActivity
-        ? {
-            responsible_name: event.responsible_name,
-            responsible_number: event.responsible_number,
-            responsible_email: event.responsible_email,
-            serving_permit: event.permit,
-            co_responsible_name: event.useCoResponsible
-              ? event.co_responsible_name
-              : null,
-            co_responsible_number: event.useCoResponsible
-              ? event.co_responsible_number
-              : null,
-            co_responsible_email: event.useCoResponsible
-              ? event.co_responsible_email
-              : null,
-          }
-        : null,
       booking_terms: event.booking_terms,
     });
     if (res === null) {
@@ -74,11 +57,6 @@ const NewReservation = ({
     start: state ? state.start : default_begin_date,
     end: state ? state.end : default_end_date,
     description: "",
-    isActivity: false,
-    permit: false,
-    responsible_name: "",
-    responsible_number: "",
-    responsible_email: "",
     booked_as: "",
   };
 

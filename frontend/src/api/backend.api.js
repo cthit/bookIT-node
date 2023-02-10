@@ -6,16 +6,13 @@ import {
   getRules_query,
   getRule_query,
   createRule_query,
-  getPartyReports_query,
   deleteRule_query,
   getUser_query,
-  getPartyReport_query,
   getEvent_query,
   getFullEvent_query,
   editEvent_query,
   deleteEvent_query,
   getIllegalSlots_query,
-  set_report_status_query,
 } from "./backend.queries";
 
 const graphql_endpoint = "/api/graphql/v1";
@@ -167,43 +164,6 @@ export const getIllegalSlots = (from, to) =>
     "illegalSlots",
     "Failed to fetch illegal slots",
     () => [],
-  );
-
-export const getPartyReports = () =>
-  request(
-    {
-      query: getPartyReports_query,
-    },
-    "party_events",
-    "Failed to fetch party reports",
-    () => [],
-  );
-
-export const getPartyReport = id =>
-  request(
-    {
-      query: getPartyReport_query,
-      variables: { id: id },
-      operationName: "GetEvent",
-    },
-    "event",
-    "Unable to fetch event with party report",
-    () => {},
-  );
-
-export const setPartyReportStatus = (id, status) =>
-  request(
-    {
-      query: set_report_status_query,
-      variables: { status: { id, status } },
-      operationName: "SetStatus",
-    },
-    "set_report_status",
-    "Unable to set status of party report",
-    err => ({
-      sv: "Error: Misslyckades att ändra status",
-      err: "Error: Failed to set status",
-    }),
   );
 
 export const getUser = () =>

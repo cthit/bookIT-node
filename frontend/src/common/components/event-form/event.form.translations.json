@@ -6,15 +6,6 @@
   "start": ["Begins at", "Börjar"],
   "end": ["Ends at", "Slutar"],
   "description": ["Description", "Beskrivning"],
-  "isActivity": ["Submit party report", "Skapa aktivitetsanmäl"],
-  "permit": ["Serving permit", "Serveringstillstånd"],
-  "responsible_name": ["Event responsible name", "Arransvarigs namn"],
-  "responsible_number": ["Event responsible phone", "Arransvarigs telefon"],
-  "responsible_email": ["Event responsible e-mail", "Arransvarigs e-post"],
-  "use_co_responsible": ["Add co-responsible", "Lägg till medansvarig"],
-  "co_responsible_name": ["Co-responsible name", "Medansvarigs namn"],
-  "co_responsible_number": ["Co-responsible phone", "Medansvarigs telefon"],
-  "co_responsible_email": ["Co-responsible e-mail", "Medansvarigs e-post"],
   "booked_as": ["Booking as", "Bokas som"],
   "new_event_created": ["A new event was created", "Ett nytt event skapades"],
   "booking_terms": ["booking terms and conditions", "bokningsvilkoren"],
@@ -29,10 +20,6 @@
     "Du måste ange en title för bokningen"
   ],
   "name_required": ["You need to provide a name", "Du måste ange ett namn"],
-  "email_required": [
-    "You need to provide an e-mail",
-    "Du måste ange en e-post"
-  ],
   "phone_required": [
     "You need to provide a phone number",
     "Du måste ange ett telefonnummer"
@@ -40,10 +27,6 @@
   "phone_invalid": [
     "Illegal characters or faulty formatting of phone number",
     "Ogiltigt format på telefonnummer"
-  ],
-  "email_invalid": [
-    "Illegal characters or faulty formatting of e-mail",
-    "Ogiltigt format på e-post"
   ],
   "room_required": [
     "You need to select at least one room",
