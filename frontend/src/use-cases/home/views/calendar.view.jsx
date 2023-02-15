@@ -15,6 +15,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
   onSelect = onSelect ?? (() => {});
 
   const [, activeLanguage] = useDigitTranslations({});
+  const calculatedScreenHeight = window.screen.height - 400;
 
   return (
     <FullCallendar
@@ -53,7 +54,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
       ]}
       initialView={window.innerWidth > 600 ? "timeGridWeek" : "timeGridDay"}
       eventOverlap
-      height={window.innerWidth > 600 ? "100%" : "auto"}
+      height={window.innerWidth > 600 ? calculatedScreenHeight + "px" : "auto"}
       scrollTime={"17:00:00"}
       scrollTimeReset={false}
       events={getEvents}
