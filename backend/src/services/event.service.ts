@@ -38,6 +38,12 @@ const validEvent = async (
     };
   }
 
+  if (event.booked_as == event.booked_by && event.room.includes("BIG_HUB")) {
+    return {
+      sv: "Storhubben får inte bokas som privatperson",
+      en: "The big hub cannot be booked as a private person",
+    };
+  }
   if (event.room.length <= 0) {
     return {
       sv: "Inget rum specificerat",

@@ -38,6 +38,7 @@ export const init = (pass: passport.PassportStatic) => {
       const groups = profile.groups
         .filter(g => g.superGroup.type != "ALUMNI")
         .map(g => g.superGroup.name);
+        groups.push(profile.cid);
       cb(
         null,
         {
