@@ -7,6 +7,8 @@ A booking service for the Chalmers Software Engineering Student Division (IT)
 ## Contributors
 
 - [@molleer](https://github.com/molleer/) David 'Mölle' Möller
+- [@x183](https://github.com/molleer/) Oscar 'saxen' Palm
+- [@molleer](https://github.com/molleer/) Felix 'sonic' Bjerhem Aronsson
 
 ## Requirements
 
