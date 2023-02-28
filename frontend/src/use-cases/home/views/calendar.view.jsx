@@ -8,6 +8,7 @@ import svLocale from "@fullcalendar/core/locales/sv";
 import enLocale from "@fullcalendar/core/locales/en-gb";
 import { useDigitTranslations } from "@cthit/react-digit-components";
 import "./calendar-view.css";
+import useHeight from "../../../common/hooks/change-calendar-size";
 
 const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));
@@ -15,7 +16,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
   onSelect = onSelect ?? (() => {});
 
   const [, activeLanguage] = useDigitTranslations({});
-  const calculatedScreenHeight = window.screen.height - 400;
+  const calculatedScreenHeight = useHeight().height - 200;
 
   return (
     <FullCallendar
