@@ -44,6 +44,22 @@ export const dayApplies = (date: Date, day_mask: number): boolean => {
   return (day_mask >> dayIndex) % 2 > 0;
 };
 
+const insertRule = (
+  explicitRules: ExplicitRule[],
+  current: Date,
+  rule: rule,
+): void => {
+  explicitRules.push({
+    start: new Date(day(current) + "T" + rule.start_time),
+    end: new Date(day(current) + "T" + rule.end_time),
+    ...rule,
+  });
+};
+
+const hasReachedEndOrTo = (current: Date, end: Date, to: Date): boolean => {
+  return sameDay(current, to) || sameDay(current, end);
+};
+
 /**
  * Creates a list of explicit rules where each rule apply, i.e., a list of
  * rules that apply to a specific time slot.
@@ -54,62 +70,81 @@ export const toExplicitRules = (
   to: Date,
 ): ExplicitRule[] => {
   const explicitRules: ExplicitRule[] = [];
-  var current = new Date(from);
 
   for (const rule_i in rules) {
+    var current = new Date(from);
     const end = new Date(rules[rule_i].end_date);
     while (true) {
-      if (dayApplies(current, rules[rule_i].day_mask))
-        explicitRules.push({
-          start: new Date(day(current) + "T" + rules[rule_i].start_time),
-          end: new Date(day(current) + "T" + rules[rule_i].end_time),
-          ...rules[rule_i],
-        });
-      if (!sameDay(current, to) && !sameDay(current, end)) {
-        current = new Date(current.getTime() + MILLISECONDS_24H);
-      } else {
+      if (dayApplies(current, rules[rule_i].day_mask)) {
+        insertRule(explicitRules, current, rules[rule_i]);
+      }
+      if (hasReachedEndOrTo(current, end, to)) {
         break;
       }
+      current = new Date(current.getTime() + MILLISECONDS_24H);
     }
   }
   return explicitRules.sort((a, b): number => a.priority - b.priority);
 };
 
+/**
+ * Returns a list of explicit rules that apply to the given event.
+ * If the rule to be inserted overlaps with the next rule in the list,
+ * the rule is split into two rules. The first rule is inserted into the list
+ * and the second rule is inserted into the list recursively.
+ */
+const mergeIntoList = (
+  rule: ExplicitRule,
+  [nextMergedRule, ...mergedRules]: ExplicitRule[],
+): ExplicitRule[] => {
+  if (rule.start >= rule.end) return [];
+  if (nextMergedRule == undefined) return [rule];
+  if (nextMergedRule.start > rule.start) {
+    if (nextMergedRule.start >= rule.end) {
+      return [rule, nextMergedRule, ...mergedRules];
+    }
+    return [
+      { ...rule, end: new Date(nextMergedRule.start) },
+      ...mergeIntoList({ ...rule, start: new Date(nextMergedRule.end) }, [
+        nextMergedRule,
+        ...mergedRules,
+      ]),
+    ];
+  }
+  if (nextMergedRule.end > rule.start)
+    return [
+      nextMergedRule,
+      ...mergeIntoList({ ...rule, start: nextMergedRule.end }, mergedRules),
+    ];
+  return [nextMergedRule, ...mergeIntoList(rule, mergedRules)];
+};
+
 export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
   var mergedRules: ExplicitRule[] = [];
-  const insert = (
-    rule: ExplicitRule,
-    [x, ...xs]: ExplicitRule[],
-  ): ExplicitRule[] => {
-    if (rule.start >= rule.end) return [];
-    if (x == undefined) return [rule];
-    if (x.start > rule.start) {
-      if (x.start >= rule.end) return [rule, x, ...xs];
-      return [
-        { ...rule, end: new Date(x.start) },
-        ...insert({ ...rule, start: new Date(x.end) }, [x, ...xs]),
-      ];
-    }
-    if (x.end > rule.start)
-      return [x, ...insert({ ...rule, start: x.end }, xs)];
-    return [x, ...insert(rule, xs)];
-  };
   for (const i in rules) {
-    mergedRules = insert(rules[i], mergedRules);
+    mergedRules = mergeIntoList(rules[i], mergedRules);
   }
   return mergedRules;
+};
+
+const breaksExplicitRule = (rule: ExplicitRule, event: Event): boolean => {
+  const start = new Date(event.start);
+  const end = new Date(event.end);
+  return rule.start < end && rule.end > start && !rule.allow;
 };
 
 const doesObeyRules = (rules: rule[], event: Event): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
-  var mr: ExplicitRule[] = mergeRules(toExplicitRules(rules, start, end));
-  for (const i in mr) {
-    if (mr[i].start < end && mr[i].end > start && !mr[i].allow) {
+  var explicitRules: ExplicitRule[] = mergeRules(
+    toExplicitRules(rules, start, end),
+  );
+  for (const i in explicitRules) {
+    if (breaksExplicitRule(explicitRules[i], event)) {
       return {
-        sv: "Bokning bryter regel: " + mr[i].title,
-        en: "Booking breaks rule: " + mr[i].title,
+        sv: "Bokning bryter regel: " + explicitRules[i].title,
+        en: "Booking breaks rule: " + explicitRules[i].title,
       };
     }
   }
@@ -150,18 +185,24 @@ export const checkRules = async (prisma: PrismaClient, event: Event) => {
   return doesObeyRules(rules, event);
 };
 
+const validDate = (start: Date, end: Date): boolean => {
+  return start.getTime() > 0 && end.getTime() > 0 && start < end;
+};
+
 export const createRule = async (
   prisma: PrismaClient,
   rule: Rule,
   user: User,
 ): Promise<Error | null> => {
-  let error = await allowedToModifyRule(prisma, rule, user);
-  if (error) {
-    return error;
+  if (!user.is_admin) {
+    return {
+      sv: "Du har inte behörighet att skapa regler",
+      en: "You do not have permission to create rules",
+    };
   }
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
-  if (!start.valueOf() || !end.valueOf() || start >= end) {
+  if (!validDate(start, end)) {
     return {
       sv: "Ogiltigt datum",
       en: "Invalid date",
@@ -172,7 +213,7 @@ export const createRule = async (
 
   const start_time = new Date(rule.start_date + "T" + rule.start_time);
   const end_time = new Date(rule.start_date + "T" + rule.end_time);
-  if (!start_time.valueOf() || !end_time.valueOf() || start_time >= end_time) {
+  if (!validDate(start_time, end_time)) {
     return {
       sv: "Ogiltig tid",
       en: "Invalid time",
@@ -209,11 +250,14 @@ export const deleteRule = async (
       en: "Could not find rule",
     };
   }
-  let error = await allowedToModifyRule(prisma, rule, user);
-  if (error) {
-    return error;
+
+  if (!user.is_admin) {
+    return {
+      sv: "Du har inte behörighet att radera regler",
+      en: "You do not have permission to delete rules",
+    };
   }
-  const { err, res } = await to(
+  const { err } = await to(
     prisma.rule.delete({
       where: {
         id: id,
@@ -225,21 +269,6 @@ export const deleteRule = async (
     return {
       sv: "Kunde inte ta bort regel",
       en: "Could not delete rule",
-    };
-  }
-  return null;
-};
-
-const allowedToModifyRule = async (
-  prisma: PrismaClient,
-  rule: Rule | dbRule,
-
-  { groups, is_admin }: User,
-): Promise<Error | null> => {
-  if (!is_admin && !groups.includes("prit")) {
-    return {
-      sv: "Du har inte behörighet att skapa regler",
-      en: "You do not have permission to create rules",
     };
   }
   return null;

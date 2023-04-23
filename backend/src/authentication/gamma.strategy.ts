@@ -15,8 +15,13 @@ const isAdmin = (authorities: Authority[], groups: String[]): boolean => {
   if (process.env.MOCK && groups.includes("superadmin")) {
     return true;
   }
+
+  if (groups.includes("prit")) {
+    return true;
+  }
+
   for (const i in authorities) {
-    if (authorities[i].authority == process.env.ADMIN_AUTHORITY || groups.includes("prit")) {
+    if (authorities[i].authority == process.env.ADMIN_AUTHORITY) {
       return true;
     }
   }
@@ -38,7 +43,7 @@ export const init = (pass: passport.PassportStatic) => {
       const groups = profile.groups
         .filter(g => g.superGroup.type != "ALUMNI")
         .map(g => g.superGroup.name);
-        groups.push(profile.cid);
+      groups.push(profile.cid);
       cb(
         null,
         {
