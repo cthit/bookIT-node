@@ -24,8 +24,7 @@
     "express-session": "^1.17.2",
     "graphql": "^15.5.1",
     "js-base64": "^3.6.1",
-    "passport": "^0.4.1",
-    "passport-gamma": "^0.0.6",
+    "passport": "^0.6.0",
     "qs": "^6.10.1",
     "redis": "^3.1.2",
     "ts-node": "^10.2.0"

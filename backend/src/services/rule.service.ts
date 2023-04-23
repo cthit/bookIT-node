@@ -3,9 +3,12 @@ import { to } from "../utils";
 import { PrismaClient, rule } from "@prisma/client";
 import { dbRule } from "../models/rule";
 
-const ms_24H = 86400000; // == 1000 * 60 * 60 * 24
+const MILLISECONDS_24H = 86400000; // == 1000 * 60 * 60 * 24
 
-export interface MiniRule {
+/**
+ * A single rule that applies to a specific time slot
+ */
+export interface ExplicitRule {
   start: Date;
   end: Date;
   title: string;
@@ -42,37 +45,42 @@ export const dayApplies = (date: Date, day_mask: number): boolean => {
 };
 
 /**
- * Creates a list of time slots where each rule apply
+ * Creates a list of explicit rules where each rule apply, i.e., a list of
+ * rules that apply to a specific time slot.
  */
-export const toMiniRules = (
+export const toExplicitRules = (
   rules: rule[],
   from: Date,
   to: Date,
-): MiniRule[] => {
-  const miniRules: MiniRule[] = [];
+): ExplicitRule[] => {
+  const explicitRules: ExplicitRule[] = [];
+  var current = new Date(from);
+
   for (const rule_i in rules) {
-    var current = new Date(from);
     const end = new Date(rules[rule_i].end_date);
     while (true) {
       if (dayApplies(current, rules[rule_i].day_mask))
-        miniRules.push({
+        explicitRules.push({
           start: new Date(day(current) + "T" + rules[rule_i].start_time),
           end: new Date(day(current) + "T" + rules[rule_i].end_time),
           ...rules[rule_i],
         });
       if (!sameDay(current, to) && !sameDay(current, end)) {
-        current = new Date(current.getTime() + ms_24H);
+        current = new Date(current.getTime() + MILLISECONDS_24H);
       } else {
         break;
       }
     }
   }
-  return miniRules.sort((a, b): number => a.priority - b.priority);
+  return explicitRules.sort((a, b): number => a.priority - b.priority);
 };
 
-export const mergeRules = (rules: MiniRule[]): MiniRule[] => {
-  var mergedRules: MiniRule[] = [];
-  const insert = (rule: MiniRule, [x, ...xs]: MiniRule[]): MiniRule[] => {
+export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
+  var mergedRules: ExplicitRule[] = [];
+  const insert = (
+    rule: ExplicitRule,
+    [x, ...xs]: ExplicitRule[],
+  ): ExplicitRule[] => {
     if (rule.start >= rule.end) return [];
     if (x == undefined) return [rule];
     if (x.start > rule.start) {
@@ -96,7 +104,7 @@ const doesObeyRules = (rules: rule[], event: Event): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
-  var mr: MiniRule[] = mergeRules(toMiniRules(rules, start, end));
+  var mr: ExplicitRule[] = mergeRules(toExplicitRules(rules, start, end));
   for (const i in mr) {
     if (mr[i].start < end && mr[i].end > start && !mr[i].allow) {
       return {
