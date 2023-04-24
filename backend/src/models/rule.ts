@@ -1,4 +1,4 @@
-import { Room } from "./room";
+import { room } from "@prisma/client";
 
 export interface Rule {
   id: string;
@@ -13,7 +13,7 @@ export interface Rule {
   title: string;
   created_at: string;
   updated_at: string;
-  room: Room[];
+  room: room[];
 }
 export interface dbRule {
   id: string;
@@ -28,5 +28,5 @@ export interface dbRule {
   title: string;
   created_at: Date;
   updated_at: Date;
-  room: Room[];
+  room: room[];
 }

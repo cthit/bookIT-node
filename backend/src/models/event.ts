@@ -1,4 +1,4 @@
-import { Room } from "./room";
+import { room } from "@prisma/client";
 
 export interface Event {
   id: string | null;
@@ -8,7 +8,7 @@ export interface Event {
   title: string;
   created_at: string;
   updated_at: string;
-  room: Room[];
+  room: room[];
   phone: string;
   booked_by: string;
   booked_as: string;

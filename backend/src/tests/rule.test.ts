@@ -1,7 +1,7 @@
 import assert from "assert";
 import {
-  toMiniRules,
-  MiniRule,
+  toExplicitRules,
+  ExplicitRule,
   day,
   dayApplies,
   mergeRules,
@@ -24,7 +24,7 @@ const defaultRule: rule = {
   room: [],
 };
 
-const defaultMiniRule: MiniRule = {
+const defaultExplicitRules: ExplicitRule = {
   ...defaultRule,
   start: new Date(),
   end: new Date(),
@@ -96,53 +96,53 @@ describe("Rule utility functions", () => {
   });
 });
 
-const assertMiniRuleEqual = (exp: MiniRule, got: MiniRule) => {
+const assertExplicitRuleEqual = (exp: ExplicitRule, got: ExplicitRule) => {
   assert.equal(got.start.toISOString(), exp.start.toISOString());
   assert.equal(got.description, exp.description);
   assert.equal(got.allow, exp.allow);
 };
 
-describe("Rules to MiniRules", () => {
+describe("Rules to ExplicitRules", () => {
   it("Should create one mini rule", () => {
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
-        ...defaultMiniRule,
+        ...defaultExplicitRules,
         start: new Date("2021-08-20T08:00"),
         end: new Date("2021-08-20T17:00"),
       },
     ];
-    const got: MiniRule[] = toMiniRules(
+    const got: ExplicitRule[] = toExplicitRules(
       [dummyRules[0]],
       new Date("2021-08-20"),
       new Date("2021-08-20"),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(got[0], expected[0]);
+    assertExplicitRuleEqual(got[0], expected[0]);
   });
   it("Should create two mini rules", () => {
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
-        ...defaultMiniRule,
+        ...defaultExplicitRules,
         start: new Date("2021-08-19T08:00"),
         end: new Date("2021-08-20T17:00"),
       },
       {
-        ...defaultMiniRule,
+        ...defaultExplicitRules,
         start: new Date("2021-08-20T08:00"),
         end: new Date("2021-08-20T17:00"),
       },
     ];
-    const got: MiniRule[] = toMiniRules(
+    const got: ExplicitRule[] = toExplicitRules(
       [dummyRules[0]],
       new Date("2021-08-19"),
       new Date("2021-08-20"),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(got[0], expected[0]);
-    assertMiniRuleEqual(got[1], expected[1]);
+    assertExplicitRuleEqual(got[0], expected[0]);
+    assertExplicitRuleEqual(got[1], expected[1]);
   });
   it("Should create two mini rules, one masked out", () => {
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
         ...dummyRules[1],
         start: new Date("2021-08-17T07:00"),
@@ -154,35 +154,35 @@ describe("Rules to MiniRules", () => {
         end: new Date("2021-08-18T17:00"),
       },
     ];
-    const got: MiniRule[] = toMiniRules(
+    const got: ExplicitRule[] = toExplicitRules(
       [dummyRules[0], dummyRules[1]],
       new Date("2021-08-17"),
       new Date("2021-08-18"),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(got[0], expected[0]);
-    assertMiniRuleEqual(got[1], expected[1]);
+    assertExplicitRuleEqual(got[0], expected[0]);
+    assertExplicitRuleEqual(got[1], expected[1]);
   });
 });
 
 describe("Merge rules", () => {
   it("No rules", () => {
-    const expected: MiniRule[] = [];
+    const expected: ExplicitRule[] = [];
     const got = mergeRules(
-      toMiniRules([], new Date("2021-08-18"), new Date("2021-08-20")),
+      toExplicitRules([], new Date("2021-08-18"), new Date("2021-08-20")),
     );
     assert.deepEqual(got, expected);
   });
   it("One rule", () => {
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
-        ...defaultMiniRule,
+        ...defaultExplicitRules,
         start: new Date("2021-08-20T08:00"),
         end: new Date("2021-08-20T17:00"),
       },
     ];
     const got = mergeRules(
-      toMiniRules(
+      toExplicitRules(
         [dummyRules[0]],
         new Date("2021-08-20"),
         new Date("2021-08-21"),
@@ -190,7 +190,7 @@ describe("Merge rules", () => {
     );
 
     assert.equal(expected.length, got.length);
-    assertMiniRuleEqual(expected[0], got[0]);
+    assertExplicitRuleEqual(expected[0], got[0]);
   });
   /**
    *  ---------
@@ -217,7 +217,7 @@ describe("Merge rules", () => {
         allow: true,
       },
     ];
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
         ...rules[1],
         start: new Date("2021-08-20T07:00"),
@@ -230,11 +230,11 @@ describe("Merge rules", () => {
       },
     ];
     const got = mergeRules(
-      toMiniRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
+      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(expected[0], got[0]);
-    assertMiniRuleEqual(expected[1], got[1]);
+    assertExplicitRuleEqual(expected[0], got[0]);
+    assertExplicitRuleEqual(expected[1], got[1]);
   });
   /**
    *  ---------
@@ -261,7 +261,7 @@ describe("Merge rules", () => {
         allow: true,
       },
     ];
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
         ...rules[0],
         start: new Date("2021-08-20T08:00"),
@@ -279,12 +279,12 @@ describe("Merge rules", () => {
       },
     ];
     const got = mergeRules(
-      toMiniRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
+      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(expected[0], got[0]);
-    assertMiniRuleEqual(expected[1], got[1]);
-    assertMiniRuleEqual(expected[2], got[2]);
+    assertExplicitRuleEqual(expected[0], got[0]);
+    assertExplicitRuleEqual(expected[1], got[1]);
+    assertExplicitRuleEqual(expected[2], got[2]);
   });
   /**
    *         ++++
@@ -321,7 +321,7 @@ describe("Merge rules", () => {
         allow: true,
       },
     ];
-    const expected: MiniRule[] = [
+    const expected: ExplicitRule[] = [
       {
         ...rules[0],
         start: new Date("2021-08-20T08:00"),
@@ -344,12 +344,12 @@ describe("Merge rules", () => {
       },
     ];
     const got = mergeRules(
-      toMiniRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
+      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
     );
     assert.equal(got.length, expected.length);
-    assertMiniRuleEqual(expected[0], got[0]);
-    assertMiniRuleEqual(expected[1], got[1]);
-    assertMiniRuleEqual(expected[2], got[2]);
-    assertMiniRuleEqual(expected[3], got[3]);
+    assertExplicitRuleEqual(expected[0], got[0]);
+    assertExplicitRuleEqual(expected[1], got[1]);
+    assertExplicitRuleEqual(expected[2], got[2]);
+    assertExplicitRuleEqual(expected[3], got[3]);
   });
 });
