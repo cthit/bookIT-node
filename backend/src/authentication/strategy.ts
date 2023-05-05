@@ -100,7 +100,7 @@ class Strategy extends passport.Strategy {
 
   _loadProfile(accessToken: string) {
     const self = this;
-    let done = (err: Error | null, profile: any, info: any) => {
+    const done = (err: Error | null, profile: any, info: any) => {
       if (err) {
         self.error(err);
         return;
@@ -112,7 +112,7 @@ class Strategy extends passport.Strategy {
       self.success(profile, undefined);
     };
 
-    let verify = (err: Error, user: any) => {
+    const verify = (err: Error, user: any) => {
       if (err) {
         self.error(err);
         return;
@@ -124,7 +124,7 @@ class Strategy extends passport.Strategy {
   }
 
   _redirectToLogin() {
-    let uri = new URL(this.options.authorizationURL);
+    const uri = new URL(this.options.authorizationURL);
     uri.searchParams.append("response_type", "code");
     uri.searchParams.append("client_id", this.options.clientID);
     uri.searchParams.append("redirect_uri", this.options.callbackURL);
