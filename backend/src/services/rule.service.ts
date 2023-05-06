@@ -72,7 +72,7 @@ export const toExplicitRules = (
   const explicitRules: ExplicitRule[] = [];
 
   for (const rule_i in rules) {
-    var current = new Date(from);
+    let current = new Date(from);
     const end = new Date(rules[rule_i].end_date);
     while (true) {
       if (dayApplies(current, rules[rule_i].day_mask)) {
@@ -120,7 +120,7 @@ const mergeIntoList = (
 };
 
 export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
-  var mergedRules: ExplicitRule[] = [];
+  let mergedRules: ExplicitRule[] = [];
   for (const i in rules) {
     mergedRules = mergeIntoList(rules[i], mergedRules);
   }
@@ -137,7 +137,7 @@ const doesObeyRules = (rules: rule[], event: Event): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
-  var explicitRules: ExplicitRule[] = mergeRules(
+  let explicitRules: ExplicitRule[] = mergeRules(
     toExplicitRules(rules, start, end),
   );
   for (const i in explicitRules) {

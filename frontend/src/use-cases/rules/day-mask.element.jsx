@@ -4,7 +4,7 @@ import "./day-mask.style.css";
 
 const dayArray = day_mask => {
   const days = [];
-  for (var i = 0; i < 7; i++) {
+  for (let i = 0; i < 7; i++) {
     days.push({ value: day_mask % 2, id: i });
     day_mask >>= 1;
   }
