@@ -37,6 +37,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
         hour12: false,
       }}
       dayHeaderFormat={"ddd DD/MM"}
+      views={{dayGridMonth: {dayHeaderFormat: "ddd"}}}
       rerenderDelay={1000}
       allDaySlot
       weekNumbers
