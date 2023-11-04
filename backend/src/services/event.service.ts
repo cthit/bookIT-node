@@ -1,7 +1,7 @@
+import { PrismaClient, event, room } from "@prisma/client";
+import { Error, User } from "../models";
 import { Event } from "../models/event";
 import { checkRules } from "./rule.service";
-import { User, Error } from "../models";
-import { PrismaClient, event, room } from "@prisma/client";
 
 /*
  * Events must end after they start
@@ -34,11 +34,12 @@ const bookedByIsSpecified = (event: Event) => {
 };
 
 /**
- * Big hub cannot be booked for a private event
+ * Big hub and The Cloud cannot be booked for a private event
  */
-const bookingBigHubAsPrivate = (event: Event) => {
+const bookingImportantAsPrivate = (event: Event) => {
   return (
-    event.booked_as == event.booked_by && event.room.includes(room.BIG_HUB)
+    event.booked_as == event.booked_by &&
+    (event.room.includes(room.BIG_HUB) || event.room.includes(room.THE_CLOUD))
   );
 };
 
@@ -118,12 +119,13 @@ const validEvent = async (
     };
   }
 
-  if (bookingBigHubAsPrivate(event)) {
+  if (bookingImportantAsPrivate(event)) {
     return {
-      sv: "Storhubben får inte bokas som privatperson",
-      en: "The big hub cannot be booked as a private person",
+      sv: "Storhubben och The Cloud får inte bokas som privatperson",
+      en: "The big hub and The Cloud cannot be booked as a private person",
     };
   }
+
   if (!roomSpecified(event)) {
     return {
       sv: "Inget rum specificerat",
