@@ -43,4 +43,4 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/cthit/bookIT-node-frontend:latest
+          tags: ghcr.io/cthit/bookit-node-frontend:latest

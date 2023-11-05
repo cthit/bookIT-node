@@ -43,4 +43,4 @@ jobs:
           context: ./backend
           file: ./backend/Dockerfile
           push: ${{ github.ref == 'refs/heads/main' }}
-          tags: ghcr.io/cthit/bookIT-node-backend:latest
+          tags: ghcr.io/cthit/bookit-node-backend:latest
