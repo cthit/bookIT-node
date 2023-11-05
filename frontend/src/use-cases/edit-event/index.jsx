@@ -19,6 +19,7 @@ const formatEvent = event => {
     end: new Date(Number(event.end)),
     booking_terms: true,
     gdpr: true,
+    cubsec: true,
   };
 };
 
