@@ -5,6 +5,7 @@ import Description from "./description.element";
 import Rooms from "./rooms.element";
 import BookAs from "./book-as.element";
 import GDPR from "./gdpr.element";
+import Cubsec from "./cubsec.element";
 
 export {
   Title,
@@ -14,4 +15,5 @@ export {
   Rooms,
   BookAs,
   GDPR,
+  Cubsec,
 };

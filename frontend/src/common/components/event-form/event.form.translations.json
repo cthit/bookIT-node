@@ -17,7 +17,7 @@
   "gdpr_agreement": ["GDPR agreement", "GDPR-avtalet"],
   "title_required": [
     "You need to provide a title for the event",
-    "Du måste ange en title för bokningen"
+    "Du måste ange en titel för bokningen"
   ],
   "name_required": ["You need to provide a name", "Du måste ange ett namn"],
   "phone_required": [
@@ -36,5 +36,17 @@
     "You need to accept the booking terms and conditions",
     "Du måste godkänna bokningsvillkoren"
   ],
-  "submit": ["Submit", "Skicka"]
+  "submit": ["Submit", "Skicka"],
+  "cubsec_condition": [
+    "If this is related to an arrangement, I have ", 
+    "Om det gäller ett arrangemang har jag "
+  ],
+  "cubsec_notified": [
+    "notified Cubsec/Chalmers",
+    "anmält det till Cubsec/Chalmers"
+  ],
+  "cubsec_required": [
+    "You must confirm that you have notified Cubsec/Chalmers if applicable",
+    "Du måste bekräfta en eventuell anmälan till Cubsec/Chalmers"
+  ]
 }

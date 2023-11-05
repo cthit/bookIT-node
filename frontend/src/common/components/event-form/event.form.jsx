@@ -18,6 +18,7 @@ import {
   PhoneNumber,
   BookAs,
   GDPR,
+  Cubsec
 } from "./elements";
 import UserContext from "../../contexts/user-context";
 import ROOMS from "../../rooms";
@@ -63,6 +64,7 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     end: yup.date().required(),
     booking_terms: yup.bool().isTrue().required(texts.booking_terms_required),
     gdpr: yup.bool().isTrue().required(texts.gdpr_required),
+    cubsec: yup.bool().isTrue().required(texts.cubsec_required),
   });
 
   return (
@@ -122,6 +124,11 @@ const EventFrom = ({ onSubmit, initialValues }) => {
                     ),
                   })
                 }
+              />
+
+              <Cubsec
+                preLinkLabel={texts.cubsec_condition}
+                linkLabel={texts.cubsec_notified}
               />
 
               <DigitButton
