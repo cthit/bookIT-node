@@ -14,6 +14,11 @@ const ROOMS = [
     text: "CTC",
     color: "#E15554",
   },
+  {
+    value: "THE_CLOUD",
+    text: "The Cloud",
+    color: "#FF9100",
+  },
 ];
 
 export default ROOMS;
