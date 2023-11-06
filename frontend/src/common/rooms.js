@@ -2,22 +2,22 @@ const ROOMS = [
   {
     value: "BIG_HUB",
     text: "Storhubben",
-    color: "#00BABE",
+    color: "#489FB5",
   },
   {
     value: "GROUP_ROOM",
     text: "Grupprummet",
-    color: "#C200FB",
+    color: "#F9C784",
   },
   {
     value: "CTC",
     text: "CTC",
-    color: "#E15554",
+    color: "#FF6B6B",
   },
   {
     value: "THE_CLOUD",
     text: "The Cloud",
-    color: "#FF9100",
+    color: "#489FB5",
   },
 ];
 
