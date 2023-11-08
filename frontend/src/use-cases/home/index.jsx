@@ -21,19 +21,16 @@ const style = document.querySelector("#room-styles");
 
 const getClassName = rooms => {
   let name = "event";
-  if (rooms.length === 1) {
-    name += "-" + rooms[0].toLowerCase() + "Alone";
-  } else {
     for (const i in rooms) {
       name += "-" + rooms[i].toLowerCase();
     }
-  }
+    name += rooms.length();
   if (!style.innerHTML.includes(name)) {
     style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
     let px = 0;
     for (const i in rooms) {
       style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
-      px += 10;
+      px += 25;
       style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
     }
     style.innerHTML = `${style.innerHTML.slice(
