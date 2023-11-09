@@ -24,7 +24,7 @@ const getClassName = rooms => {
     for (const i in rooms) {
       name += "-" + rooms[i].toLowerCase();
     }
-    name += rooms.length();
+    name += rooms.length;
   if (!style.innerHTML.includes(name)) {
     style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
     let px = 0;
