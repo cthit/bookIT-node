@@ -186,6 +186,10 @@ export const checkRules = async (prisma: PrismaClient, event: Event) => {
 };
 
 const validDate = (start: Date, end: Date): boolean => {
+  return start.getTime() > 0 && end.getTime() > 0 && start <= end;
+};
+
+const validDateTime = (start: Date, end: Date): boolean => {
   return start.getTime() > 0 && end.getTime() > 0 && start < end;
 };
 
@@ -213,7 +217,7 @@ export const createRule = async (
 
   const start_time = new Date(rule.start_date + "T" + rule.start_time);
   const end_time = new Date(rule.start_date + "T" + rule.end_time);
-  if (!validDate(start_time, end_time)) {
+  if (!validDateTime(start_time, end_time)) {
     return {
       sv: "Ogiltig tid",
       en: "Invalid time",
