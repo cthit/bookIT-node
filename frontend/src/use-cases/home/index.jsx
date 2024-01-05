@@ -74,26 +74,22 @@ const Home = () => {
     return [
       ...events
         .filter(e => overlap(e.room, filters))
-        .map(e => {
-          return {
-            ...e,
-            className: getClassName(e.room.sort()),
-            start: new Date(Number(e.start)),
-            end: new Date(Number(e.end)),
-            editable: user.groups.includes(e.booked_as) || user.is_admin,
-            durationEditable: false,
-            room: e.room.sort(),
-          };
-        }),
-      ...illegalSlots.map(e => {
-        return {
-          backgroundColor: "#EF9A9A",
+        .map(e => ({
+          ...e,
+          className: getClassName(e.room.sort()),
           start: new Date(Number(e.start)),
           end: new Date(Number(e.end)),
-          display: "background",
-          title: e.title + (e.description ? ` - ` + e.description : ""),
-        };
-      }),
+          editable: user.groups.includes(e.booked_as) || user.is_admin,
+          durationEditable: false,
+          room: e.room.sort(),
+        })),
+      ...illegalSlots.map(e => ({
+        backgroundColor: "#EF9A9A",
+        start: new Date(Number(e.start)),
+        end: new Date(Number(e.end)),
+        display: "background",
+        title: e.title + (e.description ? ` - ` + e.description : ""),
+      })),
       {
         backgroundColor: "#AAAAAA",
         startRecur: new Date(new Date(Date.now() + 5443200000).toDateString()),
