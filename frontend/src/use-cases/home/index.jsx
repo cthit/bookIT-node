@@ -94,10 +94,17 @@ const Home = () => {
           title: e.title + (e.description ? ` - ` + e.description : ""),
         };
       }),
+      {
+        backgroundColor: "#AAAAAA",
+        startRecur: new Date(new Date(Date.now() + 5443200000).toDateString()),
+        display: "background",
+        title: texts.out_of_range,
+      },
     ];
   };
 
   const getCalendarEventsCallback = useCallback(getCalendarEvents, [
+    texts,
     filters,
     user,
   ]);
