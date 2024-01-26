@@ -40,6 +40,7 @@ Frontend
 
 ```sh
 cd frontend
+source dev_setup.sh
 npm i
 npm start
 ```
