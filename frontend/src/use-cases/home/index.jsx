@@ -15,16 +15,16 @@ import { getIllegalSlots } from "../../api/backend.api";
 import { useContext, useCallback, useState } from "react";
 import UserContext from "../../common/contexts/user-context";
 import { overlap } from "../../utils/utils";
-import transitions from "./home.translations.json";
+import translations from "./home.translations.json";
 
 const style = document.querySelector("#room-styles");
 
 const getClassName = rooms => {
   let name = "event";
-    for (const i in rooms) {
-      name += "-" + rooms[i].toLowerCase();
-    }
-    name += rooms.length;
+  for (const i in rooms) {
+    name += "-" + rooms[i].toLowerCase();
+  }
+  name += rooms.length;
   if (!style.innerHTML.includes(name)) {
     style.innerHTML += `.${name}{background: repeating-linear-gradient(45deg,`;
     let px = 0;
@@ -58,7 +58,7 @@ const Home = () => {
   });
   const isMobile = useMobileQuery();
   const [filters, setFilters] = useState(ROOMS.map(r => r.value));
-  const [texts, activeLanguage] = useDigitTranslations(transitions);
+  const [texts, activeLanguage] = useDigitTranslations(translations);
   const [openToast] = useDigitToast({
     duration: 7000,
     actionText: "Ok",
@@ -74,30 +74,33 @@ const Home = () => {
     return [
       ...events
         .filter(e => overlap(e.room, filters))
-        .map(e => {
-          return {
-            ...e,
-            className: getClassName(e.room.sort()),
-            start: new Date(Number(e.start)),
-            end: new Date(Number(e.end)),
-            editable: user.groups.includes(e.booked_as) || user.is_admin,
-            durationEditable: false,
-            room: e.room.sort(),
-          };
-        }),
-      ...illegalSlots.map(e => {
-        return {
-          backgroundColor: "#EF9A9A",
+        .map(e => ({
+          ...e,
+          className: getClassName(e.room.sort()),
           start: new Date(Number(e.start)),
           end: new Date(Number(e.end)),
-          display: "background",
-          title: e.title + (e.description ? ` - ` + e.description : ""),
-        };
-      }),
+          editable: user.groups.includes(e.booked_as) || user.is_admin,
+          durationEditable: false,
+          room: e.room.sort(),
+        })),
+      ...illegalSlots.map(e => ({
+        backgroundColor: "#EF9A9A",
+        start: new Date(Number(e.start)),
+        end: new Date(Number(e.end)),
+        display: "background",
+        title: e.title + (e.description ? ` - ` + e.description : ""),
+      })),
+      {
+        backgroundColor: "#AAAAAA",
+        startRecur: new Date(new Date(Date.now() + 5443200000).toDateString()),
+        display: "background",
+        title: texts.out_of_range,
+      },
     ];
   };
 
   const getCalendarEventsCallback = useCallback(getCalendarEvents, [
+    texts,
     filters,
     user,
   ]);
