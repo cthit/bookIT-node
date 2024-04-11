@@ -8,11 +8,15 @@ const Header = ({ children }) => {
       title=""
       mainPadding="0"
       renderHeader={() => (
-        <Link to="/" style={{ textDecoration: "none", color: "white" }}>
-          <DigitText.Heading5 text="BookIT" />
-        </Link>
+        <div style={{ width: "100%", flexDirection: "row", display: "flex", placeItems: "center"}}>
+          <Link to="/" style={{ textDecoration: "none", color: "white" }}>
+            <DigitText.Heading5 text="BookIT" />
+          </Link>
+          <div style={{marginLeft: "2em"}}>
+            <Tabs/>
+          </div>
+        </div>
       )}
-      renderToolbar={Tabs}
       renderMain={() => <>{children}</>}
     />
   );
