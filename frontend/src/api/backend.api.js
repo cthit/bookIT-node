@@ -177,11 +177,14 @@ export const getUser = () =>
       }),
   );
 
-export const exchangeCode = code =>
+//http://localhost:3001/callback?code=f1lL5Y2Gx_W9G7CWUD8gyMrKE1FlbLTgQtjX6e0LqAwEV9yKOouv_pPF1xTe5KfWBjAypis46jJDK2fB7-1_V1VEXb-uwH37w4Uk3UVLNrXEyuQD7YQ49wBmEpo3mYQ1&state=eyJyZXR1cm5UbyI6Ii8ifQ
+
+export const exchangeCode = (code, state) =>
   new Promise(resolve => {
     Axios.get("/api/callback", {
       params: {
         code: code,
+        state: state,
       },
     })
       .then(res => resolve(res.data))

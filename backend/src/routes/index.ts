@@ -10,32 +10,6 @@ import { getResolvers } from "../resolvers";
 // Import types
 import express from "express";
 import { Tools } from "../utils/commonTypes";
-import { User } from "../models/user";
-
-const setupAuth = (app: express.Application, { passport }: Tools) => {
-  app.get("/api/login", passport.authenticate("gamma"));
-  app.get(
-    "/api/callback",
-    passport.authenticate("gamma"),
-    (req: express.Request, res: express.Response) => {
-      const user: User = {
-        cid: "",
-        is_admin: false,
-        groups: [],
-        language: "en",
-        ...req.user,
-      };
-      delete user.accessToken;
-      res.send(user);
-      res.status(200);
-    },
-  );
-  app.get("/api/logout", (req: express.Request, res: express.Response) => {
-    req.logOut();
-    res.send("OK");
-    res.status(200);
-  });
-};
 
 const setupGraphql = (app: express.Application, tools: Tools) => {
   const graphiql = process.env.GRAPHIQL == "true";
@@ -44,8 +18,8 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
   );
 
   const router = express.Router();
-  router.use((req: express.Request, res: express.Response, next) => {
-    if (req.isAuthenticated()) {
+  router.use((req: any, res: express.Response, next) => {
+    if (req["oidc"]?.isAuthenticated()) {
       return next();
     }
 
@@ -70,6 +44,5 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
 };
 
 export const setupRoutes = (app: express.Application, tools: Tools) => {
-  setupAuth(app, tools);
   setupGraphql(app, tools);
 };

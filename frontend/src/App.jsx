@@ -12,7 +12,7 @@ import EditEvent from "./use-cases/edit-event";
 
 const API = () => {
   useEffect(() => {
-    window.location.href = "http://localhost:8080/api/login";
+    // window.location.href = "http://localhost:8080/api/login";
   }, []);
   return null;
 };
@@ -26,7 +26,7 @@ const App = () => (
           <Route exact path="/new-event" component={NewReservation} />
           <Route path="/edit-event" component={EditEvent} />
           <Route path="/rules" component={Rules} />
-          <Route path="/auth/callback" component={Callback} />
+          <Route path="/callback" component={Callback} />
           <Route path="/api" component={API} />
           <Route path="/" component={() => <h1>Page not found</h1>} />
         </Switch>

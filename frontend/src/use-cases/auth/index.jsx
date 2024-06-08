@@ -11,7 +11,7 @@ const Callback = () => {
   useEffect(() => {
     const authenticateUser = async () => {
       const params = new URLSearchParams(window.location.search);
-      const user = await exchangeCode(params.get("code"));
+      const user = await exchangeCode(params.get("code"), params.get("state"));
       setActiveLanguage(user.language);
       setUser(user);
       history.push("/");
