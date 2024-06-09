@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { user_default } from "../common/contexts/user-context";
 import {
   getEvents_query,
   createEvent_query,
@@ -15,7 +14,7 @@ import {
   getIllegalSlots_query,
 } from "./backend.queries";
 
-const graphql_endpoint = "/api/graphql/v1";
+const graphql_endpoint = "/api/graphql/v2";
 
 const request = (body, dataLabel, errorMessage, onReject = () => null) =>
   new Promise(resolve =>
@@ -177,20 +176,3 @@ export const getUser = () =>
       }),
   );
 
-//http://localhost:3001/callback?code=f1lL5Y2Gx_W9G7CWUD8gyMrKE1FlbLTgQtjX6e0LqAwEV9yKOouv_pPF1xTe5KfWBjAypis46jJDK2fB7-1_V1VEXb-uwH37w4Uk3UVLNrXEyuQD7YQ49wBmEpo3mYQ1&state=eyJyZXR1cm5UbyI6Ii8ifQ
-
-export const exchangeCode = (code, state) =>
-  new Promise(resolve => {
-    Axios.get("/api/callback", {
-      params: {
-        code: code,
-        state: state,
-      },
-    })
-      .then(res => resolve(res.data))
-      .catch(err => {
-        console.log("Failed to exchange code");
-        console.log(err.message);
-        resolve(user_default);
-      });
-  });

@@ -1,8 +1,14 @@
 export interface User {
+  sid: string;
+  sub: string;
+  given_name: string;
+  locale: string;
+  picture: string;
+  name: string;
+  nickname: string;
+  family_name: string;
+  jti: string;
   cid: string;
-  phone?: string;
-  is_admin: boolean;
   groups: string[];
-  language: string;
-  accessToken?: string;
+  is_admin: boolean;
 }

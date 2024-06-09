@@ -1,0 +1,18 @@
+type User {
+  sid: String
+  sub: String
+  given_name: String
+  locale: String
+  picture: String
+  name: String
+  nickname: String
+  family_name: String
+  jti: String
+  cid: String
+  groups: [String]
+  is_admin: Boolean
+}
+
+type Query {
+  user: User
+}
