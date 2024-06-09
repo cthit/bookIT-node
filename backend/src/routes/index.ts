@@ -15,7 +15,7 @@ import { Tools } from "../utils/commonTypes";
 const setupGraphql = (app: express.Application, tools: Tools) => {
   const graphiql = process.env.GRAPHIQL == "true";
   const typeDefs = mergeTypeDefs(
-    loadFilesSync(join(__dirname, "../schemas/v2/*.gql")),
+    loadFilesSync(join(__dirname, "../schemas/v1/*.gql")),
   );
 
   const router = express.Router();
@@ -27,7 +27,7 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
     res.status(401).end();
   });
   router.use(
-    "/v2",
+    "/v1",
     graphqlHTTP((req: any) => ({
       
 

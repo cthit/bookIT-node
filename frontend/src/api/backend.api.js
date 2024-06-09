@@ -14,7 +14,7 @@ import {
   getIllegalSlots_query,
 } from "./backend.queries";
 
-const graphql_endpoint = "/api/graphql/v2";
+const graphql_endpoint = "/api/graphql/v1";
 
 const request = (body, dataLabel, errorMessage, onReject = () => null) =>
   new Promise(resolve =>
