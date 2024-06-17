@@ -1,4 +1,4 @@
-export interface User {
+export interface UserInfo {
   sid: string;
   sub: string;
   given_name: string;
@@ -9,6 +9,9 @@ export interface User {
   family_name: string;
   jti: string;
   cid: string;
+}
+
+export interface User extends UserInfo {
   groups: string[];
   is_admin: boolean;
 }

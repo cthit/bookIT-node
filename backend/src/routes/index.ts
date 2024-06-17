@@ -19,24 +19,19 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
   );
 
   const router = express.Router();
-  router.use((req: any, res: express.Response, next) => {
-    if (req["oidc"]?.isAuthenticated()) {
-      return next();
-    }
-
-    res.status(401).end();
-  });
   router.use(
     "/v1",
-    graphqlHTTP((req: any) => ({
-      
-
+    graphqlHTTP(async (req: any) => ({
       schema: makeExecutableSchema({
         typeDefs: typeDefs,
         resolvers: getResolvers(tools),
       }),
       graphiql: graphiql,
-      context: { user: {...req.oidc.user, is_admin: true, groups: ["digit", "styrit"]} },
+      context: {user: {
+        ...req.oidc.user,
+        groups: req.appSession.groups,
+        is_admin: req.appSession.is_admin
+      }},
     })),
   );
   app.use("/api/graphql", router);
