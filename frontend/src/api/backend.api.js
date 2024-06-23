@@ -1,5 +1,4 @@
 import Axios from "axios";
-import { user_default } from "../common/contexts/user-context";
 import {
   getEvents_query,
   createEvent_query,
@@ -177,17 +176,3 @@ export const getUser = () =>
       }),
   );
 
-export const exchangeCode = code =>
-  new Promise(resolve => {
-    Axios.get("/api/callback", {
-      params: {
-        code: code,
-      },
-    })
-      .then(res => resolve(res.data))
-      .catch(err => {
-        console.log("Failed to exchange code");
-        console.log(err.message);
-        resolve(user_default);
-      });
-  });

@@ -6,36 +6,11 @@ import { mergeTypeDefs } from "@graphql-tools/merge";
 import { makeExecutableSchema } from "@graphql-tools/schema";
 
 import { getResolvers } from "../resolvers";
+import proxy from "express-http-proxy";
 
 // Import types
 import express from "express";
 import { Tools } from "../utils/commonTypes";
-import { User } from "../models/user";
-
-const setupAuth = (app: express.Application, { passport }: Tools) => {
-  app.get("/api/login", passport.authenticate("gamma"));
-  app.get(
-    "/api/callback",
-    passport.authenticate("gamma"),
-    (req: express.Request, res: express.Response) => {
-      const user: User = {
-        cid: "",
-        is_admin: false,
-        groups: [],
-        language: "en",
-        ...req.user,
-      };
-      delete user.accessToken;
-      res.send(user);
-      res.status(200);
-    },
-  );
-  app.get("/api/logout", (req: express.Request, res: express.Response) => {
-    req.logOut();
-    res.send("OK");
-    res.status(200);
-  });
-};
 
 const setupGraphql = (app: express.Application, tools: Tools) => {
   const graphiql = process.env.GRAPHIQL == "true";
@@ -44,32 +19,25 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
   );
 
   const router = express.Router();
-  router.use((req: express.Request, res: express.Response, next) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-
-    res.status(401).end();
-  });
   router.use(
     "/v1",
-    graphqlHTTP((req: any) => ({
+    graphqlHTTP(async (req: any) => ({
       schema: makeExecutableSchema({
         typeDefs: typeDefs,
         resolvers: getResolvers(tools),
       }),
       graphiql: graphiql,
-      context: { user: req.user },
+      context: {user: {
+        ...req.oidc.user,
+        groups: req.appSession.groups,
+        is_admin: req.appSession.is_admin
+      }},
     })),
   );
   app.use("/api/graphql", router);
-
-  app.get("/", (_, res) => {
-    res.redirect("/api/graphql/v1");
-  });
 };
 
 export const setupRoutes = (app: express.Application, tools: Tools) => {
-  setupAuth(app, tools);
   setupGraphql(app, tools);
+  app.use("/", proxy("http://localhost:3001"));
 };

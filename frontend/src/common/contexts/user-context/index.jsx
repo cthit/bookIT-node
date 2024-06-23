@@ -7,7 +7,7 @@ export const user_default = {
   groups: [],
   is_admin: false,
   is_logged_in: false,
-  language: "en",
+  locale: "en",
 };
 
 const UserContext = React.createContext([user_default, () => {}]);
@@ -16,18 +16,13 @@ export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(user_default);
   const [, , setActiveLanguage] = useDigitTranslations({});
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path === "/auth/callback" || path.match(/\/api.*/)) {
-      return;
-    }
-
     getUser()
       .then(res => {
-        setActiveLanguage(res.language);
+        setActiveLanguage(res.locale);
         setUser(res);
       })
-      .catch(() => {
-        window.location = "/api/login";
+      .catch(error => {
+        console.log(error)
       });
   }, [setActiveLanguage]);
   return (
