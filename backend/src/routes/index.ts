@@ -39,5 +39,6 @@ const setupGraphql = (app: express.Application, tools: Tools) => {
 
 export const setupRoutes = (app: express.Application, tools: Tools) => {
   setupGraphql(app, tools);
-  app.use("/", proxy("http://localhost:3001"));
+  const frontend_url = process.env.FRONTEND_URL || "http://localhost:3001";
+  app.use("/", proxy(frontend_url));
 };
