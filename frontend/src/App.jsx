@@ -1,6 +1,6 @@
 import { Route, Switch } from "react-router-dom";
 import { DigitProviders } from "@cthit/react-digit-components";
-import { UserProvider } from "./common/contexts/user-context";
+import AppProvider from "./common/contexts";
 
 import Header from "./common/components/header";
 import Home from "./use-cases/home";
@@ -10,7 +10,7 @@ import EditEvent from "./use-cases/edit-event";
 
 const App = () => (
   <DigitProviders>
-    <UserProvider>
+    <AppProvider>
       <Header>
         <Switch>
           <Route exact path="/" component={Home} />
@@ -20,7 +20,7 @@ const App = () => (
           <Route path="/" component={() => <h1>Page not found</h1>} />
         </Switch>
       </Header>
-    </UserProvider>
+    </AppProvider>
   </DigitProviders>
 );
 

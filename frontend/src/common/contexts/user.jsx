@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getUser } from "../../../api/backend.api";
+import { getUser } from "../../api/backend.api";
 import { useDigitTranslations } from "@cthit/react-digit-components";
 
 export const user_default = {
@@ -22,7 +22,7 @@ export const UserProvider = ({ children }) => {
         setUser(res);
       })
       .catch(error => {
-        console.log(error)
+        console.log(error);
       });
   }, [setActiveLanguage]);
   return (

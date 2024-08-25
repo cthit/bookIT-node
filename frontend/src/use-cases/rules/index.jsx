@@ -19,7 +19,7 @@ import { formatDate, formatDT, formatTime } from "../../utils/utils";
 import { detailed_view_keys, table_header_keys } from "./rules.labels";
 import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
-import UserContext from "../../common/contexts/user-context";
+import UserContext from "../../common/contexts/user";
 
 const formatRule = r => ({
   ...r,

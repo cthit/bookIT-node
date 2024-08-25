@@ -1,24 +1,35 @@
 import Tabs from "./tabs.component";
-import { DigitHeader, DigitText } from "@cthit/react-digit-components";
 import { Link } from "react-router-dom";
+import { AppBar } from "@mui/material";
+import { Typography } from "@mui/material";
 
 const Header = ({ children }) => {
   return (
-    <DigitHeader
-      title=""
-      mainPadding="0"
-      renderHeader={() => (
-        <div style={{ width: "100%", flexDirection: "row", display: "flex", placeItems: "center"}}>
+    <div>
+      <AppBar
+        position="static"
+        style={{
+          padding: "0.5rem 1rem 0.5rem 1rem",
+        }}
+      >
+        <div
+          style={{
+            width: "100%",
+            flexDirection: "row",
+            display: "flex",
+            placeItems: "center",
+          }}
+        >
           <Link to="/" style={{ textDecoration: "none", color: "white" }}>
-            <DigitText.Heading5 text="BookIT" />
+            <Typography variant="h5">BookIT</Typography>
           </Link>
-          <div style={{marginLeft: "2em"}}>
-            <Tabs/>
+          <div style={{ marginLeft: "2em" }}>
+            <Tabs />
           </div>
         </div>
-      )}
-      renderMain={() => <>{children}</>}
-    />
+      </AppBar>
+      {children}
+    </div>
   );
 };
 

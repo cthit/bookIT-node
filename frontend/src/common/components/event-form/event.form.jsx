@@ -18,9 +18,9 @@ import {
   PhoneNumber,
   BookAs,
   GDPR,
-  Cubsec
+  Cubsec,
 } from "./elements";
-import UserContext from "../../contexts/user-context";
+import UserContext from "../../contexts/user";
 import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
 import propTypes from "prop-types";

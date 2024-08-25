@@ -1,7 +1,7 @@
 import { useContext, useEffect } from "react";
 import { useHistory } from "react-router";
 import { exchangeCode } from "../../api/backend.api";
-import UserContext from "../../common/contexts/user-context";
+import UserContext from "../../common/contexts/user";
 import { useDigitTranslations } from "@cthit/react-digit-components";
 
 const Callback = () => {

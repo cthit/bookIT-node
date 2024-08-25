@@ -13,7 +13,7 @@ import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
 import { useContext, useCallback, useState } from "react";
-import UserContext from "../../common/contexts/user-context";
+import UserContext from "../../common/contexts/user";
 import { overlap } from "../../utils/utils";
 import translations from "./home.translations.json";
 
