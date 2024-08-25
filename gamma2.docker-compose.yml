@@ -1,0 +1,57 @@
+services:
+  auth:
+    image: ghcr.io/cthit/gamma:latest
+    environment:
+      ADMIN_SETUP: true
+
+      BASE_URL: http://localhost
+      DB_HOST: db
+      DB_NAME: &db_name name
+      DB_PASSWORD: &db_password password
+      DB_USER: &db_user user
+      GOTIFY_KEY: &gotify_key key
+      GOTIFY_BASE_URL: http://gotify:8080
+      REDIS_HOST: redis
+      ROOT_DEBUG_LEVEL: INFO
+      SERVER_PORT: 9090
+      PRODUCTION: false
+      IS_MOCKING: true
+      PROFILE: development
+      UPLOAD_FOLDER: /uploads/
+    networks:
+      - default
+      - gotify
+    ports:
+      - 9090:9090
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: *db_user
+      POSTGRES_PASSWORD: *db_password
+      POSTGRES_DB: *db_name
+    networks:
+      - default
+    restart: unless-stopped
+
+  redis:
+    image: redis
+    networks:
+      - default
+    restart: unless-stopped
+
+  gotify:
+    image: cthit/gotify
+    restart: unless-stopped
+    networks:
+      - gotify
+    environment:
+      GOTIFY_PORT: 8080
+      GOTIFY_PRE-SHARED-KEY: *gotify_key
+      GOTIFY_MOCK-MODE: "true"
+      GOTIFY_GOOGLE-MAIL.ADMIN-MAIL: admin@chalmers.it
+
+networks:
+  default:
+  gotify:
