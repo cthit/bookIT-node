@@ -1,7 +1,4 @@
-import {
-  useDigitCustomDialog,
-  useDigitToast,
-} from "@cthit/react-digit-components";
+import { useDigitToast } from "@cthit/react-digit-components";
 import { useHistory } from "react-router";
 import { editEvent, getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
@@ -16,6 +13,7 @@ import UserContext from "../../common/contexts/user";
 import { overlap } from "../../utils/utils";
 import translations from "./home.translations.json";
 import { useTranslations } from "../../common/contexts/translations";
+import { Dialog } from "@mui/material";
 
 const style = document.querySelector("#room-styles");
 
@@ -33,10 +31,7 @@ const getClassName = rooms => {
       px += 25;
       style.innerHTML += `var(--bg_${rooms[i].toLowerCase()}) ${px}px ,`;
     }
-    style.innerHTML = `${style.innerHTML.slice(
-      0,
-      style.innerHTML.length - 1,
-    )});}\n`;
+    style.innerHTML = `${style.innerHTML.slice(0, style.innerHTML.length - 1)});}\n`;
   }
   return name;
 };
@@ -53,9 +48,8 @@ const colorVariables = getColorVariables();
 const Home = () => {
   const [user] = useContext(UserContext);
   const history = useHistory();
-  const [openDialog, closeDialog] = useDigitCustomDialog({
-    title: "Event",
-  });
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState({ title: null, id: null });
   const isMobile = useMobileQuery();
   const [filters, setFilters] = useState(ROOMS.map(r => r.value));
   const [texts, activeLanguage] = useTranslations(translations);
@@ -99,11 +93,7 @@ const Home = () => {
     ];
   };
 
-  const getCalendarEventsCallback = useCallback(getCalendarEvents, [
-    texts,
-    filters,
-    user,
-  ]);
+  const getCalendarEventsCallback = useCallback(getCalendarEvents, [texts, filters, user]);
   const toggleChip = room => {
     if (filters.includes(room)) {
       setFilters(filters.filter(f => f !== room));
@@ -168,24 +158,25 @@ const Home = () => {
       </div>
       <Calendar
         getEvents={getCalendarEventsCallback}
-        eventClick={value =>
-          openDialog({
+        eventClick={value => {
+          setSelectedEvent({
             title: value.event._def.title,
-            renderMain: () => (
-              <DetailedView
-                event_id={value.event._def.publicId}
-                onClose={closeDialog}
-                // This should not be needed, but context does not work in the detailed view
-                user={user}
-              />
-            ),
-          })
-        }
-        onSelect={value =>
-          history.push("/new-event", { start: value.start, end: value.end })
-        }
+            id: value.event._def.publicId,
+          });
+          setDialogOpen(true);
+        }}
+        onSelect={value => history.push("/new-event", { start: value.start, end: value.end })}
         onEventDrop={onEventDrop}
       />
+      <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+        <DetailedView
+          title={selectedEvent.title}
+          event_id={selectedEvent.id}
+          onClose={() => setDialogOpen(false)}
+          // This should not be needed, but context does not work in the detailed view
+          user={user}
+        />
+      </Dialog>
       <AddEventButton />
     </div>
   );

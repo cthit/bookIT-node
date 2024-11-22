@@ -12,8 +12,9 @@ import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
 import { formatDT } from "../../../utils/utils";
 import { useTranslations } from "../../../common/contexts/translations";
+import { Typography } from "@mui/material";
 
-const DetailedView = ({ event_id, onClose, onDelete, user }) => {
+const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
   const history = useHistory();
   const [event, setEvent] = useState({});
   const [texts, activeLanguage] = useTranslations(translations);
@@ -32,28 +33,23 @@ const DetailedView = ({ event_id, onClose, onDelete, user }) => {
           end: formatDT(Number(res.end)),
           _booked_by: (
             <>
-              <a href={"https://gamma.chalmers.it/users/" + res.booked_by}>
-                {res.booked_by}
-              </a>
+              <a href={"https://gamma.chalmers.it/users/" + res.booked_by}>{res.booked_by}</a>
               {" via "}
-              <a
-                href={"https://gamma.chalmers.it/super-groups/" + res.booked_as}
-              >
+              <a href={"https://gamma.chalmers.it/super-groups/" + res.booked_as}>
                 {res.booked_as}
               </a>
             </>
           ),
           room: res.room
             .sort()
-            .map(r => (
-              <DigitText.Text text={ROOMS.find(e => e.value === r).text} />
-            )),
+            .map(r => <DigitText.Text text={ROOMS.find(e => e.value === r).text} />),
         }),
       )
       .catch(() => {});
   }, [event_id]);
   return (
-    <>
+    <div className="dialog">
+      <Typography variant="h6">{title}</Typography>
       <DigitDisplayData
         data={event}
         keysText={{
@@ -96,7 +92,7 @@ const DetailedView = ({ event_id, onClose, onDelete, user }) => {
           />
         </div>
       ) : null}
-    </>
+    </div>
   );
 };
 
