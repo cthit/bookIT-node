@@ -5,7 +5,6 @@ import {
   DigitLoading,
   DigitButton,
   useDigitToast,
-  useDigitTranslations,
   useDigitCustomDialog,
   DigitText,
 } from "@cthit/react-digit-components";
@@ -27,6 +26,7 @@ import propTypes from "prop-types";
 import BookingTerms from "./elements/booking-terms.element";
 import GDPRAgreement from "./gdpr-agreement";
 import "./event.form.css";
+import { useTranslations } from "../../contexts/translations";
 
 const regexStrings = {
   // eslint-disable-next-line
@@ -42,7 +42,7 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     actionHandler: () => {},
   });
   const [user] = useContext(UserContext);
-  const [texts, activeLanguage] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useTranslations(translations);
   const [loading, setLoading] = useState(true);
   const [openDialog] = useDigitCustomDialog({
     title: texts.gdpr_agreement,

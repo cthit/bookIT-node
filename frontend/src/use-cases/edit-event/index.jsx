@@ -6,11 +6,12 @@ import {
   DigitLayout,
   DigitDesign,
   useDigitToast,
-  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { formatDT } from "../../utils/utils.js";
 import { editEvent } from "../../api/backend.api";
 import transitions from "./edit-event.translations.json";
+import { EventForm2 } from "../../common/components/event-form/event.form2.jsx";
+import { useTranslations } from "../../common/contexts/translations.jsx";
 
 const formatEvent = event => {
   return {
@@ -32,7 +33,7 @@ const EditEvent = () => {
     actionText: "Ok",
     actionHandler: () => {},
   });
-  const [texts, activeLanguage] = useDigitTranslations(transitions);
+  const [texts, activeLanguage] = useTranslations(transitions);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,6 +75,7 @@ const EditEvent = () => {
         <DigitDesign.CardBody>
           <DigitDesign.CardTitle text={texts.edit_event} />
           <EventForm initialValues={event} onSubmit={handleSubmit} />
+          <EventForm2 initialValues={event} onSubmit={handleSubmit} />
         </DigitDesign.CardBody>
       </DigitDesign.Card>
     </DigitLayout.Center>

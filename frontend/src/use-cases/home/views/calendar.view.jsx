@@ -6,16 +6,16 @@ import interactionPlugin from "@fullcalendar/interaction";
 import momentPlugin from "@fullcalendar/moment";
 import svLocale from "@fullcalendar/core/locales/sv";
 import enLocale from "@fullcalendar/core/locales/en-gb";
-import { useDigitTranslations } from "@cthit/react-digit-components";
 import "./calendar-view.css";
 import useHeight from "../../../common/hooks/change-calendar-size";
+import { useTranslations } from "../../../common/contexts/translations";
 
 const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));
   eventClick = eventClick ?? (() => {});
   onSelect = onSelect ?? (() => {});
 
-  const [, activeLanguage] = useDigitTranslations({});
+  const [, activeLanguage] = useTranslations({});
   const calculatedScreenHeight = useHeight().height - 200;
 
   return (
@@ -37,7 +37,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
         hour12: false,
       }}
       dayHeaderFormat={"ddd DD/MM"}
-      views={{dayGridMonth: {dayHeaderFormat: "ddd"}}}
+      views={{ dayGridMonth: { dayHeaderFormat: "ddd" } }}
       rerenderDelay={1000}
       allDaySlot
       weekNumbers

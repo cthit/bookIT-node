@@ -1,7 +1,6 @@
 import {
   useDigitCustomDialog,
   useDigitToast,
-  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { useHistory } from "react-router";
 import { editEvent, getEvents } from "../../api/backend.api";
@@ -16,6 +15,7 @@ import { useContext, useCallback, useState } from "react";
 import UserContext from "../../common/contexts/user";
 import { overlap } from "../../utils/utils";
 import translations from "./home.translations.json";
+import { useTranslations } from "../../common/contexts/translations";
 
 const style = document.querySelector("#room-styles");
 
@@ -58,7 +58,7 @@ const Home = () => {
   });
   const isMobile = useMobileQuery();
   const [filters, setFilters] = useState(ROOMS.map(r => r.value));
-  const [texts, activeLanguage] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useTranslations(translations);
   const [openToast] = useDigitToast({
     duration: 7000,
     actionText: "Ok",

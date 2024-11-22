@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getUser } from "../../api/backend.api";
-import { useDigitTranslations } from "@cthit/react-digit-components";
+import { useTranslations } from "./translations";
 
 export const user_default = {
   cid: "",
@@ -14,7 +14,7 @@ const UserContext = React.createContext([user_default, () => {}]);
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(user_default);
-  const [, , setActiveLanguage] = useDigitTranslations({});
+  const [, , setActiveLanguage] = useTranslations({});
   useEffect(() => {
     getUser()
       .then(res => {
@@ -25,11 +25,7 @@ export const UserProvider = ({ children }) => {
         console.log(error);
       });
   }, [setActiveLanguage]);
-  return (
-    <UserContext.Provider value={[user, setUser]}>
-      {children}
-    </UserContext.Provider>
-  );
+  return <UserContext.Provider value={[user, setUser]}>{children}</UserContext.Provider>;
 };
 
 export default UserContext;

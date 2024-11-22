@@ -1,9 +1,5 @@
 import { useContext } from "react";
-import {
-  DigitCRUD,
-  useDigitTranslations,
-  useDigitToast,
-} from "@cthit/react-digit-components";
+import { DigitCRUD, useDigitToast } from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
 import CancelIcon from "@material-ui/icons/Cancel";
@@ -20,6 +16,7 @@ import { detailed_view_keys, table_header_keys } from "./rules.labels";
 import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
 import UserContext from "../../common/contexts/user";
+import { useTranslations } from "../../common/contexts/translations";
 
 const formatRule = r => ({
   ...r,
@@ -48,7 +45,7 @@ const Rules = () => {
     actionText: "Ok",
     actionHandler: () => {},
   });
-  const [texts, activeLanguage] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useTranslations(translations);
   const [user] = useContext(UserContext);
 
   const createRuleCallback = async rule => {

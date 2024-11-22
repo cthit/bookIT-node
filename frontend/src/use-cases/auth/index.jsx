@@ -2,12 +2,12 @@ import { useContext, useEffect } from "react";
 import { useHistory } from "react-router";
 import { exchangeCode } from "../../api/backend.api";
 import UserContext from "../../common/contexts/user";
-import { useDigitTranslations } from "@cthit/react-digit-components";
+import { useTranslations } from "../../common/contexts/translations";
 
 const Callback = () => {
   const history = useHistory();
   const [, setUser] = useContext(UserContext);
-  const [, , setActiveLanguage] = useDigitTranslations({});
+  const [, , setActiveLanguage] = useTranslations({});
   useEffect(() => {
     const authenticateUser = async () => {
       const params = new URLSearchParams(window.location.search);

@@ -2,7 +2,6 @@ import {
   DigitDisplayData,
   DigitText,
   DigitButton,
-  useDigitTranslations,
   useDigitToast,
 } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
@@ -12,11 +11,12 @@ import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
 import { formatDT } from "../../../utils/utils";
+import { useTranslations } from "../../../common/contexts/translations";
 
 const DetailedView = ({ event_id, onClose, onDelete, user }) => {
   const history = useHistory();
   const [event, setEvent] = useState({});
-  const [texts, activeLanguage] = useDigitTranslations(translations);
+  const [texts, activeLanguage] = useTranslations(translations);
   const [openToast] = useDigitToast({
     duration: 3000,
     actionText: "Ok",

@@ -1,8 +1,8 @@
 import { DigitTabs } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { useDigitTranslations } from "@cthit/react-digit-components";
 import translations from "./tabs.translations.json";
+import { useTranslations } from "../../contexts/translations";
 
 const tabs = [
   {
@@ -18,7 +18,7 @@ const tabs = [
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState("");
   const history = useHistory();
-  const [texts] = useDigitTranslations(translations);
+  const [texts] = useTranslations(translations);
 
   useEffect(() => {
     const value = window.location.pathname.split("/")[1];

@@ -2,7 +2,6 @@ import {
   DigitDesign,
   DigitLayout,
   useDigitToast,
-  useDigitTranslations,
 } from "@cthit/react-digit-components";
 import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
@@ -10,6 +9,7 @@ import { formatDT } from "../../utils/utils";
 import transitions from "./new-event.translations.json";
 import EventForm from "../../common/components/event-form";
 import moment from "moment";
+import { useTranslations } from "../../common/contexts/translations";
 
 const NewReservation = ({
   history: {
@@ -22,7 +22,7 @@ const NewReservation = ({
     actionHandler: () => {},
   });
   const history = useHistory();
-  const [texts, activeLanguage] = useDigitTranslations(transitions);
+  const [texts, activeLanguage] = useTranslations(transitions);
 
   const handleSubmit = async event => {
     const res = await createEvent({
