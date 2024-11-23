@@ -1,9 +1,8 @@
-import { DigitTabs } from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import translations from "./tabs.translations.json";
 import { useTranslations } from "../../contexts/translations";
-
+import { Box, Tab, Tabs as MTabs } from "@mui/material";
 const tabs = [
   {
     text: "Calendar",
@@ -29,16 +28,32 @@ const Tabs = () => {
   }, []);
 
   return (
-    <DigitTabs
-      onChange={value => {
-        setActiveTab(value);
-        history.push("/" + value);
-      }}
-      centered
-      selected={activeTab}
-      fullwidth
-      tabs={tabs.map(t => ({ ...t, text: texts[t.text] }))}
-    />
+    <>
+      <Box>
+        <MTabs
+          value={activeTab}
+          onChange={(_, value) => {
+            setActiveTab(value);
+            history.push("/" + value);
+          }}
+          indicatorColor="secondary"
+        >
+          {tabs.map(e => (
+            <Tab
+              style={{
+                color: "white",
+                "&.Mui-selected": {
+                  color: "white",
+                },
+              }}
+              label={texts[e.text]}
+              value={e.value}
+              id={e.value}
+            />
+          ))}
+        </MTabs>
+      </Box>
+    </>
   );
 };
 

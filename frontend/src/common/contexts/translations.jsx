@@ -19,7 +19,6 @@ export const useTranslations = (translations = {}) => {
   );
 
   useEffect(() => {
-    console.log("language", activeLanguage);
     setText(createTranslationDict(translations, activeLanguage));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLanguage, setText]);
