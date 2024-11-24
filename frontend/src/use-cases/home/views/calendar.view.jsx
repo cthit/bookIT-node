@@ -9,8 +9,9 @@ import enLocale from "@fullcalendar/core/locales/en-gb";
 import "./calendar-view.css";
 import useHeight from "../../../common/hooks/change-calendar-size";
 import { useTranslations } from "../../../common/contexts/translations";
+import { forwardRef } from "react";
 
-const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
+const Calendar = forwardRef(({ getEvents, eventClick, onSelect, onEventDrop }, ref) => {
   getEvents = getEvents ?? (() => new Promise(res => res([])));
   eventClick = eventClick ?? (() => {});
   onSelect = onSelect ?? (() => {});
@@ -20,6 +21,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
 
   return (
     <FullCallendar
+      ref={ref}
       locales={[enLocale, svLocale]}
       locale={activeLanguage}
       select={onSelect}
@@ -47,13 +49,7 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
         center: "",
         end: "dayGridMonth,listWeek,timeGridWeek,today,prev,next",
       }}
-      plugins={[
-        momentPlugin,
-        interactionPlugin,
-        dayGridPlugin,
-        timeGridPlugin,
-        listPlugin,
-      ]}
+      plugins={[momentPlugin, interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin]}
       initialView={window.innerWidth > 600 ? "timeGridWeek" : "timeGridDay"}
       eventOverlap
       height={window.innerWidth > 600 ? calculatedScreenHeight + "px" : "auto"}
@@ -63,6 +59,6 @@ const Calendar = ({ getEvents, eventClick, onSelect, onEventDrop, ref }) => {
       eventDrop={onEventDrop}
     />
   );
-};
+});
 
 export default Calendar;

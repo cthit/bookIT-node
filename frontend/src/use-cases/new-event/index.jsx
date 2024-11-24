@@ -1,8 +1,4 @@
-import {
-  DigitDesign,
-  DigitLayout,
-  useDigitToast,
-} from "@cthit/react-digit-components";
+import { DigitDesign, DigitLayout } from "@cthit/react-digit-components";
 import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
 import { formatDT } from "../../utils/utils";
@@ -10,17 +6,16 @@ import transitions from "./new-event.translations.json";
 import EventForm from "../../common/components/event-form";
 import moment from "moment";
 import { useTranslations } from "../../common/contexts/translations";
+import Snackbar from "../../common/components/snackbar";
+import { useState } from "react";
 
 const NewReservation = ({
   history: {
     location: { state },
   },
 }) => {
-  const [openToast] = useDigitToast({
-    duration: 7000,
-    actionText: "Ok",
-    actionHandler: () => {},
-  });
+  const [snackbar, setSnackbar] = useState(false);
+  const [snackbarText, setSnackbarText] = useState("");
   const history = useHistory();
   const [texts, activeLanguage] = useTranslations(transitions);
 
@@ -36,15 +31,11 @@ const NewReservation = ({
       booking_terms: event.booking_terms,
     });
     if (res === null) {
-      openToast({
-        text: texts.new_event_created,
-      });
       history.push("/");
       return;
     }
-    openToast({
-      text: res[activeLanguage],
-    });
+    setSnackbar(true);
+    setSnackbarText(res[activeLanguage]);
   };
 
   const default_begin_date = new Date();
@@ -61,14 +52,22 @@ const NewReservation = ({
   };
 
   return (
-    <DigitLayout.Center>
-      <DigitDesign.Card>
-        <DigitDesign.CardBody>
-          <DigitDesign.CardTitle text={texts.new_booking} />
-          <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
-        </DigitDesign.CardBody>
-      </DigitDesign.Card>
-    </DigitLayout.Center>
+    <>
+      <DigitLayout.Center>
+        <DigitDesign.Card>
+          <DigitDesign.CardBody>
+            <DigitDesign.CardTitle text={texts.new_booking} />
+            <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
+          </DigitDesign.CardBody>
+        </DigitDesign.Card>
+      </DigitLayout.Center>
+      <Snackbar
+        open={snackbar}
+        onClose={() => setSnackbar(false)}
+        message={snackbarText}
+        autoHideDuration={7000}
+      />
+    </>
   );
 };
 

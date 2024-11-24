@@ -42,13 +42,13 @@ const Tabs = () => {
             <Tab
               style={{
                 color: "white",
-                "&.Mui-selected": {
+                "&.MuiSelected": {
                   color: "white",
                 },
               }}
               label={texts[e.text]}
               value={e.value}
-              id={e.value}
+              key={e.value}
             />
           ))}
         </MTabs>

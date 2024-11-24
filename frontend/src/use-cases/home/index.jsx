@@ -1,4 +1,3 @@
-import { useDigitToast } from "@cthit/react-digit-components";
 import { useHistory } from "react-router";
 import { editEvent, getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
@@ -8,12 +7,14 @@ import DetailedView from "./views/detailed-view.view";
 import "./index.css";
 import useMobileQuery from "../../common/hooks/use-mobile-query";
 import { getIllegalSlots } from "../../api/backend.api";
-import { useContext, useCallback, useState } from "react";
+import { useContext, useCallback, useState, useReducer } from "react";
 import UserContext from "../../common/contexts/user";
 import { overlap } from "../../utils/utils";
 import translations from "./home.translations.json";
 import { useTranslations } from "../../common/contexts/translations";
 import { Dialog } from "@mui/material";
+import { deleteEvent } from "../../api/backend.api";
+import Snackbar from "../../common/components/snackbar";
 
 const style = document.querySelector("#room-styles");
 
@@ -53,11 +54,9 @@ const Home = () => {
   const isMobile = useMobileQuery();
   const [filters, setFilters] = useState(ROOMS.map(r => r.value));
   const [texts, activeLanguage] = useTranslations(translations);
-  const [openToast] = useDigitToast({
-    duration: 7000,
-    actionText: "Ok",
-    actionHandler: () => {},
-  });
+  const [snackBar, setSnackBar] = useState(false);
+  const [snackBarText, setSnackBarText] = useState("");
+  const [deleteCount, eventDeleted] = useReducer((state, _) => state + 1, 0);
 
   const getCalendarEvents = async info => {
     const events = await getEvents(info.start, info.end);
@@ -93,7 +92,12 @@ const Home = () => {
     ];
   };
 
-  const getCalendarEventsCallback = useCallback(getCalendarEvents, [texts, filters, user]);
+  const getCalendarEventsCallback = useCallback(getCalendarEvents, [
+    texts,
+    filters,
+    user,
+    deleteCount,
+  ]);
   const toggleChip = room => {
     if (filters.includes(room)) {
       setFilters(filters.filter(f => f !== room));
@@ -116,13 +120,8 @@ const Home = () => {
     }).then(err => {
       if (err) {
         revert();
-        openToast({
-          text: err[activeLanguage],
-        });
-      } else {
-        openToast({
-          text: texts.event_edited,
-        });
+        setSnackBar(true);
+        setSnackBarText(err[activeLanguage]);
       }
     });
   };
@@ -151,6 +150,7 @@ const Home = () => {
               backgroundColor: filters.includes(r.value) ? r.color : "gray",
             }}
             onClick={() => toggleChip(r.value)}
+            key={r.text}
           >
             {r.text}
           </div>
@@ -175,9 +175,28 @@ const Home = () => {
           onClose={() => setDialogOpen(false)}
           // This should not be needed, but context does not work in the detailed view
           user={user}
+          onDelete={() => {
+            deleteEvent(selectedEvent.id).then(async res => {
+              setDialogOpen(false);
+              if (res) {
+                setSnackBar(true);
+                setSnackBarText(res[activeLanguage]);
+              } else {
+                setSnackBar(true);
+                setSnackBarText(texts.event_deleted);
+                eventDeleted();
+              }
+            });
+          }}
         />
       </Dialog>
       <AddEventButton />
+      <Snackbar
+        open={snackBar}
+        autoHideDuration={3000}
+        onClose={() => setSnackBar(false)}
+        message={snackBarText}
+      />
     </div>
   );
 };

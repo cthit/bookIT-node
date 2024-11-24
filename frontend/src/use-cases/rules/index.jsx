@@ -1,22 +1,18 @@
-import { useContext } from "react";
-import { DigitCRUD, useDigitToast } from "@cthit/react-digit-components";
+import { useContext, useState } from "react";
+import { DigitCRUD } from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
 import CancelIcon from "@material-ui/icons/Cancel";
 import CheckIcon from "@material-ui/icons/Check";
 import "./index.css";
-import {
-  createRule,
-  deleteRule,
-  getRule,
-  getRules,
-} from "../../api/backend.api";
+import { createRule, deleteRule, getRule, getRules } from "../../api/backend.api";
 import { formatDate, formatDT, formatTime } from "../../utils/utils";
 import { detailed_view_keys, table_header_keys } from "./rules.labels";
 import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
 import UserContext from "../../common/contexts/user";
 import { useTranslations } from "../../common/contexts/translations";
+import Snackbar from "../../common/components/snackbar";
 
 const formatRule = r => ({
   ...r,
@@ -40,11 +36,6 @@ const getRuleFormatted = async id => {
 };
 
 const Rules = () => {
-  const [openToast] = useDigitToast({
-    duration: 3000,
-    actionText: "Ok",
-    actionHandler: () => {},
-  });
   const [texts, activeLanguage] = useTranslations(translations);
   const [user] = useContext(UserContext);
 
@@ -64,14 +55,12 @@ const Rules = () => {
     if (res === null) {
       return true;
     }
-    openToast({
-      text: res[activeLanguage],
-    });
   };
 
   return (
     <div className="container">
       <DigitCRUD
+        {...CRUD_DEFAULT_PROPS}
         readAllRequest={getRulesFormatted}
         readOneRequest={getRuleFormatted}
         createRequest={user.is_admin ? createRuleCallback : null}

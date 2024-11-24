@@ -4,7 +4,6 @@ import {
   DigitLayout,
   DigitLoading,
   DigitButton,
-  useDigitToast,
   DigitText,
 } from "@cthit/react-digit-components";
 import * as yup from "yup";
@@ -35,11 +34,6 @@ const regexStrings = {
 };
 
 const EventFrom = ({ onSubmit, initialValues }) => {
-  const [openToast] = useDigitToast({
-    duration: 3000,
-    actionText: "Ok",
-    actionHandler: () => {},
-  });
   const [user] = useContext(UserContext);
   const [texts, activeLanguage] = useTranslations(translations);
   const [loading, setLoading] = useState(true);
@@ -76,11 +70,7 @@ const EventFrom = ({ onSubmit, initialValues }) => {
             validationSchema
               .validate(values)
               .then(() => onSubmit(values))
-              .catch(err =>
-                openToast({
-                  text: err.message,
-                }),
-              );
+              .catch(err => console.log(err.message));
           }}
           render={() => (
             <DigitLayout.Column size={{ maxWidth: "100%" }}>

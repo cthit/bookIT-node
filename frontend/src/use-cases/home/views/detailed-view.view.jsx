@@ -1,29 +1,18 @@
-import {
-  DigitDisplayData,
-  DigitText,
-  DigitButton,
-  useDigitToast,
-} from "@cthit/react-digit-components";
 import { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import { deleteEvent, getEvent } from "../../../api/backend.api";
+import { getEvent } from "../../../api/backend.api";
 import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
 import "./detailed-view.css";
 import { formatDT } from "../../../utils/utils";
 import { useTranslations } from "../../../common/contexts/translations";
-import { Typography } from "@mui/material";
+import { Button, Typography } from "@mui/material";
+const EVENT_KEYS = ["_booked_by", "description", "start", "end", "room"];
 
 const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
   const history = useHistory();
   const [event, setEvent] = useState({});
-  const [texts, activeLanguage] = useTranslations(translations);
-  const [openToast] = useDigitToast({
-    duration: 3000,
-    actionText: "Ok",
-    actionHandler: () => {},
-  });
-
+  const [texts] = useTranslations(translations);
   useEffect(() => {
     getEvent(event_id)
       .then(res =>
@@ -40,9 +29,7 @@ const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
               </a>
             </>
           ),
-          room: res.room
-            .sort()
-            .map(r => <DigitText.Text text={ROOMS.find(e => e.value === r).text} />),
+          room: res.room.sort().map(r => ROOMS.find(e => e.value === r).text),
         }),
       )
       .catch(() => {});
@@ -50,46 +37,43 @@ const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
   return (
     <div className="dialog">
       <Typography variant="h6">{title}</Typography>
-      <DigitDisplayData
-        data={event}
-        keysText={{
-          _booked_by: texts.bookedBy,
-          description: texts.description,
-          start: texts.start,
-          end: texts.end,
-          room: texts.rooms,
-        }}
-        keysOrder={["_booked_by", "description", "start", "end", "room"]}
-      />
+      <table>
+        <tbody>
+          {event &&
+            EVENT_KEYS.map(key => (
+              <tr key={key}>
+                <td>
+                  <Typography sx={{ "font-weight": "bolder", "text-align": "end" }} variant="body1">
+                    {texts[key]}
+                  </Typography>
+                </td>
+                <td>
+                  <Typography variant="body1">{event[key]}</Typography>
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
       {user.groups.includes(event.booked_as) || user.is_admin ? (
         <div className="container">
-          <DigitButton
-            text="Edit"
-            outlined
+          <Button
+            style={{ color: "black", borderColor: "black", marginRight: "1rem" }}
+            variant="outlined"
             onClick={() => {
               onClose();
               history.push(`/edit-event?id=${event_id}`);
             }}
-          />
-          <DigitButton
-            text="Delete"
-            outlined
-            onClick={() => {
-              deleteEvent(event_id).then(res => {
-                onClose();
-                if (res) {
-                  openToast({
-                    text: res[activeLanguage],
-                  });
-                } else {
-                  openToast({
-                    text: texts.event_deleted,
-                  });
-                  window.location.href = "/";
-                }
-              });
-            }}
-          />
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            style={{ color: "black", borderColor: "black" }}
+            onClick={onDelete}
+          >
+            Delete
+          </Button>
         </div>
       ) : null}
     </div>

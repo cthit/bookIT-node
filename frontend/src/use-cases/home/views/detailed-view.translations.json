@@ -1,8 +1,7 @@
 {
-  "bookedBy": ["Booked by:", "Bokad av:"],
+  "_booked_by": ["Booked by:", "Bokad av:"],
   "description": ["Description:", "Beskrivning:"],
   "start": ["Start:", "Börjar:"],
   "end": ["End:", "Slutar:"],
-  "rooms": ["Rooms:", "Rum:"],
-  "event_deleted": ["The event was deleted", "Bokningen raderades"]
+  "rooms": ["Rooms:", "Rum:"]
 }
