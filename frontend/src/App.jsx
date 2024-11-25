@@ -1,5 +1,4 @@
 import { Route, Switch } from "react-router-dom";
-import { DigitProviders } from "@cthit/react-digit-components";
 import AppProvider from "./common/contexts";
 
 import Header from "./common/components/header";
@@ -7,10 +6,11 @@ import Home from "./use-cases/home";
 import NewReservation from "./use-cases/new-event";
 import Rules from "./use-cases/rules";
 import EditEvent from "./use-cases/edit-event";
+import { BrowserRouter } from "react-router-dom/cjs/react-router-dom.min";
 
 const App = () => (
-  <DigitProviders>
-    <AppProvider>
+  <AppProvider>
+    <BrowserRouter>
       <Header>
         <Switch>
           <Route exact path="/" component={Home} />
@@ -20,8 +20,8 @@ const App = () => (
           <Route path="/" component={() => <h1>Page not found</h1>} />
         </Switch>
       </Header>
-    </AppProvider>
-  </DigitProviders>
+    </BrowserRouter>
+  </AppProvider>
 );
 
 export default App;

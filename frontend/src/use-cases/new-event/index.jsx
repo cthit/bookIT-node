@@ -8,7 +8,7 @@ import { useTranslations } from "../../common/contexts/translations";
 import Snackbar from "../../common/components/snackbar";
 import { useState } from "react";
 import { Typography, Card } from "@mui/material";
-
+import { DigitProviders } from "@cthit/react-digit-components";
 const NewReservation = ({
   history: {
     location: { state },
@@ -57,7 +57,9 @@ const NewReservation = ({
         <Typography variant="h6" sx={{ fontWeight: "bolder" }}>
           {texts.new_booking}
         </Typography>
-        <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
+        <DigitProviders>
+          <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
+        </DigitProviders>
       </Card>
       <Snackbar
         open={snackbar}
