@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { useContext } from "react";
 import { DigitCRUD } from "@cthit/react-digit-components";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
@@ -12,7 +12,6 @@ import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
 import UserContext from "../../common/contexts/user";
 import { useTranslations } from "../../common/contexts/translations";
-import Snackbar from "../../common/components/snackbar";
 
 const formatRule = r => ({
   ...r,
@@ -36,7 +35,7 @@ const getRuleFormatted = async id => {
 };
 
 const Rules = () => {
-  const [texts, activeLanguage] = useTranslations(translations);
+  const [texts] = useTranslations(translations);
   const [user] = useContext(UserContext);
 
   const createRuleCallback = async rule => {
@@ -60,7 +59,6 @@ const Rules = () => {
   return (
     <div className="container">
       <DigitCRUD
-        {...CRUD_DEFAULT_PROPS}
         readAllRequest={getRulesFormatted}
         readOneRequest={getRuleFormatted}
         createRequest={user.is_admin ? createRuleCallback : null}

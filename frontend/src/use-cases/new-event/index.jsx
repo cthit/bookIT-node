@@ -1,4 +1,3 @@
-import { DigitDesign, DigitLayout } from "@cthit/react-digit-components";
 import { createEvent } from "../../api/backend.api";
 import { useHistory } from "react-router";
 import { formatDT } from "../../utils/utils";
@@ -8,6 +7,7 @@ import moment from "moment";
 import { useTranslations } from "../../common/contexts/translations";
 import Snackbar from "../../common/components/snackbar";
 import { useState } from "react";
+import { Typography, Card } from "@mui/material";
 
 const NewReservation = ({
   history: {
@@ -53,14 +53,12 @@ const NewReservation = ({
 
   return (
     <>
-      <DigitLayout.Center>
-        <DigitDesign.Card>
-          <DigitDesign.CardBody>
-            <DigitDesign.CardTitle text={texts.new_booking} />
-            <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
-          </DigitDesign.CardBody>
-        </DigitDesign.Card>
-      </DigitLayout.Center>
+      <Card sx={{ margin: "2rem", padding: "1rem", marginTop: "1rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bolder" }}>
+          {texts.new_booking}
+        </Typography>
+        <EventForm initialValues={initialValues} onSubmit={handleSubmit} />
+      </Card>
       <Snackbar
         open={snackbar}
         onClose={() => setSnackbar(false)}

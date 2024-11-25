@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { useHistory } from "react-router";
 import { getFullEvent } from "../../api/backend.api";
 import EventForm from "../../common/components/event-form";
-import { DigitLayout, DigitDesign } from "@cthit/react-digit-components";
 import { formatDT } from "../../utils/utils.js";
 import { editEvent } from "../../api/backend.api";
 import transitions from "./edit-event.translations.json";
-import { EventForm2 } from "../../common/components/event-form/event.form2.jsx";
 import { useTranslations } from "../../common/contexts/translations.jsx";
 import Snackbar from "../../common/components/snackbar/index.jsx";
+import { Card, Typography } from "@mui/material";
 
 const formatEvent = event => {
   return {
@@ -61,15 +60,12 @@ const EditEvent = () => {
 
   return (
     <>
-      <DigitLayout.Center>
-        <DigitDesign.Card>
-          <DigitDesign.CardBody>
-            <DigitDesign.CardTitle text={texts.edit_event} />
-            <EventForm initialValues={event} onSubmit={handleSubmit} />
-            <EventForm2 initialValues={event} onSubmit={handleSubmit} />
-          </DigitDesign.CardBody>
-        </DigitDesign.Card>
-      </DigitLayout.Center>
+      <Card sx={{ margin: "2rem", padding: "1rem", marginTop: "1rem" }}>
+        <Typography variant="h6" sx={{ fontWeight: "bolder" }}>
+          {texts.edit_event}
+        </Typography>
+        <EventForm initialValues={event} onSubmit={handleSubmit} />
+      </Card>
       <Snackbar
         open={snackbar}
         onClose={() => setSnackbar(false)}
