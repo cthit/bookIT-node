@@ -1,31 +1,35 @@
-import { useContext, useEffect, useState } from "react";
-import {
-  DigitForm,
-  DigitLayout,
-  DigitLoading,
-  DigitButton,
-  DigitText,
-} from "@cthit/react-digit-components";
-import * as yup from "yup";
-import {
-  Title,
-  TimeAndTimePicker,
-  Description,
-  Rooms,
-  PhoneNumber,
-  BookAs,
-  GDPR,
-  Cubsec,
-} from "./elements";
-import UserContext from "../../contexts/user";
-import ROOMS from "../../rooms";
 import translations from "./event.form.translations.json";
-import propTypes from "prop-types";
-import BookingTerms from "./elements/booking-terms.element";
-import GDPRAgreement from "./gdpr-agreement";
-import "./event.form.css";
 import { useTranslations } from "../../contexts/translations";
-import { Dialog, Typography } from "@mui/material";
+import * as yup from "yup";
+import { TextField, Autocomplete, Button, Typography } from "@mui/material";
+import { useContext, useEffect, useState } from "react";
+import AutocompleteSelectMultiple from "../autocomplete-select-multiple";
+import ROOMS from "../../rooms";
+import UserContext from "../../contexts/user";
+import Checkbox from "../checkbox";
+
+const useInput = (name, initalValues, schema, submitted) => {
+  const [value, setValue] = useState(initalValues ? initalValues[name] : undefined);
+  const [error, setError] = useState(undefined);
+  const [touched, setTouched] = useState(false);
+
+  useEffect(() => {
+    schema
+      .validateAt(name, { [name]: value }, { abortEarly: false })
+      .then(() => setError(undefined))
+      .catch(error => setError(error.inner[0].message));
+  }, [value]);
+
+  return {
+    id: name,
+    error: (touched || submitted) && error,
+    helperText: (touched || submitted) && error,
+    value: value,
+    onChange: e => setValue(e.target.type === "checkbox" ? e.target.checked : e.target.value),
+    onBlur: () => setTouched(true),
+  };
+};
+
 const regexStrings = {
   // eslint-disable-next-line
   phone: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im,
@@ -33,15 +37,9 @@ const regexStrings = {
   email: /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
 };
 
-const EventFrom = ({ onSubmit, initialValues }) => {
+const EventForm = ({ initialValues }) => {
+  const [texts] = useTranslations(translations);
   const [user] = useContext(UserContext);
-  const [texts, activeLanguage] = useTranslations(translations);
-  const [loading, setLoading] = useState(true);
-  const [gdprOpen, setGdprOpen] = useState(false);
-
-  useEffect(() => {
-    setLoading(initialValues === null);
-  }, [initialValues]);
 
   const validationSchema = yup.object().shape({
     title: yup.string().required(texts.title_required),
@@ -54,83 +52,90 @@ const EventFrom = ({ onSubmit, initialValues }) => {
     start: yup.date().required(),
     end: yup.date().required(),
     booking_terms: yup.bool().isTrue().required(texts.booking_terms_required),
+    booked_as: yup.string().oneOf(user.groups),
     gdpr: yup.bool().isTrue().required(texts.gdpr_required),
     cubsec: yup.bool().isTrue().required(texts.cubsec_required),
   });
 
+  const titleProps = useInput("title", initialValues, validationSchema);
+  const phoneProps = useInput("phone", initialValues, validationSchema);
+  const roomProps = useInput("room", initialValues, validationSchema);
+  const descriptionProps = useInput("description", initialValues, validationSchema);
+  const bookAsProps = useInput("booked_as", initialValues, validationSchema);
+  const termsProps = useInput("booking_terms", initialValues, validationSchema);
+  const gdprProps = useInput("gdpr", initialValues, validationSchema);
+  const cubsecProps = useInput("cubsec", initialValues, validationSchema);
+
   return (
     <>
-      {loading ? (
-        <DigitLoading size={80} />
-      ) : (
-        <DigitForm
-          initialValues={initialValues}
-          validationSchema={validationSchema}
-          onSubmit={values => {
-            validationSchema
-              .validate(values)
-              .then(() => onSubmit(values))
-              .catch(err => console.log(err.message));
-          }}
-          render={() => (
-            <DigitLayout.Column size={{ maxWidth: "100%" }}>
-              {/*<DigitText.Text text={`Bokare: ${me ? me.cid : ""}`} />*/}
-              <Title label={texts.title} size={{ width: "100%" }} />
-              <PhoneNumber name="phone" label={texts.phone} size={{ width: "100%" }} />
-              <Rooms label={texts.room} rooms={ROOMS} />
-              <DigitLayout.Row flexWrap="wrap" display="flex">
-                <TimeAndTimePicker name="start" label={texts.start} />
-                <TimeAndTimePicker name="end" label={texts.end} />
-              </DigitLayout.Row>
-              <Description label={texts.description} />
-              <BookAs label={texts.booked_as} groups={user.groups} />
-
-              <BookingTerms preLinkLabel={texts.i_accept} linkLabel={texts.booking_terms} />
-
-              <GDPR
-                preLinkLabel={texts.i_accept}
-                linkLabel={texts.gdpr_agreement}
-                onLinkClick={() => setGdprOpen(true)}
-              />
-              <Dialog
-                open={gdprOpen}
-                onClose={() => setGdprOpen(false)}
-                style={{ padding: "2rem" }}
-              >
-                <div style={{ margin: "1rem" }}>
-                  <Typography variant="h6">{texts.gdpr_agreement}</Typography>
-                  <div className="gdpr-text">
-                    {GDPRAgreement[activeLanguage].split("\n").map(t => (
-                      <div>
-                        <DigitText.Text text={t} />
-                        <br />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </Dialog>
-
-              <Cubsec preLinkLabel={texts.cubsec_condition} linkLabel={texts.cubsec_notified} />
-
-              <DigitButton raised submit size={{ maxWidth: "100%" }} text={texts.submit} />
-            </DigitLayout.Column>
-          )}
-        />
-      )}
+      <TextField label="Title" variant="standard" sx={{ width: "100%" }} {...titleProps} />
+      <TextField label="Phone Number" variant="standard" sx={{ width: "100%" }} {...phoneProps} />
+      <AutocompleteSelectMultiple
+        size={{ width: "100%" }}
+        upperLabel="Room"
+        options={ROOMS}
+        {...roomProps}
+      />
+      <TextField
+        label="Description"
+        variant="standard"
+        sx={{ width: "100%" }}
+        minRows={3}
+        multiline
+        {...descriptionProps}
+      />
+      <Autocomplete
+        disablePortal
+        options={user.groups}
+        {...bookAsProps}
+        renderInput={params => <TextField {...params} variant="standard" label="Book as" />}
+      />
+      <Checkbox
+        label={
+          <p>
+            {texts.i_accept}
+            <a
+              href="https://docs.chalmers.it/bokningsvillkor.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {texts.booking_terms}
+            </a>
+          </p>
+        }
+        {...termsProps}
+      />
+      <Checkbox
+        label={
+          <p>
+            {texts.i_accept}
+            <a href="#" rel="noopener noreferrer">
+              {texts.gdpr_agreement}
+            </a>
+          </p>
+        }
+        {...gdprProps}
+      />
+      <Checkbox
+        label={
+          <p>
+            {texts.cubsec_condition}
+            <a
+              href="https://www.chalmers.se/utbildning/studera-hos-oss/studentliv/arrangemang-i-sektionslokaler/formular-for-anmalan-av-arrangemang/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {texts.cubsec_notified}
+            </a>
+          </p>
+        }
+        {...cubsecProps}
+      />
+      <Button variant="contained" style={{ width: "100%" }}>
+        <Typography variant="p">{texts.submit}</Typography>
+      </Button>
     </>
   );
 };
 
-EventFrom.propTypes = {
-  initialValues: propTypes.shape({
-    title: propTypes.string,
-    phone: propTypes.string,
-    room: propTypes.arrayOf(propTypes.string),
-    start: propTypes.objectOf(Date),
-    end: propTypes.objectOf(Date),
-    description: propTypes.string,
-    booked_as: propTypes.string,
-  }),
-};
-
-export default EventFrom;
+export default EventForm;

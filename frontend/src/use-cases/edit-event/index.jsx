@@ -8,8 +8,6 @@ import transitions from "./edit-event.translations.json";
 import { useTranslations } from "../../common/contexts/translations.jsx";
 import Snackbar from "../../common/components/snackbar/index.jsx";
 import { Card, Typography } from "@mui/material";
-import { DigitProviders } from "@cthit/react-digit-components";
-import { EventForm2 } from "../../common/components/event-form/event.form2.jsx";
 const formatEvent = event => {
   return {
     ...event,
@@ -65,10 +63,7 @@ const EditEvent = () => {
         <Typography variant="h6" sx={{ fontWeight: "bolder" }}>
           {texts.edit_event}
         </Typography>
-        <DigitProviders>
-          <EventForm initialValues={event} onSubmit={handleSubmit} />
-        </DigitProviders>
-        <EventForm2 initialValues={event} onSubmit={handleSubmit} />
+        <EventForm initialValues={event} onSubmit={handleSubmit} />
       </Card>
       <Snackbar
         open={snackbar}

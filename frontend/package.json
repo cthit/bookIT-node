@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@cthit/react-digit-components": "^1.0.4-alpha.2",
+    "@date-io/date-fns": "^3.2.0",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@fullcalendar/core": "^5.9.0",
@@ -17,6 +18,7 @@
     "@mui/joy": "^5.0.0-beta.48",
     "@mui/material": "^5.16.7",
     "axios": "^0.21.1",
+    "date-fns": "2.19.0",
     "moment": "^2.29.1",
     "prop-types": "^15.7.2",
     "react": "^17.0.1",

@@ -11,3 +11,5 @@ plugins:
   - "@typescript-eslint"
 rules:
   semi: "always"
+  jsx-a11y/anchor-is-valid: 
+    - ignore
