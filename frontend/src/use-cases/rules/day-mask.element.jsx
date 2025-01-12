@@ -1,4 +1,4 @@
-import { DigitCheckbox, DigitText } from "@cthit/react-digit-components";
+import { Checkbox, Typography } from "@mui/material";
 import { useCallback } from "react";
 import "./day-mask.style.css";
 
@@ -33,13 +33,13 @@ export const DayMaskInput = ({ value, onChange, label }) => {
     <div>
       <div className="mask-container" style={{ paddingLeft: "1.1rem" }}>
         {label.split(" ").map(letter => (
-          <DigitText.Title className="day-input" text={letter} />
+          <Typography variant="h6" className="day-input" text={letter} />
         ))}
       </div>
       <div className="mask-container">
         {daysArr(value).map((d, index) => (
           <div className="day-input" key={d.id}>
-            <DigitCheckbox
+            <Checkbox
               primary
               value={d.value}
               onChange={event => {
