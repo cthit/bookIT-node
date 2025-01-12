@@ -1,13 +1,12 @@
 import PropTypes from "prop-types";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@mui/material/Autocomplete";
+import TextField from "@mui/material/TextField";
 import find from "lodash/find";
 import translations from "./AutocompleteSelectMultiple.element.translations";
-import Chip from "@material-ui/core/Chip";
-import Checkbox from "@material-ui/core/Checkbox";
-import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
-import CheckBoxIcon from "@material-ui/icons/CheckBox";
-import useLayoutMaterialUi from "../../hooks/use-layout-material-ui";
+import Chip from "@mui/material/Chip";
+import Checkbox from "@mui/material/Checkbox";
+import CheckBoxOutlineBlankIcon from "@mui/icons-material/CheckBoxOutlineBlank";
+import CheckBoxIcon from "@mui/icons-material/CheckBox";
 import { useTranslations } from "../../contexts/translations";
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -48,23 +47,10 @@ const AutocompleteSelectMultiple = ({
   disableClearable,
   helperText,
 }) => {
-  const outerClasses = useLayoutMaterialUi({
-    gridColumn,
-    gridRow,
-    padding,
-    margin,
-    alignSelf,
-    justifySelf,
-    flex,
-  });
-  const classes = useLayoutMaterialUi({
-    size,
-  });
   const [text] = useTranslations(translations);
 
   return (
     <Autocomplete
-      classes={outerClasses}
       disableClearable={disableClearable}
       autoHighlight
       value={value}
@@ -113,7 +99,6 @@ const AutocompleteSelectMultiple = ({
         <TextField
           {...params}
           fullWidth={false}
-          classes={classes}
           name={name}
           error={error}
           label={upperLabel}

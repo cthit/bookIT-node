@@ -1,4 +1,4 @@
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { editEvent, getEvents } from "../../api/backend.api";
 import AddEventButton from "../../common/elements/add-event-button";
 import ROOMS from "../../common/rooms";
@@ -48,7 +48,7 @@ const colorVariables = getColorVariables();
 
 const Home = () => {
   const [user] = useContext(UserContext);
-  const history = useHistory();
+  const navigate = useNavigate();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState({ title: null, id: null });
   const isMobile = useMobileQuery();
@@ -166,7 +166,9 @@ const Home = () => {
           });
           setDialogOpen(true);
         }}
-        onSelect={value => history.push("/new-event", { start: value.start, end: value.end })}
+        onSelect={value =>
+          navigate("/new-event", { state: { start: value.start, end: value.end } })
+        }
         onEventDrop={onEventDrop}
       />
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>

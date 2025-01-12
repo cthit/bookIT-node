@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { getEvent } from "../../../api/backend.api";
 import ROOMS from "../../../common/rooms";
 import translations from "./detailed-view.translations.json";
@@ -10,7 +10,7 @@ import { Button, Typography } from "@mui/material";
 const EVENT_KEYS = ["_booked_by", "description", "start", "end", "room"];
 
 const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [event, setEvent] = useState({});
   const [texts] = useTranslations(translations);
   useEffect(() => {
@@ -62,7 +62,7 @@ const DetailedView = ({ event_id, onClose, onDelete, user, title }) => {
             variant="outlined"
             onClick={() => {
               onClose();
-              history.push(`/edit-event?id=${event_id}`);
+              navigate(`/edit-event?id=${event_id}`);
             }}
           >
             Edit

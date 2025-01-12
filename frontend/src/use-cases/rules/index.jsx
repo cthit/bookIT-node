@@ -1,17 +1,17 @@
 import { useContext } from "react";
 import DayMask from "./day-mask.element";
 import Rooms from "./rooms.element";
-import CancelIcon from "@material-ui/icons/Cancel";
-import CheckIcon from "@material-ui/icons/Check";
-import "./index.css";
+import CancelIcon from "@mui/icons-material/Cancel";
+import CheckIcon from "@mui/icons-material/Check";
 import { createRule, deleteRule, getRule, getRules } from "../../api/backend.api";
 import { formatDate, formatDT, formatTime } from "../../utils/utils";
 import { detailed_view_keys, table_header_keys } from "./rules.labels";
-import { ruleForm } from "./rule.form";
 import translations from "./rules.translations.json";
 import UserContext from "../../common/contexts/user";
 import { useTranslations } from "../../common/contexts/translations";
-// import { Paper, DataGrid } from "@mui/material";
+import { Paper } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
+
 const formatRule = r => ({
   ...r,
   _time: `${r.start_time}-${r.end_time}`,

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import { getFullEvent } from "../../api/backend.api";
 import EventForm from "../../common/components/event-form";
 import { formatDT } from "../../utils/utils.js";
@@ -20,7 +20,7 @@ const formatEvent = event => {
 };
 
 const EditEvent = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [event, setEvent] = useState(null);
   const [id, setId] = useState(null);
   const [snackbar, setSnackbar] = useState(false);
@@ -50,7 +50,7 @@ const EditEvent = () => {
       booking_terms: event_.booking_terms,
     });
     if (res === null) {
-      history.push("/");
+      navigate("/");
       return;
     }
     setSnackbar(true);

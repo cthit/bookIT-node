@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import translations from "./tabs.translations.json";
 import { useTranslations } from "../../contexts/translations";
 import { Box, Tab, Tabs as MTabs } from "@mui/material";
@@ -16,7 +16,7 @@ const tabs = [
 
 const Tabs = () => {
   const [activeTab, setActiveTab] = useState("");
-  const history = useHistory();
+  const navigate = useNavigate();
   const [texts] = useTranslations(translations);
 
   useEffect(() => {
@@ -34,7 +34,7 @@ const Tabs = () => {
           value={activeTab}
           onChange={(_, value) => {
             setActiveTab(value);
-            history.push("/" + value);
+            navigate("/" + value);
           }}
           indicatorColor="secondary"
         >

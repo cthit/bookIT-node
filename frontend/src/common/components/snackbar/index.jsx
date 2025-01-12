@@ -1,5 +1,5 @@
 import { Card, Typography, IconButton, Snackbar as MuiSnackbar } from "@mui/material";
-import CloseIcon from "@material-ui/icons/Close";
+import CloseIcon from "@mui/icons-material/Close";
 
 const Snackbar = ({ message, onClose, ...props }) => {
   return (

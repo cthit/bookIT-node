@@ -1,11 +1,11 @@
 import { useContext, useEffect } from "react";
-import { useHistory } from "react-router";
+import { useNavigate } from "react-router";
 import { exchangeCode } from "../../api/backend.api";
 import UserContext from "../../common/contexts/user";
 import { useTranslations } from "../../common/contexts/translations";
 
 const Callback = () => {
-  const history = useHistory();
+  const navigate = useNavigate();
   const [, setUser] = useContext(UserContext);
   const [, , setActiveLanguage] = useTranslations({});
   useEffect(() => {
@@ -14,10 +14,10 @@ const Callback = () => {
       const user = await exchangeCode(params.get("code"), params.get("state"));
       setActiveLanguage(user.language);
       setUser(user);
-      history.push("/");
+      navigate("/");
     };
     authenticateUser();
-  }, [setUser, history, setActiveLanguage]);
+  }, [setUser, navigate, setActiveLanguage]);
   return null;
 };
 

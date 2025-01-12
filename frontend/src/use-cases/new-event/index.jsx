@@ -1,5 +1,5 @@
 import { createEvent } from "../../api/backend.api";
-import { useHistory } from "react-router";
+import { useLocation, useNavigate } from "react-router-dom";
 import { formatDT } from "../../utils/utils";
 import transitions from "./new-event.translations.json";
 import EventForm from "../../common/components/event-form";
@@ -8,14 +8,11 @@ import { useTranslations } from "../../common/contexts/translations";
 import Snackbar from "../../common/components/snackbar";
 import { useState } from "react";
 import { Typography, Card } from "@mui/material";
-const NewReservation = ({
-  history: {
-    location: { state },
-  },
-}) => {
+const NewReservation = () => {
+  const { state } = useLocation();
   const [snackbar, setSnackbar] = useState(false);
   const [snackbarText, setSnackbarText] = useState("");
-  const history = useHistory();
+  const navigate = useNavigate();
   const [texts, activeLanguage] = useTranslations(transitions);
 
   const handleSubmit = async event => {
@@ -30,7 +27,7 @@ const NewReservation = ({
       booking_terms: event.booking_terms,
     });
     if (res === null) {
-      history.push("/");
+      navigate("/");
       return;
     }
     setSnackbar(true);
