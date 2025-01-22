@@ -130,7 +130,7 @@ const Home = () => {
   return (
     <div
       style={{
-        width: "100%",
+        width: "auto",
         margin: `${isMobile ? "1rem 0" : "1rem"}`,
         height: "40rem",
         fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
