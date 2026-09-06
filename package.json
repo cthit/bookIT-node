@@ -10,7 +10,7 @@
     "format": "vp fmt",
     "format:check": "vp fmt --check",
     "typecheck": "pnpm --dir backend typecheck && pnpm --dir frontend typecheck && tsc --noEmit -p e2e/tsconfig.json",
-    "test:e2e": "playwright test"
+    "test:e2e": "make -C e2e run-e2e"
   },
   "devDependencies": {
     "@graphql-codegen/core": "^6.2.0",

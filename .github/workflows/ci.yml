@@ -109,9 +109,7 @@ jobs:
       contents: read
       packages: read
     env:
-      E2E_MODE: images
-      BOOKIT_FRONTEND_IMAGE: ghcr.io/cthit/bookit-node-frontend:${{ github.sha }}
-      BOOKIT_BACKEND_IMAGE: ghcr.io/cthit/bookit-node-backend:${{ github.sha }}
+      VERSION: ${{ github.sha }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:

@@ -1,127 +1,44 @@
 # BookIT browser tests
 
-The suite exercises the real BookIT backend and frontend against a real Gamma
-identity provider. `compose.ts` owns the complete environment: an isolated Docker
-network, two PostgreSQL containers, two Redis containers, Gamma, Prisma schema
-initialization, and either application processes or published application containers. Ports are assigned per run. It
-does not read another checkout or use a developer's database or credentials.
+Requires Docker, Make, Node and the repository's pnpm dependencies. Install the
+browser once with `pnpm exec playwright install chromium`.
 
-Install dependencies and Playwright Chromium, then use `pnpm test:e2e`. Docker
-must be running. A worker shares the container environment, while each test gets
-a fresh browser context and cleared BookIT bookings/rules. Run with one worker
-to keep the suite's resource usage predictable.
-
-## Development servers or published images
-
-Local runs default to development servers (`E2E_MODE=dev`).
-CI requires `E2E_MODE=images` and refuses to fall back to
-development servers if either image is missing.
-
-To run the same suite locally against specific published images:
+From the repository root:
 
 ```sh
-# For private packages, authenticate Docker with read:packages access first.
-docker login ghcr.io
-E2E_MODE=images \
-BOOKIT_FRONTEND_IMAGE='ghcr.io/cthit/bookit-node-frontend:<commit-sha>' \
-BOOKIT_BACKEND_IMAGE='ghcr.io/cthit/bookit-node-backend:<commit-sha>' \
-pnpm test:e2e
+make -C e2e run-e2e                 # Build and test the current checkout
+make -C e2e run-e2e VERSION='<sha>' # Test published commit images
+make -C e2e run-e2e VERSION=v1.2.0  # Test a release or any other published tag
 ```
 
-Use the full 40-character commit SHA. Image digests (`@sha256:<64 hex characters>`)
-also work; tags such as `latest` are rejected. Images are pulled on each run.
-Docker/Testcontainers use the
-host's Docker credential store; credentials are not forwarded into containers.
-Public images do not require a login.
+`pnpm test:e2e` runs the same Make target. For private GHCR images, first use
+`docker login ghcr.io` with read-only package access.
 
-Image mode runs the backend image once with `prisma db push` against the
-empty, isolated BookIT database, and checks its exit status before starting the
-application. It does not generate a client from the checkout or migrate on normal
-backend startup. No production database is touched.
-
-The browser connects to the backend's mapped port. Backend API routes stay under
-`/api`; all other requests proxy to the Nginx frontend container on port 80, as
-in production Compose. Both BookIT containers retain their production commands
-and the backend runs with `NODE_ENV=production`. Images target `linux/amd64`;
-Docker Desktop on Apple Silicon runs them under emulation.
-
-In image mode Gamma uses `gamma.localhost:<port>` as its single OIDC issuer:
-Chromium resolves it to host loopback, while the backend resolves the identical
-name through a Docker network alias. Gamma listens on that port inside its
-container too. No issuer rewriting, authentication mocks, or development proxy
-are involved.
-
-## CI image lifecycle and fork PRs
-
-Each branch push runs quality checks, publishes frontend/backend images to GHCR
-as `:<commit-sha>`. E2E waits for publication, then pulls those commit tags directly.
-Same-repository
-PRs use that branch CI; fork PRs run quality checks separately. Publication has
-package-write permission; E2E has package-read permission.
-
-Publishing a GitHub Release requires the latest CI run for its commit to pass,
-then copies the commit images to the release tag (for example, `v1.2.0`).
-No rebuild, main-merge promotion, or
-`latest` update occurs. Release tags must be valid Docker tags, not `latest` or
-commit SHAs. Prereleases use their exact release tag too.
-
-CI and releases share a per-commit concurrency group so publication and release
-tagging cannot race. There is no image-metadata artifact to download.
-
-Fork PRs and Dependabot PRs run quality checks only. They receive no registry
-credentials and skip publication/image E2E. After reviewing their code,
-a maintainer must place it on a trusted branch in this repository to get image
-coverage before merging. We do not use `pull_request_target` to execute PR code.
-GHCR packages must grant this repository's Actions token write/read access; this
-may need configuring for pre-existing packages.
-
-Commit tags are retained; apply a registry retention policy
-separately without removing digests referenced by production tags. Failures retain
-the E2E console log (including image references and startup logs), browser traces,
-screenshots, video, and bounded per-container logs. Normal completion and failure
-both stop the owned containers/network; Testcontainers' resource reaper handles
-abrupt runner termination.
-
-The spec files contain focused, independent tests rather than one long test
-per file. Booking lifecycle and concurrency, calendar navigation and drag/edit
-consistency, language persistence, mobile layout, rule validation/lifecycle, and
-UI/API permissions have separate results. Each test gets its own login and data
-reset; the services stay shared for the worker.
-
-Prefer `getByRole` with an accessible name and scope it to the relevant dialog or
-navigation when needed. Date/time fields use React Aria's named groups and
-editable spinbutton segments. `date-time-helpers.ts` enters values through the
-keyboard and asserts their accessible numeric values. These are the controls'
-actual semantics, not artificial roles added to satisfy a selector.
-
-E2E source uses the same Vite+ formatter as the application:
+To test specific digests instead of a shared tag:
 
 ```sh
-pnpm exec vp fmt e2e playwright.config.ts
+make -C e2e run-e2e \
+  BOOKIT_FRONTEND_IMAGE='ghcr.io/cthit/bookit-node-frontend@sha256:<digest>' \
+  BOOKIT_BACKEND_IMAGE='ghcr.io/cthit/bookit-node-backend@sha256:<digest>'
 ```
 
-Use `pnpm format` for the whole repository. `pnpm check` checks E2E formatting and
-lint in CI as well.
+Every run uses fresh Testcontainers-managed containers, volumes and a network:
+BookIT frontend/backend, Gamma, and separate PostgreSQL/Redis instances for each
+app. The backend image initializes the empty BookIT database before startup.
+Requests go through the backend to the Nginx frontend, as in production.
+No development servers or existing databases are used.
 
-Tests import the extended `test` and `expect` from `./fixtures`. The default page
-logs in through Gamma as `member` before the test starts. A spec can use
-`test.use({ role: "admin" })` or `test.use({ role: "outsider" })`; `loginAs` lets a
-test explicitly switch identity. `authenticate: false` is reserved for tests of
-the unauthenticated flow.
+Tests log in through Gamma with member/admin/outsider fixtures and reset bookings
+and rules between tests. Completion or failure removes the owned containers,
+volumes and network; Testcontainers' reaper handles interrupted runs. Locally built
+image tags are removed on exit. Build caches and unrelated Docker resources are
+left alone. Published images are pulled on every run.
 
-The synthetic admin has the BookIT client's `admin` authority, configured through
-Gamma's UI. Admin and member belong to digIT; outsider belongs to no group.
-Gamma's global bootstrap administrator is used only to provision the OAuth
-client and its CLIENT API key. Authentication and authorization are never mocked.
+Failures retain Playwright traces, screenshots, video and service logs.
+CI publishes commit images after quality checks and runs this same target with
+`VERSION`. Fork/Dependabot PRs get quality checks only, without registry credentials;
+image E2E requires a reviewed branch in this repository. GitHub releases retag
+the tested commit images without rebuilding.
 
-Image versions are explicit in `compose.ts`. BookIT uses PostgreSQL 12.22 and
-Redis 5.0.14 to cover its intentionally deferred server upgrades. Gamma 2.5.1 is
-pinned by digest, with PostgreSQL 16.0 and Redis 5.0.14 matching the working
-`chalmers.it` `test/gamma-integration` reference. These pins are compatibility
-baselines, not a claim that the old PostgreSQL/Redis releases receive security
-fixes. Upgrade the BookIT servers in their separate infrastructure PRs and update
-these test pins alongside them.
-
-On failure, Playwright retains browser artifacts and the fixture attaches bounded
-application/Gamma logs with bootstrap credentials redacted. Startup failures print
-those logs before cleaning up the owned environment.
+Service versions are pinned in `compose.ts`. BookIT's PostgreSQL 12 and Redis 5
+upgrades remain separate follow-ups.
