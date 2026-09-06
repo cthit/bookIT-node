@@ -74,8 +74,10 @@ Vite is only used as a separate server during development for live updates.
 > Remove any command or entrypoint override that calls the deleted `startup.sh`;
 > use the image's default command.
 
-Commit images are published from `main` only after checks and E2E pass.
-Releases tag that tested image without rebuilding it.
+CI runs Checks → Publish → E2E for pull requests and `main`. Publish pushes a
+commit image to GHCR, then E2E pulls and tests that exact image by digest. Fork and
+Dependabot PRs transfer the image as an artifact because they cannot publish.
+Releases tag the image only after the complete `main` workflow passes, without rebuilding it.
 
 Set `NODE_ENV=production` and provide your deployment's authentication settings.
 Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.

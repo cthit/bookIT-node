@@ -87,7 +87,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
       }
       blockEventInnerClass="booking-event-label min-w-0 max-w-full overflow-hidden text-(--fc-event-contrast-color) print:text-black"
       blockEventTimeClass="min-w-0 max-w-full truncate"
-      blockEventTitleClass="min-w-0 max-w-full whitespace-normal wrap-anywhere overflow-hidden line-clamp-2 leading-snug"
+      blockEventTitleClass="min-w-0 max-w-full wrap-anywhere overflow-hidden leading-snug"
 
       rowEventClass={(info) =>
         cn(
@@ -128,7 +128,9 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         cn("flex flex-row items-center", info.isNarrow ? xxsTextClass : "text-xs")
       }
       rowEventTimeClass={(info) => cn("font-bold shrink-1", info.isNarrow ? "ps-0.5" : "ps-1")}
-      rowEventTitleClass={(info) => cn("shrink-100", info.isNarrow ? "px-0.5" : "px-1")}
+      rowEventTitleClass={(info) =>
+        cn("shrink-100 whitespace-normal line-clamp-2", info.isNarrow ? "px-0.5" : "px-1")
+      }
 
       columnEventTitleSticky={false}
       columnEventClass={(info) =>
@@ -164,10 +166,18 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         )
       }
       columnEventTimeClass={(info) =>
-        cn("order-0 shrink-100", !info.isShort && (info.isNarrow ? "pb-0.5" : "pb-1"))
+        cn(
+          "order-0",
+          info.isShort ? "shrink-100" : "shrink-0",
+          !info.isShort && (info.isNarrow ? "pb-0.5" : "pb-1"),
+        )
       }
       columnEventTitleClass={(info) =>
-        cn("order-1 shrink-1", !info.isShort && (info.isNarrow ? "py-0.5" : "py-1"))
+        cn(
+          "order-1 min-h-0 shrink-1",
+          info.isShort ? "truncate" : "whitespace-normal",
+          !info.isShort && (info.isNarrow ? "py-0.5" : "py-1"),
+        )
       }
 
       moreLinkClass="focus-visible:outline-3 outline-ring/50"
