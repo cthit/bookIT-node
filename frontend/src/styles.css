@@ -117,15 +117,8 @@ textarea {
 }
 
 .booking-multi-room {
-  background-image: var(--booking-stripes);
+  background-image: linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)), var(--booking-stripes);
   color: white;
-}
-
-.booking-multi-room .booking-event-label > * {
-  background: rgb(0 0 0 / 55%);
-  border-radius: 2px;
-  color: white;
-  align-self: flex-start;
 }
 
 @media (max-width: 760px) {
