@@ -43,9 +43,19 @@ jobs:
       - name: Install approved dependencies from the lockfile
         run: vp install --frozen-lockfile
       - name: Generate GraphQL contracts and check they are committed
+        shell: bash
         run: |
           pnpm codegen
-          git diff --exit-code -- bookit/src/generated/schema.ts frontend/src/generated/graphql.ts
+          if [[ -n "$(git status --porcelain --untracked-files=all)" ]]; then
+            echo "::error::pnpm codegen left repository changes. Regenerate and commit all generated output."
+            git status --short --untracked-files=all
+            git diff --no-ext-diff
+            git diff --cached --no-ext-diff
+            while IFS= read -r -d '' file; do
+              git diff --no-ext-diff --no-index -- /dev/null "$file" || true
+            done < <(git ls-files --others --exclude-standard -z)
+            exit 1
+          fi
       - name: Generate Prisma client
         run: pnpm --dir bookit exec prisma generate
       - name: Check strict TypeScript contracts

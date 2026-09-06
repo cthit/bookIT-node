@@ -210,7 +210,7 @@ const isSerializationFailure = (error: unknown): boolean => {
 };
 
 // Retry availability checks and writes together after serialization conflicts.
-export const withBookingTransaction = async (
+const withBookingTransaction = async (
   prisma: PrismaClient,
   operation: (transaction: Prisma.TransactionClient) => Promise<Error | null>,
 ): Promise<Error | null> => {

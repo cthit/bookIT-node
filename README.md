@@ -31,7 +31,7 @@ test -f bookit/.env || cp bookit/.env.example bookit/.env
 
 Compose starts local Gamma, its test users and BookIT OAuth client, and separate
 PostgreSQL/Redis instances for each app. Copy the local authentication values from
-`bookit/.env.example` if you already have an `.env`, and set `SESSION_SECRET`
+`bookit/.env.example` if you already have an `.env`, and set `SECRET`
 using `openssl rand -hex 32`. No production credentials are needed.
 
 BookIT, after confirming the `DB_*` settings point to your local database:
@@ -71,12 +71,16 @@ Vite is only used as a separate server during development for live updates.
 >
 > Set `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASS`; `DB_PORT` defaults to `5432`.
 > These settings configure both the backend and Prisma commands. `DATABASE_URL` is no longer read.
+> Remove any command or entrypoint override that calls the deleted `startup.sh`;
+> use the image's default command.
 
 Commit images are published from `main` only after checks and E2E pass.
 Releases tag that tested image without rebuilding it.
 
 Set `NODE_ENV=production` and provide your deployment's authentication settings.
 Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
+Apply the schema with `./node_modules/.bin/prisma db push` in a one-off application
+container using the deployment's `DB_*` settings and database network.
 
 ## Personal-data cleanup
 
@@ -96,8 +100,7 @@ docker exec bookit-node node ./build/index.js --cleanup
 The public GraphQL schema remains compatible with `main`, including nullable
 legacy arguments and the Boolean `deleteRule` result. Missing arguments and null
 room entries are rejected before database access. Database models are unchanged.
-Calendar moves
-use the additional `moveEvent` mutation, which updates only dates and rejects a
+Calendar moves use the additional `moveEvent` mutation, which updates only dates and rejects a
 move when another user has already changed its original times. Members can still
 edit shared bookings; replacing a stored contact number requires its owner or an
 administrator. Omit `phone` or send `null` to retain the existing contact.
