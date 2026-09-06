@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { EventCalendar } from "@/components/event-calendar";
 import { CalendarBlockLabel } from "@/components/calendar-block-label";
 import svLocale from "@fullcalendar/react/locales/sv";
 import enLocale from "@fullcalendar/react/locales/en-gb";
-import { addDays, startOfDay, startOfWeek } from "date-fns";
+import { addDays, format, startOfDay, startOfWeek } from "date-fns";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
@@ -22,9 +22,18 @@ import { parseDate, localInput } from "@/lib/dates";
 import { useLanguage } from "@/lib/language";
 import { useUser } from "@/lib/user";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { BookingDetails } from "@/pages/booking";
 import { Failure } from "@/components/feedback";
+
+type BookingMove = { booking: BookingFragment; start: Date; end: Date };
 
 export function CalendarPage() {
   const { t, language } = useLanguage();
@@ -32,6 +41,8 @@ export function CalendarPage() {
   const navigate = useNavigate();
   const cache = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [pendingMove, setPendingMove] = useState<BookingMove | null>(null);
+  const savingMove = useRef(false);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -57,15 +68,7 @@ export function CalendarPage() {
     event.room.some((room) => room && selectedRooms.includes(room)),
   );
   const move = useMutation({
-    mutationFn: async ({
-      booking,
-      start,
-      end,
-    }: {
-      booking: BookingFragment;
-      start: Date;
-      end: Date;
-    }) => {
+    mutationFn: async ({ booking, start, end }: BookingMove) => {
       const { editEvent } = await request(UpdateBookingDocument, {
         event: {
           id: booking.id,
@@ -88,6 +91,30 @@ export function CalendarPage() {
       toast.success(t("Booking moved", "Bokningen flyttades"));
     },
   });
+
+  function cancelMove() {
+    if (!savingMove.current) {
+      setPendingMove(null);
+    }
+  }
+
+  async function confirmMove() {
+    if (!pendingMove || savingMove.current) {
+      return;
+    }
+    savingMove.current = true;
+    try {
+      await move.mutateAsync(pendingMove);
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : t("Move failed", "Flytten misslyckades"),
+      );
+    } finally {
+      savingMove.current = false;
+      setPendingMove(null);
+    }
+  }
+
   return (
     <>
       <style>{bookingRoomStyles}</style>
@@ -134,7 +161,7 @@ export function CalendarPage() {
         height={viewport.width > 600 ? Math.max(420, viewport.height - 200) : "auto"}
         scrollTime="17:00:00"
         scrollTimeReset={false}
-        selectable
+        selectable={!pendingMove && !move.isPending}
         eventOverlap
         slotEventOverlap={false}
         eventMaxStack={2}
@@ -167,25 +194,26 @@ export function CalendarPage() {
           })
         }
         eventClick={(info) => {
-          if (info.event.id) {
+          if (info.event.id && !pendingMove && !move.isPending) {
             setDetailId(info.event.id);
           }
         }}
         eventDrop={(info) => {
           const booking = bookings.find((event) => event.id === info.event.id);
-          if (!booking || !info.event.start || !info.event.end) {
-            info.revert();
+          const start = info.event.start;
+          const end = info.event.end;
+          info.revert();
+          if (
+            pendingMove ||
+            savingMove.current ||
+            !booking ||
+            !start ||
+            !end ||
+            !(user?.is_admin || user?.groups?.includes(booking.booked_as))
+          ) {
             return;
           }
-          move.mutate(
-            { booking, start: info.event.start, end: info.event.end },
-            {
-              onError: (error) => {
-                info.revert();
-                toast.error(error.message);
-              },
-            },
-          );
+          setPendingMove({ booking, start, end });
         }}
 
         events={[
@@ -197,7 +225,11 @@ export function CalendarPage() {
             color: rooms.find((room) => event.room.includes(room.id))?.color,
             contrastColor: "#fff",
             className: bookingRoomClass(event.room),
-            editable: Boolean(user?.is_admin || user?.groups?.includes(event.booked_as)),
+            editable: Boolean(
+              !pendingMove &&
+              !move.isPending &&
+              (user?.is_admin || user?.groups?.includes(event.booked_as)),
+            ),
             durationEditable: false,
           })),
           ...calendarBlocks(
@@ -222,6 +254,66 @@ export function CalendarPage() {
             : []),
         ]}
       />
+      <Dialog
+        open={pendingMove !== null}
+        onOpenChange={(open) => {
+          if (!open) {
+            cancelMove();
+          }
+        }}
+      >
+        <DialogContent
+          showCloseButton={false}
+          onEscapeKeyDown={(event) => {
+            if (savingMove.current) {
+              event.preventDefault();
+            }
+          }}
+          onInteractOutside={(event) => {
+            if (savingMove.current) {
+              event.preventDefault();
+            }
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>{t("Move booking?", "Flytta bokningen?")}</DialogTitle>
+            <DialogDescription>{pendingMove?.booking.title}</DialogDescription>
+          </DialogHeader>
+          {pendingMove && (
+            <dl className="grid gap-4 text-sm">
+              {[
+                {
+                  label: t("Original time", "Nuvarande tid"),
+                  start: parseDate(pendingMove.booking.start),
+                  end: parseDate(pendingMove.booking.end),
+                },
+                {
+                  label: t("Proposed time", "Föreslagen tid"),
+                  start: pendingMove.start,
+                  end: pendingMove.end,
+                },
+              ].map(({ label, start, end }) => (
+                <div key={label}>
+                  <dt className="text-muted-foreground">{label}</dt>
+                  <dd className="mt-2 flex flex-wrap gap-x-2 font-medium">
+                    <time dateTime={start.toISOString()}>{format(start, "yyyy-MM-dd HH:mm")}</time>
+                    <span aria-hidden="true">–</span>
+                    <time dateTime={end.toISOString()}>{format(end, "yyyy-MM-dd HH:mm")}</time>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <DialogFooter>
+            <Button variant="outline" disabled={move.isPending} onClick={cancelMove}>
+              {t("Cancel", "Avbryt")}
+            </Button>
+            <Button disabled={move.isPending} onClick={() => void confirmMove()}>
+              {t("Move booking", "Flytta bokning")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
       <Dialog
         open={detailId !== null}
         onOpenChange={(open) => {
