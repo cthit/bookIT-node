@@ -156,6 +156,10 @@ An authorized group edit may omit the phone number to preserve it; new bookings 
 require one. Edits preserve the original author, and overlapping booking writes are
 checked within a serializable transaction.
 
+If privacy cleanup has removed a booking's author, an authorized edit requires a
+new phone number and records the editor as the new contact. It never restores the
+deleted author's identity or reuses an unowned phone number.
+
 The privacy cleanup retains the existing SQL that clears phone numbers and
 booking-user IDs 14 days after an event. Its unsupported Jobber image was replaced
 with a small PostgreSQL-client container: cleanup runs on startup and every 24

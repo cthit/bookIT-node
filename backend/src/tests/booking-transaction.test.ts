@@ -51,8 +51,8 @@ describe("Booking transaction recovery", () => {
     booking_terms: true,
     room: ["GROUP_ROOM"],
   };
-  it.each([undefined, null])(
-    "preserves the author's phone and identity when edit phone is %s",
+  it.each([undefined, null, "0707654321"])(
+    "preserves the author's identity and handles edit phone %s",
     async (phone) => {
       const previous = {
         id: "booking",
@@ -76,7 +76,7 @@ describe("Booking transaction recovery", () => {
       expect(update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
-            phone: "0701234567",
+            phone: phone ?? "0701234567",
             booked_by: "author",
             title: "Edited booking",
           }),
@@ -84,6 +84,79 @@ describe("Booking transaction recovery", () => {
       );
     },
   );
+  const anonymized = {
+    id: "booking",
+    title: "Old booking",
+    description: "",
+    booked_by: "",
+    booked_as: "digit",
+    phone: "",
+    room: ["GROUP_ROOM"],
+    start: new Date(Date.now() - 21 * 86_400_000),
+    end: new Date(Date.now() - 20 * 86_400_000),
+    created_at: new Date(Date.now() - 30 * 86_400_000),
+    updated_at: new Date(Date.now() - 30 * 86_400_000),
+  };
+
+  it.each([false, true])(
+    "lets an authorized editor become the contact for an anonymized booking (admin: %s)",
+    async (is_admin) => {
+      vi.spyOn(prisma, "$transaction").mockImplementation(async (operation) => operation(prisma));
+      vi.spyOn(prisma.event, "findUnique").mockResolvedValue(anonymized);
+      vi.spyOn(prisma.event, "count").mockResolvedValue(0);
+      vi.spyOn(prisma.rule, "findMany").mockResolvedValue([]);
+      const update = vi.spyOn(prisma.event, "update").mockResolvedValue(anonymized);
+
+      expect(
+        await editEvent(
+          prisma,
+          { ...input, phone: "0707654321", booked_by: "untrusted-author" },
+          { ...user, is_admin, groups: is_admin ? [] : user.groups },
+        ),
+      ).toBeNull();
+      expect(update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          data: expect.objectContaining({
+            booked_by: user.cid,
+            phone: "0707654321",
+            start: new Date(input.start),
+            end: new Date(input.end),
+          }),
+        }),
+      );
+    },
+  );
+
+  it.each([undefined, null, "", "invalid"])(
+    "requires a fresh valid phone for an anonymized booking, not %s",
+    async (phone) => {
+      vi.spyOn(prisma, "$transaction").mockImplementation(async (operation) => operation(prisma));
+      // Even inconsistent legacy data must not expose an unowned phone number.
+      vi.spyOn(prisma.event, "findUnique").mockResolvedValue({
+        ...anonymized,
+        phone: "0701234567",
+      });
+      vi.spyOn(prisma.event, "count").mockResolvedValue(0);
+      const update = vi.spyOn(prisma.event, "update");
+
+      expect(await editEvent(prisma, { ...input, phone }, user)).toMatchObject({
+        en: "Provided phone number is faulty",
+      });
+      expect(update).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not let an outsider take over an anonymized booking", async () => {
+    vi.spyOn(prisma, "$transaction").mockImplementation(async (operation) => operation(prisma));
+    vi.spyOn(prisma.event, "findUnique").mockResolvedValue(anonymized);
+    const update = vi.spyOn(prisma.event, "update");
+
+    expect(
+      await editEvent(prisma, { ...input, phone: "0707654321" }, { ...user, groups: [] }),
+    ).toMatchObject({ en: "You do not have permission to edit this event" });
+    expect(update).not.toHaveBeenCalled();
+  });
+
   it("still rejects new bookings without a phone", async () => {
     vi.spyOn(prisma, "$transaction").mockImplementation(async (operation) => operation(prisma));
     vi.spyOn(prisma.event, "count").mockResolvedValue(0);

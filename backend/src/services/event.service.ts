@@ -247,10 +247,13 @@ export const editEvent = async (
     // Group members may edit bookings without access to the author's phone.
     // Keep both fields together: changing the author would grant the editor
     // access to a phone number that belonged to someone else.
+    // After privacy cleanup removes the author, require a fresh phone number
+    // and make the authenticated editor the new contact. Never reclaim an old
+    // phone number whose owner is unknown.
     const updated = {
       ...event,
-      phone: event.phone ?? previous.phone,
-      booked_by: previous.booked_by,
+      phone: event.phone ?? (previous.booked_by ? previous.phone : ""),
+      booked_by: previous.booked_by || user.cid,
     };
     const error =
       (await validEvent(transaction, updated, user)) || (await checkRules(transaction, updated));

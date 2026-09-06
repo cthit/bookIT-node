@@ -138,11 +138,11 @@ export function BookingForm({
             name="phone"
             type="tel"
             autoComplete="tel"
-            required={!booking}
+            required={!booking?.booked_by}
             pattern={String.raw`\+?\(?[0-9]{3}\)?[\-\s.]?[0-9]{3}[\-\s.]?[0-9]{4,5}`}
             defaultValue={booking?.phone ?? ""}
             placeholder={
-              booking
+              booking?.booked_by
                 ? t("Leave blank to keep existing number", "Lämna tomt för att behålla numret")
                 : "070 123 45 67"
             }
