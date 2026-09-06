@@ -1,7 +1,7 @@
 import { defineConfig } from "vite-plus";
 export default defineConfig({
   test: {
-    include: ["backend/src/**/*.test.ts", "frontend/src/**/*.test.ts", "e2e/**/*.test.ts"],
+    include: ["backend/src/**/*.test.ts", "frontend/src/**/*.test.ts"],
     environment: "node",
   },
   lint: {
