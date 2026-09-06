@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker, TimePicker } from "@/components/date-time-fields";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -125,8 +126,9 @@ export function RulesPage() {
         room: selected,
         start_date: formText(form, "start_date"),
         end_date: formText(form, "end_date"),
-        start_time: formText(form, "start_time"),
-        end_time: formText(form, "end_time"),
+        // Accessible time fields serialize ISO times; the API uses minute precision.
+        start_time: formText(form, "start_time").slice(0, 5),
+        end_time: formText(form, "end_time").slice(0, 5),
       };
       if (rule.end_date < rule.start_date || rule.end_time <= rule.start_time)
         throw new Error(
@@ -357,40 +359,22 @@ export function RulesPage() {
                   <option value="false">{t("Blocked", "Spärrad")}</option>
                 </select>
               </div>
-              <div className="field">
-                <Label htmlFor="start_date">{t("Start date", "Startdatum")}</Label>
-                <Input
-                  id="start_date"
-                  name="start_date"
-                  type="date"
-                  required
-                  defaultValue={format(new Date(), "yyyy-MM-dd")}
-                />
-              </div>
-              <div className="field">
-                <Label htmlFor="end_date">{t("End date", "Slutdatum")}</Label>
-                <Input
-                  id="end_date"
-                  name="end_date"
-                  type="date"
-                  required
-                  defaultValue="2040-12-31"
-                />
-              </div>
-              <div className="field">
-                <Label htmlFor="start_time">{t("Start time", "Starttid")}</Label>
-                <Input
-                  id="start_time"
-                  name="start_time"
-                  type="time"
-                  required
-                  defaultValue="08:00"
-                />
-              </div>
-              <div className="field">
-                <Label htmlFor="end_time">{t("End time", "Sluttid")}</Label>
-                <Input id="end_time" name="end_time" type="time" required defaultValue="17:00" />
-              </div>
+              <DatePicker
+                label={t("Start date", "Startdatum")}
+                name="start_date"
+                defaultValue={format(new Date(), "yyyy-MM-dd")}
+              />
+              <DatePicker
+                label={t("End date", "Slutdatum")}
+                name="end_date"
+                defaultValue="2040-12-31"
+              />
+              <TimePicker
+                label={t("Start time", "Starttid")}
+                name="start_time"
+                defaultValue="08:00"
+              />
+              <TimePicker label={t("End time", "Sluttid")} name="end_time" defaultValue="17:00" />
             </div>
             <fieldset>
               <legend className="text-sm font-medium mb-3">{t("Weekdays", "Veckodagar")}</legend>

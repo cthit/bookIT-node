@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
 import { createBooking, graphql } from "./booking-helpers";
+import { expectSegments } from "./date-time-helpers";
 
 test("room filters and period navigation show the expected bookings", async ({ page }) => {
   const title = "E2E calendar meeting";
@@ -76,10 +77,19 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
   await event.first().click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
 
-  const editStart = await page.getByLabel("Begins at", { exact: true }).inputValue();
-  expect(await page.evaluate((value) => new Date(value).toISOString(), editStart)).toBe(
-    movedBooking.start,
-  );
+  const movedLocalTime = await page.evaluate((value) => {
+    const date = new Date(value);
+
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+      hour: date.getHours(),
+      minute: date.getMinutes(),
+    };
+  }, movedBooking.start);
+
+  await expectSegments(page.getByRole("group", { name: "Begins at", exact: true }), movedLocalTime);
 
   await page
     .getByRole("textbox", { name: "Description", exact: true })

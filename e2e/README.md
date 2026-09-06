@@ -11,15 +11,21 @@ must be running. A worker shares the container environment, while each test gets
 a fresh browser context and cleared BookIT bookings/rules. Run with one worker
 to keep the suite's resource usage predictable.
 
-The four spec files contain focused, independent tests rather than one long test
+The spec files contain focused, independent tests rather than one long test
 per file. Booking lifecycle and concurrency, calendar navigation and drag/edit
 consistency, language persistence, mobile layout, rule validation/lifecycle, and
 UI/API permissions have separate results. Each test gets its own login and data
 reset; the services stay shared for the worker.
 
+Accessibility regressions cover keyboard date/time editing, leap-day selection,
+focus restoration (including calendars inside dialogs), required-date validation,
+and the mobile date picker layout.
+
 Prefer `getByRole` with an accessible name and scope it to the relevant dialog or
-navigation when needed. Use `getByLabel` for native date/time inputs, which have
-no useful implicit role; do not add artificial roles just to satisfy a selector.
+navigation when needed. Date/time fields use React Aria's named groups and
+editable spinbutton segments. `date-time-helpers.ts` enters values through the
+keyboard and asserts their accessible numeric values. These are the controls'
+actual semantics, not artificial roles added to satisfy a selector.
 
 E2E source uses the same Vite+ formatter as the application:
 

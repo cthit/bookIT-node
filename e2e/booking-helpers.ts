@@ -1,4 +1,5 @@
 import { expect, type Page } from "@playwright/test";
+import { dateSegments, fillSegments } from "./date-time-helpers";
 
 export async function bookingDate(page: Page): Promise<string> {
   // Match the browser's date, including CI's configured timezone.
@@ -27,8 +28,16 @@ export async function fillBooking(page: Page, title: string) {
   await page.getByRole("combobox", { name: "Booking as", exact: true }).selectOption("digit");
   await page.getByRole("checkbox", { name: "Storhubben", exact: true }).check();
 
-  await page.getByLabel("Begins at", { exact: true }).fill(`${date}T12:00`);
-  await page.getByLabel("Ends at", { exact: true }).fill(`${date}T13:00`);
+  await fillSegments(page.getByRole("group", { name: "Begins at", exact: true }), {
+    ...dateSegments(date),
+    hour: 12,
+    minute: 0,
+  });
+  await fillSegments(page.getByRole("group", { name: "Ends at", exact: true }), {
+    ...dateSegments(date),
+    hour: 13,
+    minute: 0,
+  });
 
   await page
     .getByRole("textbox", { name: "Description", exact: true })

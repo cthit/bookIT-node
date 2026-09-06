@@ -1,7 +1,39 @@
 import { test, expect } from "./fixtures";
 import { bookingDate } from "./booking-helpers";
+import { dateSegments, expectSegments, fillSegments } from "./date-time-helpers";
 
 test.use({ role: "admin" });
+
+test("the rule calendar returns keyboard focus without closing its parent dialog", async ({
+  page,
+}) => {
+  await page.getByRole("navigation").getByRole("link", { name: "Rules", exact: true }).click();
+  await page.getByRole("button", { name: "New rule", exact: true }).click();
+
+  const form = page.getByRole("dialog", { name: "New rule", exact: true });
+  const trigger = form.getByRole("button", { name: "Choose date for End date", exact: true });
+  await trigger.press("Enter");
+
+  const calendar = page.getByRole("dialog", { name: "End date calendar", exact: true });
+  const day = calendar.getByRole("button", { name: /31 December 2040 selected/ });
+  await expect(day).toBeFocused();
+  await day.press("ArrowLeft");
+  await page.keyboard.press("Enter");
+
+  await expect(calendar).not.toBeVisible();
+  await expect(trigger).toBeFocused();
+  await expectSegments(form.getByRole("group", { name: "End date", exact: true }), {
+    year: 2040,
+    month: 12,
+    day: 30,
+  });
+
+  await trigger.press("Enter");
+  await page.keyboard.press("Escape");
+  await expect(calendar).not.toBeVisible();
+  await expect(form).toBeVisible();
+  await expect(trigger).toBeFocused();
+});
 
 test("a new rule has the original defaults and requires a selected weekday", async ({ page }) => {
   await page.getByRole("navigation").getByRole("link", { name: "Rules", exact: true }).click();
@@ -14,16 +46,28 @@ test("a new rule has the original defaults and requires a selected weekday", asy
   await expect(form.getByRole("combobox", { name: "Availability", exact: true })).toHaveValue(
     "true",
   );
-  await expect(form.getByLabel("End date", { exact: true })).toHaveValue("2040-12-31");
+  await expectSegments(form.getByRole("group", { name: "End date", exact: true }), {
+    year: 2040,
+    month: 12,
+    day: 31,
+  });
   await expect(form.getByRole("checkbox", { checked: true })).toHaveCount(0);
 
   await form.getByRole("textbox", { name: "Title", exact: true }).fill("E2E room maintenance");
   await form.getByRole("spinbutton", { name: "Priority", exact: true }).fill("2");
   await form.getByRole("combobox", { name: "Availability", exact: true }).selectOption("false");
-  await form.getByLabel("Start date", { exact: true }).fill(await bookingDate(page));
-  await form.getByLabel("End date", { exact: true }).fill("2040-12-31");
-  await form.getByLabel("Start time", { exact: true }).fill("12:00");
-  await form.getByLabel("End time", { exact: true }).fill("13:00");
+  await fillSegments(
+    form.getByRole("group", { name: "Start date", exact: true }),
+    dateSegments(await bookingDate(page)),
+  );
+  await fillSegments(form.getByRole("group", { name: "Start time", exact: true }), {
+    hour: 12,
+    minute: 0,
+  });
+  await fillSegments(form.getByRole("group", { name: "End time", exact: true }), {
+    hour: 13,
+    minute: 0,
+  });
   await form.getByRole("checkbox", { name: "Storhubben", exact: true }).check();
   await form
     .getByRole("textbox", { name: "Description", exact: true })
@@ -43,10 +87,18 @@ test("an administrator creates, views and deletes a recurring booking rule", asy
   await form.getByRole("textbox", { name: "Title", exact: true }).fill("E2E room maintenance");
   await form.getByRole("spinbutton", { name: "Priority", exact: true }).fill("2");
   await form.getByRole("combobox", { name: "Availability", exact: true }).selectOption("false");
-  await form.getByLabel("Start date", { exact: true }).fill(await bookingDate(page));
-  await form.getByLabel("End date", { exact: true }).fill("2040-12-31");
-  await form.getByLabel("Start time", { exact: true }).fill("12:00");
-  await form.getByLabel("End time", { exact: true }).fill("13:00");
+  await fillSegments(
+    form.getByRole("group", { name: "Start date", exact: true }),
+    dateSegments(await bookingDate(page)),
+  );
+  await fillSegments(form.getByRole("group", { name: "Start time", exact: true }), {
+    hour: 12,
+    minute: 0,
+  });
+  await fillSegments(form.getByRole("group", { name: "End time", exact: true }), {
+    hour: 13,
+    minute: 0,
+  });
   await form.getByRole("checkbox", { name: "Storhubben", exact: true }).check();
   await form
     .getByRole("textbox", { name: "Description", exact: true })

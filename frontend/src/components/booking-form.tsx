@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { DatePicker } from "@/components/date-time-fields";
 import {
   Dialog,
   DialogContent,
@@ -191,14 +192,8 @@ export function BookingForm({
         </div>
       </fieldset>
       <div className="grid gap-5 sm:grid-cols-2">
-        <div className="field">
-          <Label htmlFor="start">{t("Begins at", "Börjar")}</Label>
-          <Input id="start" name="start" type="datetime-local" required defaultValue={start} />
-        </div>
-        <div className="field">
-          <Label htmlFor="end">{t("Ends at", "Slutar")}</Label>
-          <Input id="end" name="end" type="datetime-local" required defaultValue={end} />
-        </div>
+        <DatePicker label={t("Begins at", "Börjar")} name="start" defaultValue={start} withTime />
+        <DatePicker label={t("Ends at", "Slutar")} name="end" defaultValue={end} withTime />
       </div>
       <div className="field">
         <Label htmlFor="description">{t("Description", "Beskrivning")}</Label>
