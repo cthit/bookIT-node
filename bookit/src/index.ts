@@ -8,6 +8,7 @@ import { setupRoutes } from "./routes";
 import type { UserInfo } from "./models/user";
 import { authRequest } from "./utils";
 import { createSessionStore } from "./auth/session-store";
+import { cleanupPersonalData, startCleanup } from "./cleanup";
 
 interface GammaGroup {
   superGroup?: { type: string; name: string };
@@ -25,6 +26,20 @@ const requiredEnvironment = (name: string): string => {
 
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
+
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: requiredEnvironment("DATABASE_URL") }),
+  });
+
+  if (process.argv.includes("--cleanup")) {
+    try {
+      await cleanupPersonalData(prisma);
+    } finally {
+      await prisma.$disconnect();
+    }
+
+    return;
+  }
 
   const issuerBaseURL = requiredEnvironment("ISSUER_BASE_URL");
   const issuer = new URL(issuerBaseURL);
@@ -61,10 +76,6 @@ async function main() {
   });
 
   redis.on("error", (error) => console.error("Redis connection error", error));
-
-  const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: requiredEnvironment("DATABASE_URL") }),
-  });
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
 
@@ -146,6 +157,7 @@ async function main() {
 
   console.log(`BookIT listening on port ${port}`);
 
+  const stopCleanup = startCleanup(prisma);
   let stopping = false;
 
   const stop = () => {
@@ -155,8 +167,7 @@ async function main() {
 
     stopping = true;
 
-    void apollo
-      .stop()
+    void Promise.all([apollo.stop(), stopCleanup()])
       .then(() => Promise.all([redis.close(), prisma.$disconnect()]))
       .catch((error) => {
         console.error("Shutdown failed", error);

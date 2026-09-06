@@ -37,25 +37,25 @@ function Layout() {
         <div className="max-w-[1560px] mx-auto px-4 sm:px-12 flex items-center justify-between min-h-20 gap-4">
           <div className="flex items-center gap-2 sm:gap-12">
             <Link to="/" aria-label="BookIT home" className="flex items-center gap-2.5">
-              <span className="size-9 rounded-lg bg-brand text-white grid place-items-center">
+              <span className="size-9 rounded-lg bg-brand text-primary-foreground grid place-items-center">
                 <CalendarDays className="size-5" />
               </span>
               <span className="hidden sm:inline text-2xl tracking-tight font-bold">
-                book<span className="text-brand">IT</span>
+                book<span className="text-accent-foreground">IT</span>
               </span>
             </Link>
             <nav aria-label={t("Main navigation", "Huvudnavigation")} className="flex gap-1">
               <Link
                 to="/"
                 activeOptions={{ exact: true }}
-                activeProps={{ className: "bg-blue-50 text-primary" }}
+                activeProps={{ className: "bg-accent text-accent-foreground" }}
                 className="rounded-md px-3 py-2 text-sm font-medium"
               >
                 {t("Calendar", "Kalender")}
               </Link>
               <Link
                 to="/rules"
-                activeProps={{ className: "bg-blue-50 text-primary" }}
+                activeProps={{ className: "bg-accent text-accent-foreground" }}
                 className="rounded-md px-3 py-2 text-sm font-medium"
               >
                 {t("Rules", "Regler")}
@@ -72,7 +72,7 @@ function Layout() {
               {language === "en" ? "SV" : "EN"}
             </Button>
             <div className="hidden md:flex text-sm items-center gap-2 border-l pl-4 ml-2">
-              {user.data?.is_admin && <ShieldCheck className="size-4 text-primary" />}
+              {user.data?.is_admin && <ShieldCheck className="size-4 text-accent-foreground" />}
               {user.data?.nickname || user.data?.name || user.data?.cid}
             </div>
             <Button variant="ghost" size="icon" asChild>

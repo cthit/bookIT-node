@@ -1,7 +1,0 @@
-# Standalone production cleanup. Use the same database settings as BookIT.
-services:
-  db-scripts:
-    build: ./db-scripts
-    restart: unless-stopped
-    environment:
-      DATABASE_URL: ${DATABASE_URL:?Set DATABASE_URL to the BookIT database}

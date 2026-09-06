@@ -30,28 +30,28 @@
 }
 
 :root {
-  --background: #f6f8fb;
-  --foreground: #17283a;
+  --background: #f4f9fa;
+  --foreground: #102f36;
   --card: #fff;
-  --card-foreground: #17283a;
+  --card-foreground: #102f36;
   --popover: #fff;
-  --popover-foreground: #17283a;
-  --primary: #1769aa;
-  --primary-foreground: #fff;
-  --secondary: #e8f3fb;
-  --secondary-foreground: #1769aa;
-  --muted: #f1f5f8;
-  --muted-foreground: #617083;
-  --accent: #e8f3fb;
-  --accent-foreground: #1769aa;
+  --popover-foreground: #102f36;
+  --primary: #09cdda;
+  --primary-foreground: #102f36;
+  --secondary: #e2f5f6;
+  --secondary-foreground: #08616a;
+  --muted: #edf4f5;
+  --muted-foreground: #587078;
+  --accent: #e2f5f6;
+  --accent-foreground: #08616a;
   --destructive: #b42339;
-  --border: #dfe6ed;
-  --input: #d1dae4;
-  --ring: #2196f3;
-  --brand: #2196f3;
-  --eyebrow: #697a8d;
+  --border: #d6e5e7;
+  --input: #bed3d7;
+  --ring: #087c87;
+  --brand: var(--primary);
+  --eyebrow: #587078;
   --radius: 0.5rem;
-  --chart-1: #2196f3;
+  --chart-1: var(--primary);
   --chart-3: #ff9100;
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
   color: var(--foreground);

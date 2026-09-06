@@ -3,7 +3,6 @@ import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testconta
 import { GenericContainer, Network, Wait, type StartedTestContainer } from "testcontainers";
 import { createServer, type AddressInfo } from "node:net";
 import seed from "../gamma/users.json";
-import { resolve } from "node:path";
 
 export const images = {
   bookitPostgres: "postgres:12.22-alpine",
@@ -40,6 +39,7 @@ export interface Environment {
   logs: Record<string, string>;
   resetBookings(): Promise<void>;
   cleanupPersonalData(): Promise<void>;
+  restartBookit(): Promise<void>;
   stop(): Promise<void>;
 }
 
@@ -316,7 +316,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .start(),
     );
 
-    await track(
+    const bookit = await track(
       new GenericContainer(image)
         .withPlatform("linux/amd64")
         .withNetwork(network)
@@ -335,30 +335,15 @@ export async function compose(browser: Browser): Promise<Environment> {
       stop,
 
       async cleanupPersonalData() {
-        await bookitDb.copyFilesToContainer([
-          { source: resolve("db-scripts/cleanup.sh"), target: "/cleanup/cleanup.sh" },
-          { source: resolve("db-scripts/delete-data.sql"), target: "/cleanup/delete-data.sql" },
-        ]);
+        const result = await bookit.exec(["sh", "./startup.sh", "--cleanup"]);
 
-        // Exercise both supported deployment configurations against real data.
-        for (const connection of [
-          { DATABASE_URL: "postgresql://bookit_test:bookit_test@127.0.0.1:5432/bookit_test" },
-          {
-            DB_HOST: "127.0.0.1",
-            DB_PORT: "5432",
-            DB_USER: "bookit_test",
-            DB_NAME: "bookit_test",
-            PGPASSWORD: "bookit_test",
-          },
-        ]) {
-          const result = await bookitDb.exec(["sh", "/cleanup/cleanup.sh"], {
-            env: { ...connection, CLEANUP_ONCE: "1" },
-          });
-
-          if (result.exitCode !== 0) {
-            throw new Error(`Privacy cleanup failed: ${result.output}`);
-          }
+        if (result.exitCode !== 0) {
+          throw new Error(`Privacy cleanup failed: ${result.output}`);
         }
+      },
+
+      async restartBookit() {
+        await bookit.restart();
       },
 
       async resetBookings() {

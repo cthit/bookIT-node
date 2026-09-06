@@ -156,7 +156,7 @@ export function BookingDetails({
                 <dt className="text-sm text-muted-foreground">{t("Booking as", "Bokas som")}</dt>
                 <dd className="mt-2 font-medium">
                   <a
-                    className="text-primary underline"
+                    className="text-accent-foreground underline"
                     href={`https://gamma.chalmers.it/super-groups/${encodeURIComponent(booking.booked_as)}`}
                   >
                     {booking.booked_as}
@@ -180,7 +180,7 @@ export function BookingDetails({
                 <dd className="mt-2">
                   {booking.booked_by ? (
                     <a
-                      className="text-primary underline"
+                      className="text-accent-foreground underline"
                       href={`https://gamma.chalmers.it/users/${encodeURIComponent(booking.booked_by)}`}
                     >
                       {booking.booked_by}

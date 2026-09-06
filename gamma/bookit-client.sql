@@ -1,3 +1,13 @@
+-- Local development seed, run with `docker compose run --rm gamma-init`.
+-- Gamma's mock data creates test users, but BookIT also needs a registered OAuth
+-- client for sign-in and an API key to read their groups and admin permissions.
+-- This registers the localhost callback and grants bookadmin the BookIT admin
+-- role, so developers can exercise booking and rule management without manually
+-- configuring Gamma or using production credentials. The fixed client ID and
+-- credentials match bookit/.env.example and must only be used with local Gamma.
+-- gamma-init waits for Gamma's schema and mock users before running this file;
+-- ON CONFLICT DO NOTHING makes repeated setup preserve the existing seed rows.
+
 BEGIN;
 
 INSERT INTO g_text (text_id, sv, en)

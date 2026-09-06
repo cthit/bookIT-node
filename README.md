@@ -38,7 +38,6 @@ BookIT, after confirming `DATABASE_URL` points to your local database:
 
 ```sh
 pnpm --dir bookit migrate
-docker compose up -d db-scripts
 pnpm --dir bookit dev
 ```
 
@@ -54,35 +53,37 @@ Sign in with `bookmember` (digIT), `bookadmin` (BookIT admin), or `bookguest`
 The GraphQL endpoint is `/api/graphql/v1`.
 
 Ordinary startup preserves database contents; do not use `docker compose down -v`
-to stop development. Use `docker compose stop` instead. Compose is development-only;
-deployments must provide their own authentication settings with `NODE_ENV=production`.
-Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
-The `ghcr.io/cthit/bookit` image serves both the API and built frontend on port 8080.
+to stop development. Use `docker compose stop` instead. Compose is development-only.
 Vite is only used as a separate server during development for live updates.
+
+## Deployment
+
+> [!IMPORTANT]
+> `bookit-node-frontend` and `bookit-node-backend` have been merged into **`bookit-node`**.
+> Replace the two application containers with one using `ghcr.io/cthit/bookit:<tag>`.
+> It serves both the frontend and API on port **8080**; route `/` and `/api/*` to
+> this container and remove the separate frontend deployment.
+>
+> Move the backend environment settings to the combined container and retain the
+> existing PostgreSQL/Redis services and data volumes. Apply the database schema
+> explicitly before starting the app; startup no longer applies it automatically.
+> Remove any old `db-scripts` cleanup container; the backend now runs cleanup itself.
+
+Set `NODE_ENV=production` and provide your deployment's authentication settings.
+Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
 
 ## Personal-data cleanup
 
-Run the cleanup service alongside every deployment. It clears phone numbers and
-CIDs from bookings that ended at least two weeks ago, runs immediately and then
-daily, and retries failures after an hour. The application image does not schedule
-this job itself. Development Compose includes `db-scripts`.
+The backend automatically clears phone numbers and CIDs from bookings ending on
+or before midnight 14 days ago (using the database timezone). It runs at startup
+and daily, retries failures after an hour, and logs the number of bookings updated.
+No separate cleanup service is needed.
 
-For production, export the application's `DATABASE_URL` and run:
+To run it immediately inside the application container:
 
 ```sh
-docker compose -f compose.cleanup.yml up -d --build
-docker compose -f compose.cleanup.yml logs db-scripts
+docker exec bookit-node sh ./startup.sh --cleanup
 ```
-
-For an immediate one-time verification, run
-`docker compose -f compose.cleanup.yml run --rm -e CLEANUP_ONCE=1 db-scripts`.
-It exits with a failure status if the cleanup query fails.
-
-The database must be reachable from that Compose network. If it runs in Docker,
-attach the cleanup service to the database's existing network through your
-deployment's Compose configuration. Existing cleanup deployments may continue to
-use `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_NAME`, and `PGPASSWORD` instead of
-`DATABASE_URL`. Check the job's logs as part of deployment verification.
 
 ## API compatibility and limits
 
@@ -104,7 +105,16 @@ a maximum of 10,000 rule occurrences per room. Excessive or invalid ranges retur
 a validation error; existing stored bookings and rules are not deleted or migrated.
 
 Run `pnpm check`, `pnpm test` and `pnpm build` for the project checks.
-See [browser tests](e2e/README.md) for Playwright setup and CI image testing.
+
+## E2E tests
+
+With Docker running and Make installed, run from the repository root:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
 
 ## Technologies
 

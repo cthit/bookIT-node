@@ -3,13 +3,14 @@ packages:
   - frontend
 
 overrides:
-  vite: npm:@voidzero-dev/vite-plus-core@0.3.0
-  vitest: 4.1.11
+  # Required by Vite+: https://viteplus.dev/guide/migrate-rules#vite-and-overrides
+  "vite@*": npm:@voidzero-dev/vite-plus-core@0.3.0
+  "vitest@*": 4.1.11
+  # Prisma 7.10 pins vulnerable versions; remove when upstream includes these fixes.
   "@prisma/config>deepmerge-ts": 8.0.0
   "prisma>mysql2": 3.24.3
-  "archiver-utils>glob": 13.0.6
 
-# Vite+ reports its distribution version (0.3.0), not its Vite version (8.2.2).
+# Vite+ core implements Vite 8 but publishes its own 0.3.0 version.
 peerDependencyRules:
   allowedVersions:
     "vitest>vite": "0.3.0"
@@ -18,17 +19,12 @@ peerDependencyRules:
     "@vitejs/plugin-react>vite": "0.3.0"
 
 allowBuilds:
-  protobufjs: true
-  ssh2: false
+  # Native tooling needed by Prisma and tsx.
+  "@prisma/engines@7.10.0": true
+  "esbuild@0.28.2": true
+  # Version notices/checks and optional SSH acceleration are unnecessary.
+  "@apollo/protobufjs": false
+  protobufjs: false
+  prisma: false
   cpu-features: false
-  "@apollo/protobufjs": true
-  "@prisma/engines": true
-  core-js: false
-  core-js-pure: false
-  esbuild: true
-  prisma: true
-
-minimumReleaseAgeExclude:
-  - "@full-ui/headless-calendar@7.1.0"
-  - "@fullcalendar/core@7.1.0"
-  - "@fullcalendar/react@7.1.0"
+  ssh2: false

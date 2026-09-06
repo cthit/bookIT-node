@@ -205,7 +205,7 @@ export function BookingForm({
           {rooms.map((room) => (
             <label
               key={room.id}
-              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 ${selected.includes(room.id) ? "border-primary bg-blue-50/50" : ""}`}
+              className={`flex cursor-pointer items-center gap-3 rounded-lg border p-4 ${selected.includes(room.id) ? "border-ring bg-accent/50" : ""}`}
             >
               <Checkbox
                 aria-label={room.name}
@@ -246,7 +246,7 @@ export function BookingForm({
           <label htmlFor="terms">
             {t("I accept the ", "Jag godkänner ")}
             <a
-              className="text-primary underline"
+              className="text-accent-foreground underline"
               href="https://docs.chalmers.it/bokningsvillkor.pdf"
               target="_blank"
               rel="noreferrer"
@@ -268,7 +268,7 @@ export function BookingForm({
             </label>
             <Dialog>
               <DialogTrigger asChild>
-                <button type="button" className="text-primary underline">
+                <button type="button" className="text-accent-foreground underline">
                   {t("Read agreement", "Läs avtalet")}
                 </button>
               </DialogTrigger>
@@ -301,7 +301,7 @@ export function BookingForm({
               "Jag har anmält till Cubsec/Chalmers om bokningen gäller ett arrangemang som kräver anmälan.",
             )}{" "}
             <a
-              className="text-primary underline"
+              className="text-accent-foreground underline"
               href="https://www.chalmers.se/utbildning/studera-hos-oss/studentliv/arrangemang-i-sektionslokaler/formular-for-anmalan-av-arrangemang/"
               target="_blank"
               rel="noreferrer"
