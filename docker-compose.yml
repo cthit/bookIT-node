@@ -1,27 +1,101 @@
-version: "3"
 services:
   db:
-    image: postgres:12
+    image: postgres:12.22-alpine
     environment:
       POSTGRES_DB: bookit
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       TZ: "Europe/Stockholm"
     ports:
-      - 5432:5432
+      - 127.0.0.1:5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d bookit"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   redis:
-    image: redis:5.0
+    image: redis:5.0.14-alpine
     ports:
-      - 6379:6379
+      - 127.0.0.1:6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
-  db-scripts: # Deletes personal data from database
-    build:
-      context: ./db-scripts
-      dockerfile: Dockerfile
+  gamma-db:
+    image: postgres:16.0-alpine
     environment:
-      PGPASSWORD: password
-      DB_USER: postgres
-      DB_HOST: db
-      DB_PORT: 5432
-      DB_NAME: bookit
+      POSTGRES_DB: gamma
+      POSTGRES_USER: gamma
+      POSTGRES_PASSWORD: gamma-local
+    volumes:
+      - gamma-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "gamma", "-d", "gamma"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  gamma-redis:
+    image: redis:5.0.14-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  gamma:
+    image: ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db
+    platform: linux/amd64
+    depends_on:
+      gamma-db:
+        condition: service_healthy
+      gamma-redis:
+        condition: service_healthy
+    environment:
+      DB_HOST: gamma-db
+      DB_NAME: gamma
+      DB_USER: gamma
+      DB_PASSWORD: gamma-local
+      REDIS_HOST: gamma-redis
+      SERVER_PORT: "8081"
+      BASE_URL: http://localhost:8081
+      PRODUCTION: "false"
+      IS_MOCKING: "true"
+      ADMIN_SETUP: "true"
+      MOCK_DATA_RESOURCE: file:/tmp/bookit-users.json
+      UPLOAD_FOLDER: /tmp/uploads/
+    ports:
+      - 127.0.0.1:8081:8081
+    volumes:
+      - ./gamma/users.json:/tmp/bookit-users.json:ro
+
+  gamma-init:
+    image: postgres:16.0-alpine
+    depends_on:
+      gamma:
+        condition: service_started
+    environment:
+      PGHOST: gamma-db
+      PGDATABASE: gamma
+      PGUSER: gamma
+      PGPASSWORD: gamma-local
+    volumes:
+      - ./gamma/bookit-client.sql:/init/bookit-client.sql:ro
+    entrypoint: ["/bin/sh", "-ec"]
+    command:
+      - |
+        for attempt in $$(seq 1 120); do
+          if wget -q -T 2 -O /dev/null http://gamma:8081/login &&
+             [ "$$(psql -Atc "SELECT count(*) FROM g_user WHERE cid IN ('bookadmin', 'bookmember', 'bookguest')" 2>/dev/null)" = 3 ]; then
+            exec psql -v ON_ERROR_STOP=1 -f /init/bookit-client.sql
+          fi
+          sleep 2
+        done
+        echo "Gamma did not become ready with its local test users" >&2
+        exit 1
+
+volumes:
+  gamma-db:

@@ -1,0 +1,11 @@
+type IllegalSlot {
+  room: [Room!]!
+  start: String!
+  end: String!
+  description: String
+  title: String!
+}
+
+type Query {
+  illegalSlots(from: String!, to: String!): [IllegalSlot!]
+}

@@ -1,0 +1,37 @@
+{
+  "name": "bookit-node",
+  "private": true,
+  "scripts": {
+    "codegen": "tsx codegen.ts",
+    "build": "pnpm codegen && pnpm --dir bookit exec prisma generate && pnpm --dir bookit build && pnpm --dir frontend build",
+    "test": "vp test run",
+    "check": "vp check",
+    "lint": "vp lint --type-aware",
+    "format": "vp fmt",
+    "format:check": "vp fmt --check",
+    "typecheck": "pnpm --dir bookit typecheck && pnpm --dir frontend typecheck && tsc --noEmit -p e2e/tsconfig.json",
+    "test:e2e": "make -C e2e run-e2e"
+  },
+  "devDependencies": {
+    "@graphql-codegen/core": "^6.2.0",
+    "@graphql-codegen/typed-document-node": "^7.1.0",
+    "@graphql-codegen/typescript": "^6.1.0",
+    "@graphql-codegen/typescript-operations": "^6.1.6",
+    "@graphql-codegen/typescript-resolvers": "^6.1.0",
+    "@graphql-tools/load-files": "^7.0.1",
+    "@graphql-tools/merge": "^9.2.3",
+    "@playwright/test": "^1.63.0",
+    "@testcontainers/postgresql": "^12.1.0",
+    "@types/node": "^24.13.3",
+    "graphql": "^16.14.2",
+    "testcontainers": "^12.1.0",
+    "tsx": "^4.23.13",
+    "typescript": "^7.0.2",
+    "vite": "npm:@voidzero-dev/vite-plus-core@0.3.0",
+    "vite-plus": "0.3.0"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.3.4"
+}

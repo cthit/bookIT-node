@@ -1,0 +1,55 @@
+name: Release BookIT
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+  actions: read
+  packages: write
+
+concurrency:
+  group: images-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Tag tested BookIT image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      RELEASE_TAG: ${{ github.event.release.tag_name }}
+    steps:
+      - name: Require successful main validation and publication
+        shell: bash
+        run: |
+          if [[ ! "$RELEASE_TAG" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ||
+                "$RELEASE_TAG" == latest || "$RELEASE_TAG" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Release tags must be valid Docker tags, not latest or a commit SHA." >&2
+            exit 1
+          fi
+          conclusion="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/main.yml/runs" \
+            -f head_sha="$GITHUB_SHA" -f branch=main -f per_page=100 \
+            --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch")][0].conclusion')"
+          if [[ "$conclusion" != success ]]; then
+            echo "The latest main validation and publication for $GITHUB_SHA must pass before releasing." >&2
+            exit 1
+          fi
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - name: Log in to GHCR
+        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Apply the release tag without rebuilding
+        shell: bash
+        run: |
+          repository="ghcr.io/cthit/bookit"
+          digest="$(docker buildx imagetools inspect "$repository:$GITHUB_SHA" --format '{{.Manifest.Digest}}')"
+          target="$repository:$RELEASE_TAG"
+          docker buildx imagetools create --prefer-index=false --tag "$target" "$repository@$digest"
+          actual="$(docker buildx imagetools inspect "$target" --format '{{.Manifest.Digest}}')"
+          test "$actual" = "$digest"

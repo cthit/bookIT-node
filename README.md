@@ -1,7 +1,5 @@
 # bookIT
 
-[![Build Status](https://travis-ci.com/molleer/bookit.svg?token=ES9SJGmRYiEL9bzd8RLb&branch=main)](https://travis-ci.com/molleer/bookit)
-
 A booking service for the Chalmers Software Engineering Student Division (IT)
 
 ## Contributors
@@ -13,48 +11,63 @@ A booking service for the Chalmers Software Engineering Student Division (IT)
 ## Requirements
 
 - [Docker](https://www.docker.com/)
-- [NodeJs](https://nodejs.org/en/)
-- npm
-- bash
+- [Node.js](https://nodejs.org/en/) 24 (see `.node-version`)
+- pnpm 12.3.4
 
 ## Setup
 
-Dependencies
+Dependencies, from the repository root:
 
 ```sh
-docker compose up -d
+corepack enable
+corepack prepare pnpm@12.3.4 --activate
+pnpm install --frozen-lockfile
+pnpm codegen
+pnpm --dir bookit exec prisma generate
+docker compose up -d --wait db redis gamma
+docker compose run --rm gamma-init
+test -f bookit/.env || cp bookit/.env.example bookit/.env
 ```
 
-Backend
+Set `SECRET` in `bookit/.env` using `openssl rand -hex 32`. The example file
+contains the local database and Gamma settings; no production credentials are needed.
+
+Backend:
 
 ```sh
-cd backend
-npm i
-source dev_setup.sh
-npm run dev
+pnpm --dir bookit migrate
+pnpm --dir bookit dev
 ```
 
-Go to http://localhost:8080 if you want to use the GraphiQL UI to build queries
-
-Frontend
+Frontend, in another terminal:
 
 ```sh
-cd frontend
-source dev_setup.sh
-npm i
-npm start
+pnpm --dir frontend dev
 ```
 
-Go to http://localhost:3000 to view the website
+Open [http://localhost:8080](http://localhost:8080) to view the website.
+Sign in with `bookmember` (digIT), `bookadmin` (admin), or `bookguest` (no group),
+all with password `password1337`. Gamma runs at `http://localhost:8081`.
+The GraphQL endpoint is `/api/graphql/v1`.
+
+## E2E tests
+
+With Docker running and Make installed, run from the repository root:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
 
 ## Technologies
 
-- [Docker](https://www.docker.com/) to easily set up an development environment and launch the service in production
+- [Docker](https://www.docker.com/) for development services and production containers
 - [PostgreSQL](https://www.postgresql.org/) to store service data
-- [NodeJs](https://nodejs.org/en/) used to power the backend and frontend
-- [TypeScript](https://www.typescriptlang.org/) to enforce strict typing
-- [ExpressJs](http://expressjs.com/) to create backend endpoints
-- [Prisma](https://www.prisma.io/docs/) to query the database and manage database migrations
-- [GraphQL](https://graphql.org/) to create a flexible web API
-- [ReactJs](https://reactjs.org/) framework to create the frontend
+- [Node.js](https://nodejs.org/en/) and [TypeScript](https://www.typescriptlang.org/) for the application
+- [Express](https://expressjs.com/) and [Apollo Server](https://www.apollographql.com/docs/apollo-server/) for the GraphQL API
+- [Prisma](https://www.prisma.io/docs/) to query the database and apply schema changes
+- [React](https://react.dev/), [shadcn/ui](https://ui.shadcn.com/) and [FullCalendar](https://fullcalendar.io/) for the frontend
+- [TanStack Router and Query](https://tanstack.com/) for routing and API data
+- [Vite+](https://viteplus.dev/) for builds, tests, linting and formatting
 - [Redis](https://redis.io/) to store user sessions

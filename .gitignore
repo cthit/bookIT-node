@@ -3,3 +3,14 @@ build
 .vscode/
 package-lock.json
 .env
+.env.*
+!.env.example
+.pnpm-store/
+dist/
+bookit/public/
+.vite/
+playwright-report/
+test-results/
+coverage/
+.DS_Store
+*.log
