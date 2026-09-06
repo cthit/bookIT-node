@@ -121,6 +121,24 @@ Backend port: 8080. Frontend Nginx port: 80. Configure the backend's
 trusted TLS reverse proxy so browser assets and API share an origin. Enable
 `TRUST_PROXY=1` only when exactly one trusted proxy is in front.
 
+`prod.docker-compose.yml` builds both application images from the repository root
+and connects them to BookIT's private database and Redis services. It uses an
+existing Gamma issuer, not the retired bundled Gamma mock/development images.
+Supply `DATABASE_URL`, `DB_PASS`, `ISSUER_BASE_URL`, `BASE_URL`, `CLIENT_ID`,
+`CLIENT_SECRET`, `API_KEY`, and a strong `SESSION_SECRET` through your deployment
+environment (or a protected Compose `--env-file`). For its bundled database,
+`DATABASE_URL` must use host `db`, database `bookit`, user `postgres`, and the
+URL-encoded `DB_PASS`. Register `${BASE_URL}/api/callback` in Gamma. The backend
+binds only to host loopback for a trusted TLS reverse proxy; the other services
+are not published. Set `TRUST_PROXY` for your actual proxy topology.
+
+Validate with `docker compose -f prod.docker-compose.yml config --quiet`, then
+build with `docker compose -f prod.docker-compose.yml build`. The named
+`bookit-db` volume is for new deployments: **do not switch an existing deployment
+to it without mapping or migrating its current database storage first**. Back up
+data and review the resolved Compose configuration before deploying. Schema
+application remains an explicit release step; this file does not run it for you.
+
 Container startup no longer applies schema changes automatically. Before a release,
 back up the database, review the Prisma schema diff and apply the approved schema
 change explicitly using `pnpm --dir backend migrate` from a release checkout
