@@ -7,19 +7,20 @@ WORKDIR /workspace
 FROM base AS build
 ENV CI=true
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY backend/package.json ./backend/package.json
+COPY bookit/package.json ./bookit/package.json
 COPY frontend/package.json ./frontend/package.json
-COPY backend/prisma ./backend/prisma
-COPY backend/prisma.config.ts ./backend/prisma.config.ts
-RUN pnpm install --frozen-lockfile --filter backend
-COPY backend ./backend
-RUN pnpm --dir backend exec prisma generate \
-    && pnpm --dir backend build \
-    && node -e 'require("node:fs").cpSync("backend/src/schemas", "backend/build/schemas", { recursive: true })' \
-    && pnpm --filter backend deploy --prod --legacy /app \
+COPY bookit/prisma ./bookit/prisma
+COPY bookit/prisma.config.ts ./bookit/prisma.config.ts
+RUN pnpm install --frozen-lockfile --filter bookit --filter @bookit/frontend
+COPY bookit ./bookit
+COPY frontend ./frontend
+RUN pnpm --dir bookit exec prisma generate \
+    && pnpm --dir bookit build \
+    && pnpm --dir frontend build \
+    && node -e 'require("node:fs").cpSync("bookit/src/schemas", "bookit/build/schemas", { recursive: true })' \
+    && pnpm --filter bookit deploy --prod --legacy /app \
     && node -e 'require("node:fs").copyFileSync("pnpm-workspace.yaml", "/app/pnpm-workspace.yaml")'
 
-# Deployment creates a fresh node_modules layout; generate the client there.
 WORKDIR /app
 RUN ./node_modules/.bin/prisma generate
 

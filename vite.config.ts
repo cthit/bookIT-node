@@ -2,7 +2,7 @@ import { defineConfig } from "vite-plus";
 
 export default defineConfig({
   test: {
-    include: ["backend/src/**/*.test.ts", "frontend/src/**/*.test.ts"],
+    include: ["bookit/src/**/*.test.ts", "frontend/src/**/*.test.ts"],
     environment: "node",
   },
   lint: {
@@ -27,6 +27,7 @@ export default defineConfig({
       "**/generated/**",
       "**/build/**",
       "**/dist/**",
+      "bookit/public/**",
       "**/node_modules/**",
       "playwright-report/**",
       "test-results/**",
@@ -38,6 +39,7 @@ export default defineConfig({
       "pnpm-lock.yaml",
       "**/build/**",
       "**/dist/**",
+      "bookit/public/**",
       "playwright-report/**",
       "test-results/**",
     ],

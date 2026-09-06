@@ -10,7 +10,7 @@ import { mergeTypeDefs } from "@graphql-tools/merge";
 import { type DocumentNode } from "graphql";
 
 async function generate() {
-  const schema = mergeTypeDefs(loadFilesSync("backend/src/schemas/v1/*.gql"));
+  const schema = mergeTypeDefs(loadFilesSync("bookit/src/schemas/v1/*.gql"));
 
   const documents = loadFilesSync<DocumentNode>("frontend/src/**/*.graphql").map((document) => ({
     document,
@@ -31,11 +31,11 @@ async function generate() {
       }),
     },
     {
-      filename: "backend/src/generated/schema.ts",
+      filename: "bookit/src/generated/schema.ts",
       content: await codegen({
         schema,
         documents: [],
-        filename: "backend/src/generated/schema.ts",
+        filename: "bookit/src/generated/schema.ts",
         config: { ...config, contextType: "../utils/commonTypes#Context" },
         plugins: [{ typescript: {} }, { resolvers: {} }],
         pluginMap: { typescript, resolvers },

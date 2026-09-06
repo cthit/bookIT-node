@@ -31,7 +31,24 @@ export const setupRoutes = async (app: express.Application, tools: Tools, httpSe
     }),
   );
 
-  app.use("/", proxy(process.env.FRONTEND_URL || "http://localhost:3001"));
+  app.use("/api", (_req, res) => res.status(404).json({ error: "Not found" }));
+
+  if (process.env.NODE_ENV === "development") {
+    app.use("/", proxy(process.env.FRONTEND_URL || "http://localhost:3001"));
+  } else {
+    const publicDirectory = join(__dirname, "../../public");
+
+    app.use(
+      "/assets",
+      express.static(join(publicDirectory, "assets"), { maxAge: "1y", immutable: true }),
+      (_req, res) => res.sendStatus(404),
+    );
+    app.use(express.static(publicDirectory, { index: false }));
+    app.get("/{*path}", (_req, res) => {
+      res.set("Cache-Control", "no-store");
+      res.sendFile(join(publicDirectory, "index.html"));
+    });
+  }
 
   return server;
 };

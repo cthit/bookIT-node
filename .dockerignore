@@ -5,6 +5,7 @@
 !**/.env.example
 **/build
 **/dist
+bookit/public
 **/.vite
 **/.cache
 **/coverage

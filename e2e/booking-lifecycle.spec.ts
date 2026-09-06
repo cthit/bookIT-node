@@ -16,6 +16,7 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await page.reload();
 
   await expect(page.getByRole("textbox", { name: "Phone number", exact: true })).toHaveValue(
     "0701234567",

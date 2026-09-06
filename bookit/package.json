@@ -1,11 +1,12 @@
 {
-  "name": "backend",
+  "name": "bookit",
   "version": "1.0.0",
   "description": "",
   "license": "ISC",
   "author": "",
   "files": [
     "build",
+    "public",
     "prisma",
     "prisma.config.ts",
     "startup.sh"

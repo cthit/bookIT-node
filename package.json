@@ -3,13 +3,13 @@
   "private": true,
   "scripts": {
     "codegen": "tsx codegen.ts",
-    "build": "pnpm codegen && pnpm --dir backend exec prisma generate && pnpm --dir backend build && pnpm --dir frontend build",
+    "build": "pnpm codegen && pnpm --dir bookit exec prisma generate && pnpm --dir bookit build && pnpm --dir frontend build",
     "test": "vp test run",
     "check": "vp check",
     "lint": "vp lint --type-aware",
     "format": "vp fmt",
     "format:check": "vp fmt --check",
-    "typecheck": "pnpm --dir backend typecheck && pnpm --dir frontend typecheck && tsc --noEmit -p e2e/tsconfig.json",
+    "typecheck": "pnpm --dir bookit typecheck && pnpm --dir frontend typecheck && tsc --noEmit -p e2e/tsconfig.json",
     "test:e2e": "make -C e2e run-e2e"
   },
   "devDependencies": {

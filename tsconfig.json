@@ -1,4 +1,4 @@
 {
   "files": [],
-  "references": [{ "path": "./frontend" }, { "path": "./backend" }, { "path": "./e2e" }]
+  "references": [{ "path": "./frontend" }, { "path": "./bookit" }, { "path": "./e2e" }]
 }

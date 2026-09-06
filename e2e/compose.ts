@@ -169,10 +169,9 @@ export async function loginAs(
 }
 
 export async function compose(browser: Browser): Promise<Environment> {
-  const frontendImage = process.env.BOOKIT_FRONTEND_IMAGE;
-  const backendImage = process.env.BOOKIT_BACKEND_IMAGE;
+  const image = process.env.BOOKIT_IMAGE;
 
-  if (!frontendImage || !backendImage) {
+  if (!image) {
     throw new Error("Run E2E with make -C e2e run-e2e");
   }
 
@@ -320,25 +319,21 @@ export async function compose(browser: Browser): Promise<Environment> {
       SESSION_SECRET: "secret",
       SECRET: "bookit-isolated-e2e-oidc-secret-at-least-32-characters",
       BASE_URL: appUrl,
-      BACKEND_URL: appUrl,
       PORT: "8080",
-      FRONTEND_URL: "http://bookit-frontend:80",
       ISSUER_BASE_URL: gammaUrl,
       CLIENT_ID: client.clientId,
       CLIENT_SECRET: client.clientSecret,
       API_KEY: client.apiKey,
     };
 
-    record("images", JSON.stringify({ frontend: frontendImage, backend: backendImage }));
+    record("image", image);
 
-    console.log(
-      `Using BookIT images: ${JSON.stringify({ frontend: frontendImage, backend: backendImage })}`,
-    );
+    console.log(`Using BookIT image: ${image}`);
 
-    console.log("Initializing the isolated database with the backend image...");
+    console.log("Initializing the isolated database with the BookIT image...");
 
     await track(
-      new GenericContainer(backendImage)
+      new GenericContainer(image)
         .withPlatform("linux/amd64")
         .withNetwork(network)
         .withEnvironment({ DATABASE_URL: env.DATABASE_URL })
@@ -350,26 +345,12 @@ export async function compose(browser: Browser): Promise<Environment> {
     );
 
     await track(
-      new GenericContainer(frontendImage)
-        .withPlatform("linux/amd64")
-        .withNetwork(network)
-        .withNetworkAliases("bookit-frontend")
-        .withExposedPorts(80)
-        .withLogConsumer((stream) =>
-          stream.on("data", (chunk: Buffer) => record("frontend", chunk)),
-        )
-        .withWaitStrategy(Wait.forHttp("/", 80).forStatusCode(200))
-        .withStartupTimeout(120_000)
-        .start(),
-    );
-
-    await track(
-      new GenericContainer(backendImage)
+      new GenericContainer(image)
         .withPlatform("linux/amd64")
         .withNetwork(network)
         .withEnvironment(env)
         .withExposedPorts({ container: 8080, host: appPort })
-        .withLogConsumer((stream) => stream.on("data", (chunk: Buffer) => record("backend", chunk)))
+        .withLogConsumer((stream) => stream.on("data", (chunk: Buffer) => record("bookit", chunk)))
         .withWaitStrategy(Wait.forHttp("/api/health", 8080).forStatusCode(200))
         .withStartupTimeout(120_000)
         .start(),

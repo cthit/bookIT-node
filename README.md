@@ -23,22 +23,22 @@ corepack enable
 corepack prepare pnpm@12.3.4 --activate
 pnpm install --frozen-lockfile
 pnpm codegen
-pnpm --dir backend exec prisma generate
+pnpm --dir bookit exec prisma generate
 docker compose up -d --wait db redis gamma
 docker compose run --rm gamma-init
-test -f backend/.env || cp backend/.env.example backend/.env
+test -f bookit/.env || cp bookit/.env.example bookit/.env
 ```
 
 Compose starts local Gamma, its test users and BookIT OAuth client, and separate
 PostgreSQL/Redis instances for each app. Copy the local authentication values from
-`backend/.env.example` if you already have an `.env`, and set `SESSION_SECRET`
+`bookit/.env.example` if you already have an `.env`, and set `SESSION_SECRET`
 using `openssl rand -hex 32`. No production credentials are needed.
 
-Backend, after confirming `DATABASE_URL` points to your local database:
+BookIT, after confirming `DATABASE_URL` points to your local database:
 
 ```sh
-pnpm --dir backend migrate
-pnpm --dir backend dev
+pnpm --dir bookit migrate
+pnpm --dir bookit dev
 ```
 
 Frontend, in another terminal:
@@ -56,7 +56,8 @@ Ordinary startup preserves database contents; do not use `docker compose down -v
 to stop development. Use `docker compose stop` instead. Compose is development-only;
 deployments must provide their own authentication settings with `NODE_ENV=production`.
 Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
-Deploy matching frontend/backend versions together; open tabs may need a refresh and a new sign-in.
+The `ghcr.io/cthit/bookit` image serves both the API and built frontend on port 8080.
+Vite is only used as a separate server during development for live updates.
 
 Run `pnpm check`, `pnpm test` and `pnpm build` for the project checks.
 See [browser tests](e2e/README.md) for Playwright setup and CI image testing.

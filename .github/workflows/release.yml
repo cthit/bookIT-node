@@ -1,4 +1,4 @@
-name: Release images
+name: Release BookIT
 
 on:
   release:
@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   release:
-    name: Tag tested images
+    name: Tag tested BookIT image
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     env:
@@ -47,11 +47,9 @@ jobs:
       - name: Apply the release tag without rebuilding
         shell: bash
         run: |
-          for component in frontend backend; do
-            repository="ghcr.io/cthit/bookit-node-$component"
-            digest="$(docker buildx imagetools inspect "$repository:$GITHUB_SHA" --format '{{.Manifest.Digest}}')"
-            target="$repository:$RELEASE_TAG"
-            docker buildx imagetools create --prefer-index=false --tag "$target" "$repository@$digest"
-            actual="$(docker buildx imagetools inspect "$target" --format '{{.Manifest.Digest}}')"
-            test "$actual" = "$digest"
-          done
+          repository="ghcr.io/cthit/bookit"
+          digest="$(docker buildx imagetools inspect "$repository:$GITHUB_SHA" --format '{{.Manifest.Digest}}')"
+          target="$repository:$RELEASE_TAG"
+          docker buildx imagetools create --prefer-index=false --tag "$target" "$repository@$digest"
+          actual="$(docker buildx imagetools inspect "$target" --format '{{.Manifest.Digest}}')"
+          test "$actual" = "$digest"
