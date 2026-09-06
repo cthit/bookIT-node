@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { createBooking, graphql } from "./booking-helpers";
+import { createBooking, openBooking } from "./booking-helpers";
 import { expectSegments } from "./date-time-helpers";
 
 test("room filters and period navigation show the expected bookings", async ({ page }) => {
@@ -36,24 +36,12 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
 
   const event = page.getByRole("button").filter({ hasText: title });
 
-  // Prime the detail cache before moving the booking.
-  const readBooking = async () => {
-    const { events } = await graphql<{
-      events: { title: string; start: string; end: string }[];
-    }>(page, "{ events { title start end } }");
+  const details = page.getByRole("dialog", { name: "Booking details", exact: true });
+  const beginsAt = details.getByText("Begins at", { exact: true }).locator("..").locator("dd");
+  const endsAt = details.getByText("Ends at", { exact: true }).locator("..").locator("dd");
 
-    const booking = events.find((entry) => entry.title === title);
-    if (!booking) {
-      throw new Error("Calendar booking is missing");
-    }
-
-    return booking;
-  };
-
-  const originalBooking = await readBooking();
-  await event.first().click();
-  await expect(page.getByRole("dialog", { name: "Booking details", exact: true })).toBeVisible();
-  await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+  await openBooking(page, title);
+  const originalStart = await beginsAt.innerText();
   await page.keyboard.press("Escape");
 
   await event.first().scrollIntoViewIfNeeded();
@@ -62,37 +50,32 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
     throw new Error("Calendar booking has no drag target");
   }
 
-  const movedResponse = page.waitForResponse(
-    (response) =>
-      response.url().endsWith("/api/graphql/v1") &&
-      Boolean(response.request().postData()?.includes("mutation UpdateBooking")),
-  );
-
   await page.mouse.move(box.x + box.width / 2, box.y + 10);
   await page.mouse.down();
   await page.mouse.move(box.x + box.width / 2, box.y + box.height + 10, { steps: 20 });
   await page.mouse.up();
-  expect((await (await movedResponse).json()).data.editEvent).toBeNull();
+  await expect(page.getByText("Booking moved", { exact: true })).toBeVisible();
 
-  const movedBooking = await readBooking();
-  expect(movedBooking.start).not.toBe(originalBooking.start);
+  await openBooking(page, title);
+  await expect(beginsAt).not.toHaveText(originalStart);
+  const movedStart = await beginsAt.innerText();
+  const movedEnd = await endsAt.innerText();
 
-  await event.first().click();
   await page.getByRole("button", { name: "Edit", exact: true }).click();
 
-  const movedLocalTime = await page.evaluate((value) => {
-    const date = new Date(value);
-
-    return {
+  for (const [name, value] of [
+    ["Begins at", movedStart],
+    ["Ends at", movedEnd],
+  ] as const) {
+    const date = new Date(value.replace(" ", "T"));
+    await expectSegments(page.getByRole("group", { name, exact: true }), {
       year: date.getFullYear(),
       month: date.getMonth() + 1,
       day: date.getDate(),
       hour: date.getHours(),
       minute: date.getMinutes(),
-    };
-  }, movedBooking.start);
-
-  await expectSegments(page.getByRole("group", { name: "Begins at", exact: true }), movedLocalTime);
+    });
+  }
 
   await page
     .getByRole("textbox", { name: "Description", exact: true })
@@ -100,9 +83,13 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
   await page.getByRole("button", { name: "Save booking", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
 
-  const savedBooking = await readBooking();
-  expect(savedBooking.start).toBe(movedBooking.start);
-  expect(savedBooking.end).toBe(movedBooking.end);
+  await page.reload();
+  await openBooking(page, title);
+  await expect(beginsAt).toHaveText(movedStart);
+  await expect(endsAt).toHaveText(movedEnd);
+  await expect(
+    details.getByText("Updated after moving the booking.", { exact: true }),
+  ).toBeVisible();
 });
 
 test("the selected language survives a reload", async ({ page }) => {

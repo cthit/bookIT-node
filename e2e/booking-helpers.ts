@@ -46,7 +46,7 @@ export async function fillBooking(page: Page, title: string) {
 }
 
 export async function createBooking(page: Page, title: string) {
-  await page.goto("/new-event");
+  await page.getByRole("link", { name: "New booking", exact: true }).click();
   await fillBooking(page, title);
 
   await page.getByRole("button", { name: "Save booking", exact: true }).click();
@@ -55,44 +55,8 @@ export async function createBooking(page: Page, title: string) {
   await expect(page.getByRole("button").filter({ hasText: title }).first()).toBeVisible();
 }
 
-export async function openBooking(page: Page, title: string): Promise<string> {
+export async function openBooking(page: Page, title: string) {
   await page.getByRole("button").filter({ hasText: title }).first().click();
   await expect(page.getByRole("dialog", { name: "Booking details", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
-
-  const result = await graphql<{ events: { id: string; title: string }[] }>(
-    page,
-    "{ events { id title } }",
-  );
-
-  const id = result.events.find((event) => event.title === title)?.id;
-  if (!id) {
-    throw new Error("Booking details did not include a booking id");
-  }
-
-  await page.goto(`/bookings/${id}`);
-  await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
-
-  return id;
-}
-
-export async function graphql<T>(
-  page: Page,
-  query: string,
-  variables: Record<string, unknown> = {},
-): Promise<T> {
-  const response = await page.request.post("/api/graphql/v1", {
-    headers: { Origin: new URL(page.url()).origin },
-    data: { query, variables },
-  });
-
-  expect(response.status()).toBe(200);
-
-  const body = (await response.json()) as { data?: T; errors?: unknown[] };
-  expect(body.errors).toBeUndefined();
-  if (!body.data) {
-    throw new Error("GraphQL response has no data");
-  }
-
-  return body.data;
 }

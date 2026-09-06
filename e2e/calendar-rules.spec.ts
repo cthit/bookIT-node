@@ -1,5 +1,6 @@
 import { test, expect } from "./fixtures";
-import { bookingDate, graphql } from "./booking-helpers";
+import { bookingDate } from "./booking-helpers";
+import { dateSegments, fillSegments } from "./date-time-helpers";
 
 test.use({ role: "admin" });
 
@@ -8,33 +9,46 @@ test("overlapping room restrictions share a compact label and respect room filte
 }) => {
   const date = await bookingDate(page);
 
-  for (const [title, room] of [
-    ["Maintenance", ["BIG_HUB", "GROUP_ROOM"]],
-    ["Reading", ["CTC"]],
-  ]) {
-    const result = await graphql<{ createRule: { en: string } | null }>(
-      page,
-      "mutation($rule: InputRule!) { createRule(rule: $rule) { en } }",
-      {
-        rule: {
-          title,
-          description: "The rooms are unavailable during this time.",
-          room,
-          start_date: date,
-          end_date: date,
-          start_time: "12:00",
-          end_time: "13:00",
-          day_mask: 127,
-          priority: 10,
-          allow: false,
-        },
-      },
-    );
+  await page.getByRole("navigation").getByRole("link", { name: "Rules", exact: true }).click();
 
-    expect(result.createRule).toBeNull();
+  for (const { title, rooms } of [
+    { title: "Maintenance", rooms: ["Storhubben", "Grupprummet"] },
+    { title: "Reading", rooms: ["CTC"] },
+  ]) {
+    await page.getByRole("button", { name: "New rule", exact: true }).click();
+    const form = page.getByRole("dialog", { name: "New rule", exact: true });
+
+    await form.getByRole("textbox", { name: "Title", exact: true }).fill(title);
+    await form
+      .getByRole("textbox", { name: "Description", exact: true })
+      .fill("The rooms are unavailable during this time.");
+    await form.getByRole("combobox", { name: "Availability", exact: true }).selectOption("false");
+
+    for (const name of ["Start date", "End date"]) {
+      await fillSegments(form.getByRole("group", { name, exact: true }), dateSegments(date));
+    }
+    await fillSegments(form.getByRole("group", { name: "Start time", exact: true }), {
+      hour: 12,
+      minute: 0,
+    });
+    await fillSegments(form.getByRole("group", { name: "End time", exact: true }), {
+      hour: 13,
+      minute: 0,
+    });
+
+    for (const room of rooms) {
+      await form.getByRole("checkbox", { name: room, exact: true }).check();
+    }
+    for (const weekday of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
+      await form.getByRole("checkbox", { name: weekday, exact: true }).check();
+    }
+
+    await form.getByRole("button", { name: "Save rule", exact: true }).click();
+    await expect(form).not.toBeVisible();
+    await expect(page.getByRole("row").filter({ hasText: title })).toBeVisible();
   }
 
-  await page.reload();
+  await page.getByRole("navigation").getByRole("link", { name: "Calendar", exact: true }).click();
   const label = page.getByRole("button", { name: "Maintenance · Reading", exact: true });
 
   await expect(label).toHaveCount(1);

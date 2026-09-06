@@ -29,7 +29,9 @@ Requests go through the backend to the Nginx frontend, as in production.
 No development servers or existing databases are used.
 
 Tests log in through Gamma with member/admin/outsider fixtures and reset bookings
-and rules between tests. Completion or failure removes the owned containers,
+and rules between tests. Test data is created through the UI, and assertions check
+what users see; tests do not call the API directly.
+Completion or failure removes the owned containers,
 volumes and network; Testcontainers' reaper handles interrupted runs. Locally built
 image tags are removed on exit. Build caches and unrelated Docker resources are
 left alone. Published images are pulled on every run.
