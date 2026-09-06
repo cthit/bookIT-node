@@ -9,26 +9,17 @@ import type { UserInfo } from "./models/user";
 import { authRequest } from "./utils";
 import { createSessionStore } from "./auth/session-store";
 import { cleanupPersonalData, startCleanup } from "./cleanup";
+import { databaseUrl, requiredEnvironment } from "./environment";
 
 interface GammaGroup {
   superGroup?: { type: string; name: string };
 }
 
-const requiredEnvironment = (name: string): string => {
-  const value = process.env[name];
-
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${name}`);
-  }
-
-  return value;
-};
-
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
 
   const prisma = new PrismaClient({
-    adapter: new PrismaPg({ connectionString: requiredEnvironment("DATABASE_URL") }),
+    adapter: new PrismaPg({ connectionString: databaseUrl() }),
   });
 
   if (process.argv.includes("--cleanup")) {

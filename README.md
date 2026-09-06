@@ -34,7 +34,7 @@ PostgreSQL/Redis instances for each app. Copy the local authentication values fr
 `bookit/.env.example` if you already have an `.env`, and set `SESSION_SECRET`
 using `openssl rand -hex 32`. No production credentials are needed.
 
-BookIT, after confirming `DATABASE_URL` points to your local database:
+BookIT, after confirming the `DB_*` settings point to your local database:
 
 ```sh
 pnpm --dir bookit migrate
@@ -68,6 +68,12 @@ Vite is only used as a separate server during development for live updates.
 > existing PostgreSQL/Redis services and data volumes. Apply the database schema
 > explicitly before starting the app; startup no longer applies it automatically.
 > Remove any old `db-scripts` cleanup container; the backend now runs cleanup itself.
+>
+> Set `DB_HOST`, `DB_NAME`, `DB_USER`, and `DB_PASS`; `DB_PORT` defaults to `5432`.
+> These settings configure both the backend and Prisma commands. `DATABASE_URL` is no longer read.
+
+Commit images are published from `main` only after checks and E2E pass.
+Releases tag that tested image without rebuilding it.
 
 Set `NODE_ENV=production` and provide your deployment's authentication settings.
 Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
@@ -82,7 +88,7 @@ No separate cleanup service is needed.
 To run it immediately inside the application container:
 
 ```sh
-docker exec bookit-node sh ./startup.sh --cleanup
+docker exec bookit-node node ./build/index.js --cleanup
 ```
 
 ## API compatibility and limits

@@ -9,7 +9,7 @@
     "public",
     "prisma",
     "prisma.config.ts",
-    "startup.sh"
+    "src/environment.ts"
   ],
   "main": "index.js",
   "scripts": {

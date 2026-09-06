@@ -22,7 +22,7 @@ jobs:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       RELEASE_TAG: ${{ github.event.release.tag_name }}
     steps:
-      - name: Require successful CI for the release commit
+      - name: Require successful main validation and publication
         shell: bash
         run: |
           if [[ ! "$RELEASE_TAG" =~ ^[a-zA-Z0-9_][a-zA-Z0-9_.-]{0,127}$ ||
@@ -30,11 +30,11 @@ jobs:
             echo "Release tags must be valid Docker tags, not latest or a commit SHA." >&2
             exit 1
           fi
-          conclusion="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs" \
-            -f head_sha="$GITHUB_SHA" -f per_page=100 \
+          conclusion="$(gh api --method GET "repos/$GITHUB_REPOSITORY/actions/workflows/main.yml/runs" \
+            -f head_sha="$GITHUB_SHA" -f branch=main -f per_page=100 \
             --jq '[.workflow_runs[] | select(.event == "push" or .event == "workflow_dispatch")][0].conclusion')"
           if [[ "$conclusion" != success ]]; then
-            echo "The latest CI run for $GITHUB_SHA must pass before releasing." >&2
+            echo "The latest main validation and publication for $GITHUB_SHA must pass before releasing." >&2
             exit 1
           fi
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0

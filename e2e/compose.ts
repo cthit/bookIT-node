@@ -38,8 +38,6 @@ export interface Environment {
   gammaUrl: string;
   logs: Record<string, string>;
   resetBookings(): Promise<void>;
-  cleanupPersonalData(): Promise<void>;
-  restartBookit(): Promise<void>;
   stop(): Promise<void>;
 }
 
@@ -223,7 +221,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withNetworkAliases("bookit-db")
         .withDatabase("bookit_test")
         .withUsername("bookit_test")
-        .withPassword("bookit_test")
+        .withPassword("bookit_test:p@ss/%")
         .start(),
     );
 
@@ -280,11 +278,19 @@ export async function compose(browser: Browser): Promise<Environment> {
 
     const client = await provisionClient(browser, gammaUrl, appUrl);
 
+    const databaseEnvironment = {
+      DB_HOST: "bookit-db",
+      DB_PORT: "5432",
+      DB_NAME: bookitDb.getDatabase(),
+      DB_USER: bookitDb.getUsername(),
+      DB_PASS: bookitDb.getPassword(),
+    };
+
     const env = {
       NODE_ENV: "production",
       CI: "true",
       TZ: "Europe/Stockholm",
-      DATABASE_URL: "postgresql://bookit_test:bookit_test@bookit-db:5432/bookit_test",
+      ...databaseEnvironment,
       REDIS_HOST: "bookit-redis",
       REDIS_PORT: "6379",
       REDIS_PASS: "",
@@ -308,7 +314,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       new GenericContainer(image)
         .withPlatform("linux/amd64")
         .withNetwork(network)
-        .withEnvironment({ DATABASE_URL: env.DATABASE_URL })
+        .withEnvironment(databaseEnvironment)
         .withCommand(["./node_modules/.bin/prisma", "db", "push"])
         .withLogConsumer((stream) => stream.on("data", (chunk: Buffer) => record("schema", chunk)))
         .withWaitStrategy(Wait.forOneShotStartup())
@@ -316,7 +322,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .start(),
     );
 
-    const bookit = await track(
+    await track(
       new GenericContainer(image)
         .withPlatform("linux/amd64")
         .withNetwork(network)
@@ -333,18 +339,6 @@ export async function compose(browser: Browser): Promise<Environment> {
       gammaUrl,
       logs,
       stop,
-
-      async cleanupPersonalData() {
-        const result = await bookit.exec(["sh", "./startup.sh", "--cleanup"]);
-
-        if (result.exitCode !== 0) {
-          throw new Error(`Privacy cleanup failed: ${result.output}`);
-        }
-      },
-
-      async restartBookit() {
-        await bookit.restart();
-      },
 
       async resetBookings() {
         const result = await bookitDb.exec([

@@ -16,7 +16,8 @@ run-e2e:
 		BOOKIT_IMAGE="ghcr.io/cthit/bookit:$$VERSION"; \
 	fi; \
 	if [ -n "$$BOOKIT_IMAGE" ]; then \
-		docker pull --platform linux/amd64 "$$BOOKIT_IMAGE"; \
+		docker image inspect "$$BOOKIT_IMAGE" >/dev/null 2>&1 || \
+			docker pull --platform linux/amd64 "$$BOOKIT_IMAGE"; \
 	elif [ -n "$${CI:-}" ]; then \
 		echo "CI requires VERSION or BOOKIT_IMAGE" >&2; exit 1; \
 	else \
