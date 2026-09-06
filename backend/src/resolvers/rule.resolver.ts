@@ -1,4 +1,5 @@
-import { Rule, User } from "../models";
+import { User } from "../models";
+import type { InputRule } from "../generated/schema";
 import { createRule, deleteRule } from "../services/rule.service";
 import { Tools } from "../utils/commonTypes";
 import { ruleResult } from "./serialize";
@@ -18,7 +19,7 @@ export const getRuleQResolvers = ({ prisma }: Tools) => ({
 });
 
 export const getRuleMResolvers = ({ prisma }: Tools) => ({
-  createRule: async (_: unknown, { rule }: { rule: Rule }, { user }: { user: User }) => {
+  createRule: async (_: unknown, { rule }: { rule: InputRule }, { user }: { user: User }) => {
     return createRule(prisma, rule, user);
   },
   deleteRule: async (_: unknown, { id }: { id: string }, { user }: { user: User }) => {

@@ -9,7 +9,7 @@ import {
   doesObeyRules,
   ruleDateBounds,
 } from "../services/rule.service";
-import type { Event } from "../models/event";
+import type { InputEvent } from "../generated/schema";
 import { rule } from "@prisma/client";
 
 const defaultRule: rule = {
@@ -179,13 +179,12 @@ describe("Booking rule scope", () => {
     assert.equal(bounds.end_date.gte.toISOString(), "2026-10-25T00:00:00.000Z");
   });
   it("does not let permission in one room override restrictions in another", () => {
-    const booking: Event = {
+    const booking: InputEvent = {
       title: "Two rooms",
       start: "2021-08-20T11:00",
       end: "2021-08-20T12:00",
       room: ["BIG_HUB", "GROUP_ROOM"],
       phone: "0701234567",
-      booked_by: "member",
       booked_as: "digit",
       booking_terms: true,
     };

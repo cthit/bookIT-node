@@ -1,8 +1,10 @@
 import { Prisma, PrismaClient, event, room } from "@prisma/client";
 import { Error, User } from "../models";
-import { Event } from "../models/event";
+import type { InputEvent } from "../generated/schema";
 import { checkRules } from "./rule.service";
 import { setTimeout as delay } from "node:timers/promises";
+
+type Event = InputEvent & { booked_by: string };
 
 /*
  * Events must end after they start

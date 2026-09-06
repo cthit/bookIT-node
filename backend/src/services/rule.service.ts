@@ -1,7 +1,7 @@
-import { Event, Rule, Error, User } from "../models";
+import { Error, User } from "../models";
+import type { InputEvent, InputRule } from "../generated/schema";
 import { to } from "../utils";
 import { Prisma, rule } from "@prisma/client";
-import { dbRule } from "../models/rule";
 
 /**
  * A single rule that applies to a specific time slot
@@ -107,13 +107,13 @@ export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
   return mergedRules;
 };
 
-const breaksExplicitRule = (rule: ExplicitRule, event: Event): boolean => {
+const breaksExplicitRule = (rule: ExplicitRule, event: InputEvent): boolean => {
   const start = new Date(event.start);
   const end = new Date(event.end);
   return rule.start < end && rule.end > start && !rule.allow;
 };
 
-export const doesObeyRules = (rules: rule[], event: Event): Error | null => {
+export const doesObeyRules = (rules: rule[], event: InputEvent): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
@@ -151,7 +151,7 @@ export const getRulesBetween = async (prisma: Prisma.TransactionClient, from: Da
   });
 };
 
-export const checkRules = async (prisma: Prisma.TransactionClient, event: Event) => {
+export const checkRules = async (prisma: Prisma.TransactionClient, event: InputEvent) => {
   const rules = await prisma.rule.findMany({
     where: {
       room: {
@@ -173,7 +173,7 @@ const validDateTime = (start: Date, end: Date): boolean => {
 
 export const createRule = async (
   prisma: Prisma.TransactionClient,
-  rule: Rule,
+  rule: InputRule,
   user: User,
 ): Promise<Error | null> => {
   if (!user.is_admin) {
@@ -236,7 +236,7 @@ export const deleteRule = async (
       en: "You do not have permission to delete rules",
     };
   }
-  const rule: dbRule | null = await prisma.rule.findUnique({
+  const rule = await prisma.rule.findUnique({
     where: { id: id },
   });
   if (!rule) {
