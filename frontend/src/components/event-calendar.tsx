@@ -2,49 +2,28 @@ import { type CalendarOptions, useCalendarController } from "@fullcalendar/react
 import dayGridPlugin from "@fullcalendar/react/daygrid";
 import interactionPlugin from "@fullcalendar/react/interaction";
 import listPlugin from "@fullcalendar/react/list";
-import multiMonthPlugin from "@fullcalendar/react/multimonth";
 import timeGridPlugin from "@fullcalendar/react/timegrid";
 import { EventCalendarToolbar } from "@/components/event-calendar-toolbar";
 import { EventCalendarViews } from "@/components/ui/event-calendar-views";
 import { EventCalendarCloseIcon } from "@/components/event-calendar-icons";
 import { cn } from "@/lib/utils";
 
-const plugins = [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, multiMonthPlugin];
-
-const defaultAvailableViews = [
-  "dayGridMonth",
-  "timeGridWeek",
-  "timeGridDay",
-  "listWeek",
-  "multiMonthYear",
-];
-
-const navLinkDayClick = "timeGridDay";
-
-const navLinkWeekClick = "timeGridWeek";
+const plugins = [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin];
 
 export interface EventCalendarProps extends Omit<
   CalendarOptions,
-  "class" | "className" | "headerToolbar" | "footerToolbar"
+  "class" | "className" | "headerToolbar" | "footerToolbar" | "plugins"
 > {
   className?: string;
-  availableViews?: string[];
-  addButton?: {
-    isPrimary?: boolean;
-    text?: string;
-    hint?: string;
-    click?: () => void;
-  };
+  availableViews: string[];
 }
 
 export function EventCalendar({
-  availableViews = defaultAvailableViews,
-  addButton,
+  availableViews,
   className,
   height,
   contentHeight,
   direction,
-  plugins: userPlugins = [],
   ...restOptions
 }: EventCalendarProps) {
   const controller = useCalendarController();
@@ -73,16 +52,15 @@ export function EventCalendar({
         className="px-4 py-5 sm:px-5 gap-y-4"
         controller={controller}
         availableViews={availableViews}
-        addButton={addButton}
       />
       <div className="grow min-h-0">
         <EventCalendarViews
           controller={controller}
           height={isHeightAuto ? "auto" : height !== undefined ? "100%" : contentHeight}
           initialView={availableViews[0]}
-          navLinkDayClick={navLinkDayClick}
-          navLinkWeekClick={navLinkWeekClick}
-          plugins={[...plugins, ...userPlugins]}
+          navLinkDayClick="timeGridDay"
+          navLinkWeekClick="timeGridWeek"
+          plugins={plugins}
           popoverCloseContent={() => <EventCalendarCloseIcon />}
           {...restOptions}
         />

@@ -55,6 +55,7 @@ export function BookingForm({
   const [error, setError] = useState("");
   const [defaultStart] = useState(() => new Date());
   const groups = user?.groups?.filter((group): group is string => Boolean(group)) ?? [];
+  const canEditPhone = !booking?.booked_by || booking.booked_by === user?.cid || user?.is_admin;
 
   const eligibleGroups =
     user?.is_admin && booking && !groups.includes(booking.booked_as)
@@ -159,6 +160,7 @@ export function BookingForm({
             name="phone"
             type="tel"
             autoComplete="tel"
+            disabled={!canEditPhone}
             required={!booking?.booked_by}
             pattern={String.raw`\+?\(?[0-9]{3}\)?[\-\s.]?[0-9]{3}[\-\s.]?[0-9]{4,5}`}
             defaultValue={booking?.phone ?? ""}
@@ -168,6 +170,14 @@ export function BookingForm({
                 : "070 123 45 67"
             }
           />
+          {!canEditPhone && (
+            <p className="text-sm text-muted-foreground">
+              {t(
+                "The contact number is kept private. Its owner or an administrator can change it.",
+                "Kontaktens nummer är privat. Kontaktpersonen eller en administratör kan ändra det.",
+              )}
+            </p>
+          )}
         </div>
         <div className="field">
           <Label htmlFor="booked_as">{t("Booking as", "Bokas som")}</Label>

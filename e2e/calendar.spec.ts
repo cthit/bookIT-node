@@ -191,6 +191,45 @@ test("confirming a calendar drag preserves the confirmed times when editing", as
   ).toBeVisible();
 });
 
+test("a move confirmed after another editor saves preserves their newer details", async ({
+  page,
+}) => {
+  const title = "E2E stale calendar";
+
+  await createBooking(page, title);
+  await openBooking(page, title);
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  await expect(page.getByRole("textbox", { name: "Title", exact: true })).toBeVisible();
+  const editUrl = page.url();
+
+  await page.goto("/");
+  await dragBooking(page, title);
+  const confirmation = page.getByRole("dialog", { name: "Move booking?", exact: true });
+
+  await expect(confirmation).toBeVisible();
+  const editor = await page.context().newPage();
+
+  try {
+    await editor.goto(editUrl);
+    await editor.getByRole("textbox", { name: "Title", exact: true }).fill(`${title} updated`);
+    await editor
+      .getByRole("textbox", { name: "Description", exact: true })
+      .fill("New instructions from the other editor");
+    await editor.getByRole("button", { name: "Save booking", exact: true }).click();
+    await expect(editor).toHaveURL(/\/$/);
+
+    await confirmation.getByRole("button", { name: "Move booking", exact: true }).click();
+    await expect(page.getByText("Booking moved", { exact: true })).toBeVisible();
+    await page.reload();
+    await openBooking(page, `${title} updated`);
+    await expect(
+      page.getByText("New instructions from the other editor", { exact: true }),
+    ).toBeVisible();
+  } finally {
+    await editor.close();
+  }
+});
+
 test("a rejected calendar move keeps the original booking times", async ({ page }) => {
   const title = "E2E rejected move";
 

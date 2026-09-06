@@ -1,27 +1,13 @@
-import { formText } from "@/lib/forms";
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { format } from "date-fns";
 import { Plus, Trash2, ArrowUpDown } from "lucide-react";
 import { toast } from "sonner";
-import { request, checkMutation } from "@/api/client";
-import {
-  RulesDocument,
-  CreateRuleDocument,
-  DeleteRuleDocument,
-  type Room,
-  type RulesQuery,
-} from "@/generated/graphql";
-import { rooms, roomName } from "@/lib/rooms";
-import { parseDate } from "@/lib/dates";
+import { request } from "@/api/client";
+import { RulesDocument, DeleteRuleDocument, type Room } from "@/generated/graphql";
+import { roomName } from "@/lib/rooms";
 import { useUser } from "@/lib/user";
 import { useLanguage } from "@/lib/language";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { DatePicker, TimePicker } from "@/components/date-time-fields";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
@@ -42,7 +28,9 @@ import {
 } from "@/components/ui/dialog";
 import { Failure, Loading } from "@/components/feedback";
 
-type RuleDetails = NonNullable<NonNullable<RulesQuery["rules"]>[number]>;
+import { RuleForm } from "@/components/rule-form";
+import { RuleDetails as RuleDetailsContent } from "@/components/rule-details";
+import { ruleDateText as dateText, ruleDayText, type RuleDetails } from "@/lib/rules";
 
 type SortKey =
   | "title"
@@ -76,18 +64,10 @@ export function RulesPage() {
   const cache = useQueryClient();
   const [creating, setCreating] = useState(false);
   const [deleting, setDeleting] = useState<{ id: string; title: string } | null>(null);
-  const [selected, setSelected] = useState<Room[]>([]);
-  const [days, setDays] = useState(0);
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [sortKey, setSortKey] = useState<SortKey>("title");
   const [ascending, setAscending] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
-  const [error, setError] = useState("");
-
-  const weekdays =
-    language === "en"
-      ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-      : ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
 
   const query = useQuery({ queryKey: ["rules"], queryFn: () => request(RulesDocument, {}) });
 
@@ -121,62 +101,20 @@ export function RulesPage() {
     { key: "allow", label: t("Availability", "Tillgänglighet") },
   ];
 
-  const dateText = (value: string | null | undefined, withTime = false) =>
-    value ? format(parseDate(value), withTime ? "d MMM yyyy, HH:mm" : "d MMM yyyy") : "—";
-
-  const dayText = (mask: number | null | undefined) =>
-    weekdays.filter((_, index) => ((mask ?? 0) & (1 << index)) !== 0).join(" · ") || "—";
+  const dayText = (mask: number | null | undefined) => ruleDayText(mask, language);
 
   async function invalidate() {
     await cache.invalidateQueries({ queryKey: ["rules"] });
     await cache.invalidateQueries({ queryKey: ["calendar"] });
   }
 
-  const create = useMutation({
-    mutationFn: async (form: FormData) => {
-      if (!selected.length || !days) {
-        throw new Error(
-          t("Select rooms and at least one weekday.", "Välj rum och minst en veckodag."),
-        );
-      }
-
-      const rule = {
-        title: formText(form, "title").trim(),
-        description: formText(form, "description"),
-        priority: Number(form.get("priority")),
-        allow: form.get("allow") === "true",
-        day_mask: days,
-        room: selected,
-        start_date: formText(form, "start_date"),
-        end_date: formText(form, "end_date"),
-        start_time: formText(form, "start_time").slice(0, 5),
-        end_time: formText(form, "end_time").slice(0, 5),
-      };
-
-      if (rule.end_date < rule.start_date || rule.end_time <= rule.start_time) {
-        throw new Error(
-          t("The rule must end after it starts.", "Regeln måste sluta efter att den börjar."),
-        );
-      }
-
-      const result = await request(CreateRuleDocument, { rule });
-
-      checkMutation(result.createRule, language);
-    },
-    onSuccess: async () => {
-      await invalidate();
-      setCreating(false);
-      setSelected([]);
-      toast.success(t("Rule created", "Regeln skapades"));
-    },
-    onError: (reason) => setError(reason.message),
-  });
-
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const result = await request(DeleteRuleDocument, { id });
 
-      checkMutation(result.deleteRule, language);
+      if (!result.deleteRule) {
+        throw new Error(t("Could not delete rule", "Kunde inte ta bort regel"));
+      }
     },
     onSuccess: async () => {
       await invalidate();
@@ -186,25 +124,12 @@ export function RulesPage() {
     onError: (reason) => toast.error(reason.message),
   });
 
-  function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    create.mutate(new FormData(event.currentTarget));
-  }
-
   return (
     <>
       <div className="flex justify-between items-end flex-wrap gap-5 mb-7">
         <h1 className="page-title">{t("Rules", "Regler")}</h1>
         {user?.is_admin && (
-          <Button
-            onClick={() => {
-              setError("");
-              setDays(0);
-              setSelected([]);
-              setCreating(true);
-            }}
-          >
+          <Button onClick={() => setCreating(true)}>
             <Plus className="size-4" />
             {t("New rule", "Ny regel")}
           </Button>
@@ -339,37 +264,7 @@ export function RulesPage() {
             <DialogTitle>{t("Rule details", "Regeldetaljer")}</DialogTitle>
             <DialogDescription>{details?.title}</DialogDescription>
           </DialogHeader>
-          {details && (
-            <dl className="grid gap-4 sm:grid-cols-2 text-sm">
-              {[
-                [t("Title", "Titel"), details.title],
-                [t("Priority", "Prioritet"), details.priority],
-                [t("Start date", "Startdatum"), dateText(details.start_date)],
-                [t("End date", "Slutdatum"), dateText(details.end_date)],
-                [t("Start time", "Starttid"), details.start_time],
-                [t("End time", "Sluttid"), details.end_time],
-                [t("Description", "Beskrivning"), details.description],
-                [t("Rooms", "Rum"), details.room?.map(roomName).join(", ")],
-                [t("Weekdays", "Veckodagar"), dayText(details.day_mask)],
-                [
-                  t("Availability", "Tillgänglighet"),
-                  details.allow ? t("Allowed", "Tillåten") : t("Blocked", "Spärrad"),
-                ],
-                [t("Created", "Skapad"), dateText(details.created_at, true)],
-                [t("Updated", "Uppdaterad"), dateText(details.updated_at, true)],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="mt-1 whitespace-pre-wrap">{value ?? "—"}</dd>
-                </div>
-              ))}
-            </dl>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDetailsId(null)}>
-              {t("Close", "Stäng")}
-            </Button>
-          </DialogFooter>
+          {details && <RuleDetailsContent details={details} onClose={() => setDetailsId(null)} />}
         </DialogContent>
       </Dialog>
       <Dialog open={creating} onOpenChange={setCreating}>
@@ -378,96 +273,13 @@ export function RulesPage() {
             <DialogTitle>{t("New rule", "Ny regel")}</DialogTitle>
             <DialogDescription className="sr-only">{t("New rule", "Ny regel")}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={submit} className="space-y-5">
-            <div className="field">
-              <Label htmlFor="rule-title">{t("Title", "Titel")}</Label>
-              <Input id="rule-title" name="title" required maxLength={200} />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="field">
-                <Label htmlFor="priority">{t("Priority", "Prioritet")}</Label>
-                <Input id="priority" name="priority" type="number" required defaultValue={10} />
-              </div>
-              <div className="field">
-                <Label htmlFor="allow">{t("Availability", "Tillgänglighet")}</Label>
-                <select id="allow" name="allow" className="native-select">
-                  <option value="true">{t("Allowed", "Tillåten")}</option>
-                  <option value="false">{t("Blocked", "Spärrad")}</option>
-                </select>
-              </div>
-              <DatePicker
-                label={t("Start date", "Startdatum")}
-                name="start_date"
-                defaultValue={format(new Date(), "yyyy-MM-dd")}
-              />
-              <DatePicker
-                label={t("End date", "Slutdatum")}
-                name="end_date"
-                defaultValue="2040-12-31"
-              />
-              <TimePicker
-                label={t("Start time", "Starttid")}
-                name="start_time"
-                defaultValue="08:00"
-              />
-              <TimePicker label={t("End time", "Sluttid")} name="end_time" defaultValue="17:00" />
-            </div>
-            <fieldset>
-              <legend className="text-sm font-medium mb-3">{t("Weekdays", "Veckodagar")}</legend>
-              <div className="flex flex-wrap gap-3">
-                {weekdays.map((day, index) => (
-                  <label className="flex gap-2 items-center text-sm" key={day}>
-                    <Checkbox
-                      aria-label={day}
-                      checked={Boolean(days & (1 << index))}
-                      onCheckedChange={(checked) =>
-                        setDays(checked ? days | (1 << index) : days & ~(1 << index))
-                      }
-                    />
-                    {day}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset>
-              <legend className="text-sm font-medium mb-3">{t("Rooms", "Rum")}</legend>
-              <div className="grid grid-cols-2 gap-3">
-                {rooms.map((room) => (
-                  <label className="flex gap-2 items-center text-sm" key={room.id}>
-                    <Checkbox
-                      aria-label={room.name}
-                      checked={selected.includes(room.id)}
-                      onCheckedChange={(checked) =>
-                        setSelected(
-                          checked
-                            ? [...selected, room.id]
-                            : selected.filter((id) => id !== room.id),
-                        )
-                      }
-                    />
-                    {room.name}
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <div className="field">
-              <Label htmlFor="rule-description">{t("Description", "Beskrivning")}</Label>
-              <Textarea id="rule-description" name="description" />
-            </div>
-            {error && (
-              <p role="alert" className="text-sm text-destructive">
-                {error}
-              </p>
-            )}
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setCreating(false)}>
-                {t("Cancel", "Avbryt")}
-              </Button>
-              <Button type="submit" disabled={create.isPending}>
-                {t("Save rule", "Spara regel")}
-              </Button>
-            </DialogFooter>
-          </form>
+          <RuleForm
+            onCancel={() => setCreating(false)}
+            onSaved={async () => {
+              await invalidate();
+              setCreating(false);
+            }}
+          />
         </DialogContent>
       </Dialog>
       <Dialog

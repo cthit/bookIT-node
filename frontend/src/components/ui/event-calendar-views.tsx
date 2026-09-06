@@ -270,19 +270,6 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
       }
       listDayBodyClass="grow min-w-0 py-3 pe-3 sm:pe-5 gap-2"
 
-      singleMonthClass={(info) =>
-        cn(
-          info.multiMonthColumns > 1 && "m-4",
-          info.multiMonthColumns === 1 && !info.isLast && "border-b",
-        )
-      }
-      singleMonthHeaderClass={(info) =>
-        cn(info.multiMonthColumns > 1 ? "pb-2" : "py-1 border-b bg-background", "items-center")
-      }
-      singleMonthHeaderInnerClass={(info) =>
-        cn("px-3 py-1 rounded-full text-base font-bold", info.hasNavLink && "hover:bg-foreground/5")
-      }
-
       tableHeaderClass="bg-background"
       fillerClass={(info) => cn("opacity-50 border", info.inTableHeader && "border-transparent")}
       dayNarrowWidth={100}
@@ -310,15 +297,6 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           ...dayRowCommonClasses,
           dayCellBottomClass: getShortDayCellBottomClass,
           ...userViews?.dayGrid,
-        },
-        multiMonth: {
-          ...dayRowCommonClasses,
-          dayCellBottomClass: getShortDayCellBottomClass,
-          tableBodyClass: (info) =>
-            cn(info.multiMonthColumns > 1 && "border rounded-sm overflow-hidden"),
-          dayHeaderInnerClass: (info) => cn(!info.inPopover && "mb-2"),
-          dayHeaderDividerClass: (info) => cn(info.multiMonthColumns === 1 && "border-b"),
-          ...userViews?.multiMonth,
         },
         timeGrid: {
           ...dayRowCommonClasses,

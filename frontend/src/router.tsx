@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@/lib/user";
 import { useLanguage } from "@/lib/language";
 import { Failure, Loading } from "@/components/feedback";
+import { bookingSearchDate } from "@/lib/dates";
 
 function Layout() {
   const user = useUser();
@@ -117,14 +118,8 @@ const newRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/new-event",
   validateSearch: (search: Record<string, unknown>): { start?: string; end?: string } => ({
-    start:
-      typeof search.start === "string" && !Number.isNaN(Date.parse(search.start))
-        ? search.start
-        : undefined,
-    end:
-      typeof search.end === "string" && !Number.isNaN(Date.parse(search.end))
-        ? search.end
-        : undefined,
+    start: bookingSearchDate(search.start),
+    end: bookingSearchDate(search.end),
   }),
   component: lazyRouteComponent(() => import("@/pages/booking"), "NewBookingPage"),
 });

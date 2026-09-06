@@ -38,6 +38,7 @@ BookIT, after confirming `DATABASE_URL` points to your local database:
 
 ```sh
 pnpm --dir bookit migrate
+docker compose up -d db-scripts
 pnpm --dir bookit dev
 ```
 
@@ -58,6 +59,49 @@ deployments must provide their own authentication settings with `NODE_ENV=produc
 Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
 The `ghcr.io/cthit/bookit` image serves both the API and built frontend on port 8080.
 Vite is only used as a separate server during development for live updates.
+
+## Personal-data cleanup
+
+Run the cleanup service alongside every deployment. It clears phone numbers and
+CIDs from bookings that ended at least two weeks ago, runs immediately and then
+daily, and retries failures after an hour. The application image does not schedule
+this job itself. Development Compose includes `db-scripts`.
+
+For production, export the application's `DATABASE_URL` and run:
+
+```sh
+docker compose -f compose.cleanup.yml up -d --build
+docker compose -f compose.cleanup.yml logs db-scripts
+```
+
+For an immediate one-time verification, run
+`docker compose -f compose.cleanup.yml run --rm -e CLEANUP_ONCE=1 db-scripts`.
+It exits with a failure status if the cleanup query fails.
+
+The database must be reachable from that Compose network. If it runs in Docker,
+attach the cleanup service to the database's existing network through your
+deployment's Compose configuration. Existing cleanup deployments may continue to
+use `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_NAME`, and `PGPASSWORD` instead of
+`DATABASE_URL`. Check the job's logs as part of deployment verification.
+
+## API compatibility and limits
+
+The public GraphQL schema remains compatible with `main`, including nullable
+legacy arguments and the Boolean `deleteRule` result. Missing arguments and null
+room entries are rejected before database access. Database models are unchanged.
+Calendar moves
+use the additional `moveEvent` mutation, which updates only dates and rejects a
+move when another user has already changed its original times. Members can still
+edit shared bookings; replacing a stored contact number requires its owner or an
+administrator. Omit `phone` or send `null` to retain the existing contact.
+Hidden phone numbers are returned as empty strings. Legacy `User.sid` and
+`User.jti` fields remain queryable but are deprecated and always return `null`;
+session and token identifiers are not exposed.
+
+Date-range queries and booking durations are limited to 366 days. Recurring rules
+can still span multiple years; each query expands only the requested period, with
+a maximum of 10,000 rule occurrences per room. Excessive or invalid ranges return
+a validation error; existing stored bookings and rules are not deleted or migrated.
 
 Run `pnpm check`, `pnpm test` and `pnpm build` for the project checks.
 See [browser tests](e2e/README.md) for Playwright setup and CI image testing.

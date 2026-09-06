@@ -3,8 +3,9 @@ import { Error, User } from "../models";
 import type { InputEvent } from "../generated/schema";
 import { checkRules } from "./rule.service";
 import { setTimeout as delay } from "node:timers/promises";
+import { MAX_RANGE_DAYS, validRange } from "../utils/date-range";
 
-type Event = InputEvent & { booked_by: string };
+type Event = Omit<InputEvent, "room"> & { room: room[]; booked_by: string };
 
 /*
  * Events must end after they start
@@ -98,6 +99,13 @@ const validEvent = async (
     return {
       sv: "Starttid är efter sluttid",
       en: "Start date is later than end date",
+    };
+  }
+
+  if (!validRange(new Date(event.start), new Date(event.end))) {
+    return {
+      sv: `En bokning får vara högst ${MAX_RANGE_DAYS} dagar lång`,
+      en: `A booking may last at most ${MAX_RANGE_DAYS} days`,
     };
   }
 
@@ -260,7 +268,20 @@ export const editEvent = async (
       };
     }
 
-    // Never transfer access to a previous author's phone number to the editor.
+    if (
+      previous.booked_by &&
+      previous.booked_by !== user.cid &&
+      !user.is_admin &&
+      event.phone != null
+    ) {
+      return {
+        sv: "Endast kontaktpersonen eller en administratör får ändra telefonnumret",
+        en: "Only the contact owner or an administrator may change the phone number",
+      };
+    }
+
+    // Keeping a hidden number must also keep its owner. An anonymized booking
+    // needs a new contact, whose number is validated below.
     const updated = {
       ...event,
       phone: event.phone ?? (previous.booked_by ? previous.phone : ""),
@@ -275,6 +296,69 @@ export const editEvent = async (
     }
 
     await transaction.event.update({ where: { id }, data: toEvent(updated) });
+
+    return null;
+  });
+};
+
+export interface BookingMove {
+  id: string;
+  start: string;
+  end: string;
+  previousStart: string;
+  previousEnd: string;
+}
+
+export const moveEvent = async (
+  prisma: PrismaClient,
+  move: BookingMove,
+  user: User,
+): Promise<Error | null> => {
+  return withBookingTransaction(prisma, async (transaction) => {
+    const previous = await transaction.event.findUnique({ where: { id: move.id } });
+
+    if (!previous) {
+      return { sv: "Kunde inte hämta gamla bokningen", en: "Failed to get event" };
+    }
+
+    if (!userIsInBookingGroup(previous, user)) {
+      return {
+        sv: "Du har inte behörighet att redigera denna bokning",
+        en: "You do not have permission to edit this event",
+      };
+    }
+
+    if (
+      previous.start.getTime() !== Date.parse(move.previousStart) ||
+      previous.end.getTime() !== Date.parse(move.previousEnd)
+    ) {
+      return {
+        sv: "Bokningens tid har ändrats. Ladda om kalendern och försök igen.",
+        en: "The booking time has changed. Reload the calendar and try again.",
+      };
+    }
+
+    const updated: Event = {
+      ...previous,
+      start: move.start,
+      end: move.end,
+      room: previous.room as room[],
+      booking_terms: true,
+      created_at: previous.created_at.toISOString(),
+      updated_at: previous.updated_at.toISOString(),
+    };
+
+    const error =
+      (await validEvent(transaction, updated, user)) || (await checkRules(transaction, updated));
+
+    if (error) {
+      return error;
+    }
+
+    await transaction.event.update({
+      where: { id: move.id },
+      data: { start: new Date(move.start), end: new Date(move.end) },
+    });
 
     return null;
   });

@@ -9,8 +9,9 @@ export const getResolvers = (tools: Tools) => {
   return {
     Event: {
       phone: (event, _args, { user }) =>
-        user.is_admin || user.cid === event.booked_by ? (event.phone ?? null) : null,
+        user.is_admin || user.cid === event.booked_by ? (event.phone ?? "") : "",
     },
+    User: { sid: () => null, jti: () => null },
     Query: {
       ...getUserQResolvers(),
       ...getEventQResolvers(tools),

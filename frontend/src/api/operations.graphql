@@ -57,6 +57,25 @@ mutation UpdateBooking($event: InputEvent!) {
   }
 }
 
+mutation MoveBooking(
+  $id: String!
+  $start: String!
+  $end: String!
+  $previousStart: String!
+  $previousEnd: String!
+) {
+  moveEvent(
+    id: $id
+    start: $start
+    end: $end
+    previousStart: $previousStart
+    previousEnd: $previousEnd
+  ) {
+    en
+    sv
+  }
+}
+
 mutation DeleteBooking($id: String!) {
   deleteEvent(id: $id) {
     en
@@ -90,8 +109,5 @@ mutation CreateRule($rule: InputRule!) {
 }
 
 mutation DeleteRule($id: String!) {
-  deleteRule(id: $id) {
-    en
-    sv
-  }
+  deleteRule(id: $id)
 }

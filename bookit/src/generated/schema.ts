@@ -28,7 +28,7 @@ export type Event = {
   created_at?: Maybe<Scalars['String']['output']>;
   updated_at?: Maybe<Scalars['String']['output']>;
   room: Array<Room>;
-  phone?: Maybe<Scalars['String']['output']>;
+  phone: Scalars['String']['output'];
   booked_as: Scalars['String']['output'];
   booked_by: Scalars['String']['output'];
 };
@@ -46,7 +46,7 @@ export type Query = {
 
 
 export type QueryEventArgs = {
-  id: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
 };
 
 
@@ -63,7 +63,7 @@ export type QueryIllegalSlotsArgs = {
 
 
 export type QueryRuleArgs = {
-  id: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type InputEvent = {
@@ -74,7 +74,7 @@ export type InputEvent = {
   title: Scalars['String']['input'];
   created_at?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['String']['input']>;
-  room: Array<Room>;
+  room: Array<InputMaybe<Room>>;
   phone?: InputMaybe<Scalars['String']['input']>;
   booked_as: Scalars['String']['input'];
   booking_terms: Scalars['Boolean']['input'];
@@ -84,34 +84,44 @@ export type Mutation = {
   __typename?: 'Mutation';
   createEvent?: Maybe<Error>;
   editEvent?: Maybe<Error>;
+  moveEvent?: Maybe<Error>;
   deleteEvent?: Maybe<Error>;
   createRule?: Maybe<Error>;
-  deleteRule?: Maybe<Error>;
+  deleteRule?: Maybe<Scalars['Boolean']['output']>;
 };
 
 
 export type MutationCreateEventArgs = {
-  event: InputEvent;
+  event?: InputMaybe<InputEvent>;
 };
 
 
 export type MutationEditEventArgs = {
-  event: InputEvent;
+  event?: InputMaybe<InputEvent>;
+};
+
+
+export type MutationMoveEventArgs = {
+  id: Scalars['String']['input'];
+  start: Scalars['String']['input'];
+  end: Scalars['String']['input'];
+  previousStart: Scalars['String']['input'];
+  previousEnd: Scalars['String']['input'];
 };
 
 
 export type MutationDeleteEventArgs = {
-  id: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
 };
 
 
 export type MutationCreateRuleArgs = {
-  rule: InputRule;
+  rule?: InputMaybe<InputRule>;
 };
 
 
 export type MutationDeleteRuleArgs = {
-  id: Scalars['String']['input'];
+  id?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type IllegalSlot = {
@@ -159,11 +169,18 @@ export type InputRule = {
   title: Scalars['String']['input'];
   created_at?: InputMaybe<Scalars['String']['input']>;
   updated_at?: InputMaybe<Scalars['String']['input']>;
-  room: Array<Room>;
+  room: Array<InputMaybe<Room>>;
 };
 
 export type User = {
   __typename?: 'User';
+  /** @deprecated Session identifiers are not exposed */
+  sid?: Maybe<Scalars['String']['output']>;
+  /** @deprecated Token identifiers are not exposed */
+  jti?: Maybe<Scalars['String']['output']>;
+  given_name?: Maybe<Scalars['String']['output']>;
+  family_name?: Maybe<Scalars['String']['output']>;
+  picture?: Maybe<Scalars['String']['output']>;
   sub?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   nickname?: Maybe<Scalars['String']['output']>;
@@ -291,27 +308,28 @@ export type EventResolvers<ContextType = Context, ParentType extends ResolversPa
   created_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   room?: Resolver<Array<ResolversTypes['Room']>, ParentType, ContextType>;
-  phone?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   booked_as?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   booked_by?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   events?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType>;
-  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<QueryEventArgs, 'id'>>;
+  event?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, Partial<QueryEventArgs>>;
   eventsFT?: Resolver<Maybe<Array<Maybe<ResolversTypes['Event']>>>, ParentType, ContextType, RequireFields<QueryEventsFtArgs, 'from' | 'to'>>;
   illegalSlots?: Resolver<Maybe<Array<ResolversTypes['IllegalSlot']>>, ParentType, ContextType, RequireFields<QueryIllegalSlotsArgs, 'from' | 'to'>>;
   rules?: Resolver<Maybe<Array<Maybe<ResolversTypes['Rule']>>>, ParentType, ContextType>;
-  rule?: Resolver<Maybe<ResolversTypes['Rule']>, ParentType, ContextType, RequireFields<QueryRuleArgs, 'id'>>;
+  rule?: Resolver<Maybe<ResolversTypes['Rule']>, ParentType, ContextType, Partial<QueryRuleArgs>>;
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
 };
 
 export type MutationResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
-  createEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationCreateEventArgs, 'event'>>;
-  editEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationEditEventArgs, 'event'>>;
-  deleteEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationDeleteEventArgs, 'id'>>;
-  createRule?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationCreateRuleArgs, 'rule'>>;
-  deleteRule?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationDeleteRuleArgs, 'id'>>;
+  createEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, Partial<MutationCreateEventArgs>>;
+  editEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, Partial<MutationEditEventArgs>>;
+  moveEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, RequireFields<MutationMoveEventArgs, 'id' | 'start' | 'end' | 'previousStart' | 'previousEnd'>>;
+  deleteEvent?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, Partial<MutationDeleteEventArgs>>;
+  createRule?: Resolver<Maybe<ResolversTypes['Error']>, ParentType, ContextType, Partial<MutationCreateRuleArgs>>;
+  deleteRule?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationDeleteRuleArgs>>;
 };
 
 export type IllegalSlotResolvers<ContextType = Context, ParentType extends ResolversParentTypes['IllegalSlot'] = ResolversParentTypes['IllegalSlot']> = {
@@ -339,6 +357,11 @@ export type RuleResolvers<ContextType = Context, ParentType extends ResolversPar
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
+  sid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  jti?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  given_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  family_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  picture?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   nickname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

@@ -2,11 +2,11 @@ import { Tools } from "../utils/commonTypes";
 import { room } from "@prisma/client";
 import { slotResult } from "./serialize";
 import { mergeRules, toExplicitRules, getRulesBetween } from "../services/rule.service";
+import { queryRange } from "../utils/date-range";
 
 export const getIllegalSlotsQResolvers = ({ prisma }: Tools) => ({
   illegalSlots: async (_: unknown, ft: { from: string; to: string }) => {
-    const from = new Date(ft.from);
-    const to = new Date(ft.to);
+    const { from, to } = queryRange(ft.from, ft.to);
 
     const rules = await getRulesBetween(prisma, from, to);
 

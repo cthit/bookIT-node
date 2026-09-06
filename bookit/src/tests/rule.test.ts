@@ -10,7 +10,7 @@ import {
   ruleDateBounds,
 } from "../services/rule.service";
 import type { InputEvent } from "../generated/schema";
-import { rule } from "@prisma/client";
+import { rule, room } from "@prisma/client";
 
 const defaultRule: rule = {
   id: "",
@@ -199,7 +199,7 @@ describe("Booking rule scope", () => {
   });
 
   it("does not let permission in one room override restrictions in another", () => {
-    const booking: InputEvent = {
+    const booking: Omit<InputEvent, "room"> & { room: room[] } = {
       title: "Two rooms",
       start: "2021-08-20T11:00",
       end: "2021-08-20T12:00",
@@ -457,5 +457,66 @@ describe("Merge rules", () => {
     assertExplicitRuleEqual(expected[1], got[1]);
     assertExplicitRuleEqual(expected[2], got[2]);
     assertExplicitRuleEqual(expected[3], got[3]);
+  });
+});
+
+describe("Rule processing bounds and precedence", () => {
+  it("rejects unbounded expansion while allowing long-lived rules in a calendar window", () => {
+    const from = new Date("2026-01-01");
+    const to = new Date("2040-01-01");
+    const rule = {
+      ...defaultRule,
+      start_date: from,
+      end_date: to,
+      start_time: "08:00",
+      end_time: "17:00",
+    };
+
+    assert.throws(() => toExplicitRules([rule], from, to), /366 days/);
+    assert.equal(toExplicitRules([rule], from, new Date("2026-01-07")).length, 7);
+    assert.throws(
+      () =>
+        toExplicitRules(
+          Array.from({ length: 10_001 }, () => rule),
+          from,
+          from,
+        ),
+      /Too many recurring rules/,
+    );
+  });
+
+  it("preserves the first applicable rule for nested, touching, and disjoint intervals", () => {
+    const rules = Array.from({ length: 40 }, (_, index) => {
+      const start = (index * 17) % 80;
+
+      return {
+        ...defaultExplicitRules,
+        title: String(index),
+        start: new Date(start * 1000),
+        end: new Date((start + 1 + ((index * 11) % 25)) * 1000),
+        allow: index % 2 === 0,
+      };
+    });
+    const merged = mergeRules(rules);
+
+    for (let second = 0.5; second < 110; second++) {
+      const instant = new Date(second * 1000);
+      const expected = rules.find((rule) => rule.start <= instant && instant < rule.end);
+      const actual = merged.filter((rule) => rule.start <= instant && instant < rule.end);
+
+      assert.equal(actual.length, expected ? 1 : 0);
+      assert.equal(actual[0]?.title, expected?.title);
+      assert.equal(actual[0]?.allow, expected?.allow);
+    }
+  });
+
+  it("merges thousands of disjoint intervals without overflowing the call stack", () => {
+    const rules = Array.from({ length: 5_000 }, (_, index) => ({
+      ...defaultExplicitRules,
+      start: new Date(index * 2000),
+      end: new Date(index * 2000 + 1000),
+    }));
+
+    assert.deepEqual(mergeRules(rules), rules);
   });
 });

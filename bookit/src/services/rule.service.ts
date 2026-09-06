@@ -1,7 +1,11 @@
 import { Error, User } from "../models";
 import type { InputEvent, InputRule } from "../generated/schema";
 import { to } from "../utils";
-import { Prisma, rule } from "@prisma/client";
+import { Prisma, rule, room } from "@prisma/client";
+import { GraphQLError } from "graphql";
+import { validRange } from "../utils/date-range";
+
+type RuleBooking = Omit<InputEvent, "room"> & { room: room[] };
 
 /**
  * A single rule that applies to a specific time slot
@@ -52,6 +56,12 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
     return [];
   }
 
+  if (!validRange(from, to)) {
+    throw new GraphQLError("Choose a date range of at most 366 days.", {
+      extensions: { code: "BAD_USER_INPUT" },
+    });
+  }
+
   for (const rule of rules) {
     const current = new Date(Math.max(from.getTime(), rule.start_date.getTime()));
     const end = new Date(Math.min(to.getTime(), rule.end_date.getTime()));
@@ -61,6 +71,12 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
 
     while (current <= end) {
       if (dayApplies(current, rule.day_mask)) {
+        if (explicitRules.length >= 10_000) {
+          throw new GraphQLError("Too many recurring rules. Choose a shorter date range.", {
+            extensions: { code: "BAD_USER_INPUT" },
+          });
+        }
+
         insertRule(explicitRules, current, rule);
       }
 
@@ -71,63 +87,52 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
   return explicitRules.sort((a, b): number => a.priority - b.priority);
 };
 
-/**
- * Returns a list of explicit rules that apply to the given event.
- * If the rule to be inserted overlaps with the next rule in the list,
- * the rule is split into two rules. The first rule is inserted into the list
- * and the second rule is inserted into the list recursively.
- */
-const mergeIntoList = (
-  rule: ExplicitRule,
-  [nextMergedRule, ...mergedRules]: ExplicitRule[],
-): ExplicitRule[] => {
-  if (rule.start >= rule.end) {
-    return nextMergedRule ? [nextMergedRule, ...mergedRules] : [];
-  }
-
-  if (nextMergedRule == undefined) {
-    return [rule];
-  }
-
-  if (nextMergedRule.start > rule.start) {
-    if (nextMergedRule.start >= rule.end) {
-      return [rule, nextMergedRule, ...mergedRules];
-    }
-
-    return [
-      { ...rule, end: new Date(nextMergedRule.start) },
-      ...mergeIntoList({ ...rule, start: new Date(nextMergedRule.end) }, [
-        nextMergedRule,
-        ...mergedRules,
-      ]),
-    ];
-  }
-
-  if (nextMergedRule.end > rule.start) {
-    return [nextMergedRule, ...mergeIntoList({ ...rule, start: nextMergedRule.end }, mergedRules)];
-  }
-
-  return [nextMergedRule, ...mergeIntoList(rule, mergedRules)];
-};
-
+// Input order defines precedence (toExplicitRules sorts by priority). Keep
+// existing intervals and fill their gaps, without recursive array copying.
 export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
-  let mergedRules: ExplicitRule[] = [];
+  let merged: ExplicitRule[] = [];
 
   for (const rule of rules) {
-    mergedRules = mergeIntoList(rule, mergedRules);
+    let start = rule.start;
+
+    if (start >= rule.end) {
+      continue;
+    }
+
+    const next: ExplicitRule[] = [];
+
+    for (const existing of merged) {
+      if (start < existing.start && start < rule.end) {
+        const end = new Date(Math.min(existing.start.getTime(), rule.end.getTime()));
+
+        next.push({ ...rule, start, end });
+      }
+
+      next.push(existing);
+
+      if (existing.end > start) {
+        start = existing.end;
+      }
+    }
+
+    if (start < rule.end) {
+      next.push({ ...rule, start });
+    }
+
+    merged = next;
   }
 
-  return mergedRules;
+  return merged;
 };
 
-const breaksExplicitRule = (rule: ExplicitRule, event: InputEvent): boolean => {
+const breaksExplicitRule = (rule: ExplicitRule, event: RuleBooking): boolean => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
   return rule.start < end && rule.end > start && !rule.allow;
 };
 
-export const doesObeyRules = (rules: rule[], event: InputEvent): Error | null => {
+export const doesObeyRules = (rules: rule[], event: RuleBooking): Error | null => {
   const start = new Date(event.start);
   const end = new Date(event.end);
 
@@ -167,7 +172,7 @@ export const getRulesBetween = async (prisma: Prisma.TransactionClient, from: Da
   });
 };
 
-export const checkRules = async (prisma: Prisma.TransactionClient, event: InputEvent) => {
+export const checkRules = async (prisma: Prisma.TransactionClient, event: RuleBooking) => {
   const rules = await prisma.rule.findMany({
     where: {
       room: {
@@ -190,7 +195,7 @@ const validDateTime = (start: Date, end: Date): boolean => {
 
 export const createRule = async (
   prisma: Prisma.TransactionClient,
-  rule: InputRule,
+  rule: Omit<InputRule, "room"> & { room: room[] },
   user: User,
 ): Promise<Error | null> => {
   if (!user.is_admin) {

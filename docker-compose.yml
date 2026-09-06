@@ -24,6 +24,19 @@ services:
       timeout: 5s
       retries: 20
 
+  db-scripts:
+    build: ./db-scripts
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      PGPASSWORD: password
+      DB_USER: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: bookit
+
   gamma-db:
     image: postgres:16.0-alpine
     environment:

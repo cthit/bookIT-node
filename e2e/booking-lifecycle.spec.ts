@@ -1,5 +1,50 @@
 import { test, expect } from "./fixtures";
 import { acceptConditions, createBooking, fillBooking, openBooking } from "./booking-helpers";
+import { expectSegments } from "./date-time-helpers";
+
+test("a new-booking link accepts UTC timestamps and preserves their local time", async ({
+  page,
+}) => {
+  const initial = await page.evaluate(() => {
+    const date = new Date();
+
+    date.setHours(12, 0, 0, 0);
+
+    return {
+      start: date.toISOString(),
+      end: new Date(date.getTime() + 3_600_000).toISOString(),
+      year: date.getFullYear(),
+      month: date.getMonth() + 1,
+      day: date.getDate(),
+    };
+  });
+
+  await page.goto(`/new-event?${new URLSearchParams({ start: initial.start, end: initial.end })}`);
+  await expect(page.getByRole("heading", { name: "New booking", exact: true })).toBeVisible();
+  const { year, month, day } = initial;
+
+  await expectSegments(page.getByRole("group", { name: "Begins at", exact: true }), {
+    year,
+    month,
+    day,
+    hour: 12,
+    minute: 0,
+  });
+  await expectSegments(page.getByRole("group", { name: "Ends at", exact: true }), {
+    year,
+    month,
+    day,
+    hour: 13,
+    minute: 0,
+  });
+  await page.getByRole("textbox", { name: "Title", exact: true }).fill("E2E UTC link booking");
+  await page.getByRole("textbox", { name: "Phone number", exact: true }).fill("0701234567");
+  await page.getByRole("combobox", { name: "Booking as", exact: true }).selectOption("digit");
+  await acceptConditions(page);
+  await page.getByRole("button", { name: "Save booking", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  await openBooking(page, "E2E UTC link booking");
+});
 
 test("a group member creates, edits and deletes a persisted booking", async ({ page }) => {
   const title = "E2E digIT planning";

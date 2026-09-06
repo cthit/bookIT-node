@@ -2,6 +2,8 @@ import { expect, type Browser, type Page } from "@playwright/test";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
 import { GenericContainer, Network, Wait, type StartedTestContainer } from "testcontainers";
 import { createServer, type AddressInfo } from "node:net";
+import seed from "../gamma/users.json";
+import { resolve } from "node:path";
 
 export const images = {
   bookitPostgres: "postgres:12.22-alpine",
@@ -12,62 +14,32 @@ export const images = {
     "ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db",
 } as const;
 
+function userWithCid(cid: string) {
+  const user = seed.users.find((user) => user.cid === cid);
+
+  if (!user) {
+    throw new Error(`Missing Gamma fixture: ${cid}`);
+  }
+
+  return user;
+}
+
 const users = {
-  admin: {
-    id: "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
-    cid: "bookadmin",
-    nick: "BookIT Admin",
-    groups: ["digit"],
-  },
-  member: {
-    id: "bc605869-9a4d-46ec-8a29-d00819d4c195",
-    cid: "bookmember",
-    nick: "BookIT Member",
-    groups: ["digit"],
-  },
-  outsider: {
-    id: "ec8987d7-4087-461d-bed5-9365086b6e3b",
-    cid: "bookguest",
-    nick: "BookIT Guest",
-    groups: [],
-  },
-} as const;
+  admin: userWithCid("bookadmin"),
+  member: userWithCid("bookmember"),
+  outsider: userWithCid("bookguest"),
+};
 
 export type UserRole = keyof typeof users;
 
 const testPassword = "password1337";
-
-const groupId = "aed27030-ad90-4526-855c-1e909b1dcecb";
-
-const postId = "7bb1db15-730d-4864-bfc3-99abe7c0ccf8";
-
-const seed = {
-  users: Object.values(users).map((user) => ({
-    id: user.id,
-    cid: user.cid,
-    nick: user.nick,
-    firstName: "BookIT",
-    lastName: user.cid,
-    acceptanceYear: 2020,
-  })),
-  superGroups: [{ id: groupId, name: "digit", prettyName: "digIT", type: "COMMITTEE" }],
-  groups: [
-    {
-      id: "acd27030-ad90-4526-855c-1e909b1dcecb",
-      name: "digit-test",
-      prettyName: "digIT test",
-      superGroupId: groupId,
-      members: [users.admin, users.member].map((user) => ({ userId: user.id, postId })),
-    },
-  ],
-  posts: [{ id: postId, postName: { sv: "Testmedlem", en: "Test member" } }],
-};
 
 export interface Environment {
   appUrl: string;
   gammaUrl: string;
   logs: Record<string, string>;
   resetBookings(): Promise<void>;
+  cleanupPersonalData(): Promise<void>;
   stop(): Promise<void>;
 }
 
@@ -361,6 +333,33 @@ export async function compose(browser: Browser): Promise<Environment> {
       gammaUrl,
       logs,
       stop,
+
+      async cleanupPersonalData() {
+        await bookitDb.copyFilesToContainer([
+          { source: resolve("db-scripts/cleanup.sh"), target: "/cleanup/cleanup.sh" },
+          { source: resolve("db-scripts/delete-data.sql"), target: "/cleanup/delete-data.sql" },
+        ]);
+
+        // Exercise both supported deployment configurations against real data.
+        for (const connection of [
+          { DATABASE_URL: "postgresql://bookit_test:bookit_test@127.0.0.1:5432/bookit_test" },
+          {
+            DB_HOST: "127.0.0.1",
+            DB_PORT: "5432",
+            DB_USER: "bookit_test",
+            DB_NAME: "bookit_test",
+            PGPASSWORD: "bookit_test",
+          },
+        ]) {
+          const result = await bookitDb.exec(["sh", "/cleanup/cleanup.sh"], {
+            env: { ...connection, CLEANUP_ONCE: "1" },
+          });
+
+          if (result.exitCode !== 0) {
+            throw new Error(`Privacy cleanup failed: ${result.output}`);
+          }
+        }
+      },
 
       async resetBookings() {
         const result = await bookitDb.exec([

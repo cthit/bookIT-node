@@ -31,6 +31,9 @@ export function authenticatedUser(req: Request): User {
     sub: claims.sub,
     cid: claims.cid,
     name: claim("name"),
+    given_name: claim("given_name"),
+    family_name: claim("family_name"),
+    picture: claim("picture"),
     nickname: claim("nickname"),
     locale: claim("locale"),
     groups: Array.isArray(groups)

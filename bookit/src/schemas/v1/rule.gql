@@ -27,15 +27,15 @@ input InputRule {
   title: String!
   created_at: String
   updated_at: String
-  room: [Room!]!
+  room: [Room]!
 }
 
 type Query {
   rules: [Rule]
-  rule(id: String!): Rule
+  rule(id: String): Rule
 }
 
 type Mutation {
-  createRule(rule: InputRule!): Error
-  deleteRule(id: String!): Error
+  createRule(rule: InputRule): Error
+  deleteRule(id: String): Boolean
 }

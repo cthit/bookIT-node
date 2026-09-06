@@ -41,5 +41,20 @@ CI publishes a commit image after quality checks and runs this same target with
 image E2E requires a reviewed branch in this repository. GitHub releases retag
 the tested commit image without rebuilding.
 
+Development and E2E share `gamma/users.json`. Development uses a stable SQL-seeded
+OAuth client; E2E provisions a fresh client through Gamma's UI because each run
+uses different ports and credentials.
+
 Service versions are pinned in `compose.ts`. BookIT's PostgreSQL 12 and Redis 5
 upgrades remain separate follow-ups.
+
+Manual verification with the pinned Gamma 2.5.1 image found that BookIT's OIDC
+sign-out redirect reaches a Gamma HTTP 500 page. Gamma's own Logout button works;
+use it before switching test users. The automated suite uses isolated browser
+contexts and does not cover this sign-out flow. Resolve and retest the provider's
+OIDC logout support before treating local sign-out as verified.
+
+The existing Prisma schema also gives rules a fixed February 2022 default for
+`created_at` and `updated_at`. Newly created rules consequently show that date in
+their details. Correcting those database defaults and defining update-time
+behavior requires a separate migration; this change leaves the schema intact.

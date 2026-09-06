@@ -1,4 +1,9 @@
 type User {
+  sid: String @deprecated(reason: "Session identifiers are not exposed")
+  jti: String @deprecated(reason: "Token identifiers are not exposed")
+  given_name: String
+  family_name: String
+  picture: String
   sub: String
   name: String
   nickname: String

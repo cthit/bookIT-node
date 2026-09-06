@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { request, checkMutation } from "@/api/client";
 import {
   CalendarDocument,
-  UpdateBookingDocument,
+  MoveBookingDocument,
   type BookingFragment,
   type Room,
 } from "@/generated/graphql";
@@ -79,20 +79,19 @@ export function CalendarPage() {
 
   const move = useMutation({
     mutationFn: async ({ booking, start, end }: BookingMove) => {
-      const { editEvent } = await request(UpdateBookingDocument, {
-        event: {
-          id: booking.id,
-          title: booking.title,
-          description: booking.description,
-          start: start.toISOString(),
-          end: end.toISOString(),
-          room: booking.room.filter((room): room is Room => Boolean(room)),
-          booked_as: booking.booked_as,
-          booking_terms: true,
-        },
+      if (!booking.id) {
+        throw new Error(t("Booking not found.", "Bokningen hittades inte."));
+      }
+
+      const { moveEvent } = await request(MoveBookingDocument, {
+        id: booking.id,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        previousStart: booking.start,
+        previousEnd: booking.end,
       });
 
-      checkMutation(editEvent, language);
+      checkMutation(moveEvent, language);
     },
     onSuccess: async (_result, { booking }) => {
       await Promise.all([
