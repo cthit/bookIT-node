@@ -5,6 +5,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer, type AddressInfo } from "node:net";
 import { resolve } from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
+import { applicationImages } from "./application-images";
 
 const root = resolve(__dirname, "..");
 
@@ -178,6 +179,8 @@ export async function loginAs(
 }
 
 export async function compose(browser: Browser): Promise<Environment> {
+  // Validate before allocating any containers; CI must never fall back to dev servers.
+  const appImages = applicationImages();
   const network = await new Network().start();
   const containers: StartedTestContainer[] = [];
   const processes: ChildProcess[] = [];
@@ -288,7 +291,11 @@ export async function compose(browser: Browser): Promise<Environment> {
     );
 
     const gammaPort = await unusedPort();
-    const gammaUrl = `http://localhost:${gammaPort}`;
+    // Chromium resolves *.localhost to loopback. Docker resolves the same name
+    // through Gamma's network alias, keeping the OIDC issuer identical on both sides.
+    const gammaHost = appImages ? "gamma.localhost" : "localhost";
+    const gammaUrl = `http://${gammaHost}:${gammaPort}`;
+    const gammaContainerPort = appImages ? gammaPort : 8081;
     const appPort = await unusedPort();
     const appUrl = `http://localhost:${appPort}`;
     const frontendPort = await unusedPort();
@@ -298,14 +305,14 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withPlatform("linux/amd64")
         .withResourcesQuota({ memory: 2 })
         .withNetwork(network)
-        .withNetworkAliases("gamma")
+        .withNetworkAliases("gamma", "gamma.localhost")
         .withEnvironment({
           DB_HOST: "gamma-db",
           DB_NAME: gammaDb.getDatabase(),
           DB_USER: gammaDb.getUsername(),
           DB_PASSWORD: gammaDb.getPassword(),
           REDIS_HOST: "gamma-redis",
-          SERVER_PORT: "8081",
+          SERVER_PORT: String(gammaContainerPort),
           BASE_URL: gammaUrl,
           PRODUCTION: "false",
           IS_MOCKING: "true",
@@ -316,11 +323,11 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withCopyContentToContainer([
           { content: JSON.stringify(seed), target: "/tmp/bookit-gamma-seed.json" },
         ])
-        .withExposedPorts({ container: 8081, host: gammaPort })
+        .withExposedPorts({ container: gammaContainerPort, host: gammaPort })
         .withLogConsumer((stream) => stream.on("data", (chunk: Buffer) => record("gamma", chunk)))
         .withWaitStrategy(
           Wait.forAll([
-            Wait.forHttp("/login", 8081).forStatusCode(200),
+            Wait.forHttp("/login", gammaContainerPort).forStatusCode(200),
             Wait.forLogMessage(/Api key of type INFO has been generated/),
           ]),
         )
@@ -332,81 +339,128 @@ export async function compose(browser: Browser): Promise<Environment> {
     const client = await provisionClient(browser, gammaUrl, appUrl);
 
     const env = {
-      NODE_ENV: "test",
+      NODE_ENV: appImages ? "production" : "test",
       TZ: "Europe/Stockholm",
-      DATABASE_URL: bookitDb.getConnectionUri(),
-      REDIS_HOST: bookitRedis.getHost(),
-      REDIS_PORT: String(bookitRedis.getMappedPort(6379)),
+      DATABASE_URL: appImages
+        ? "postgresql://bookit_test:bookit_test@bookit-db:5432/bookit_test"
+        : bookitDb.getConnectionUri(),
+      REDIS_HOST: appImages ? "bookit-redis" : bookitRedis.getHost(),
+      REDIS_PORT: appImages ? "6379" : String(bookitRedis.getMappedPort(6379)),
       REDIS_PASS: "",
       SESSION_SECRET: "bookit-isolated-e2e-session-secret",
       SECRET: "bookit-isolated-e2e-oidc-secret-at-least-32-characters",
       BASE_URL: appUrl,
       BACKEND_URL: appUrl,
-      PORT: String(appPort),
-      FRONTEND_URL: `http://127.0.0.1:${frontendPort}`,
+      PORT: appImages ? "8080" : String(appPort),
+      FRONTEND_URL: appImages ? "http://bookit-frontend:80" : `http://127.0.0.1:${frontendPort}`,
       ISSUER_BASE_URL: gammaUrl,
       CLIENT_ID: client.clientId,
       CLIENT_SECRET: client.clientSecret,
       API_KEY: client.apiKey,
     };
 
-    console.log("Generating Prisma client and initializing the isolated BookIT schema...");
-    for (const command of [["generate"], ["db", "push"]]) {
-      const migrate = startProcess(
-        "schema",
-        ["--dir", "backend", "exec", "prisma", ...command],
+    if (appImages) {
+      record("images", JSON.stringify(appImages));
+      console.log(`Using published BookIT images: ${JSON.stringify(appImages)}`);
+      console.log("Initializing the isolated database with the candidate backend image...");
+      await track(
+        new GenericContainer(appImages.backend)
+          .withPlatform("linux/amd64")
+          .withNetwork(network)
+          .withEnvironment({ DATABASE_URL: env.DATABASE_URL })
+          .withCommand(["./node_modules/.bin/prisma", "db", "push"])
+          .withLogConsumer((stream) =>
+            stream.on("data", (chunk: Buffer) => record("schema", chunk)),
+          )
+          .withWaitStrategy(Wait.forOneShotStartup())
+          .withStartupTimeout(120_000)
+          .start(),
+      );
+      await track(
+        new GenericContainer(appImages.frontend)
+          .withPlatform("linux/amd64")
+          .withNetwork(network)
+          .withNetworkAliases("bookit-frontend")
+          .withExposedPorts(80)
+          .withLogConsumer((stream) =>
+            stream.on("data", (chunk: Buffer) => record("frontend", chunk)),
+          )
+          .withWaitStrategy(Wait.forHttp("/", 80).forStatusCode(200))
+          .withStartupTimeout(120_000)
+          .start(),
+      );
+      await track(
+        new GenericContainer(appImages.backend)
+          .withPlatform("linux/amd64")
+          .withNetwork(network)
+          .withEnvironment(env)
+          .withExposedPorts({ container: 8080, host: appPort })
+          .withLogConsumer((stream) =>
+            stream.on("data", (chunk: Buffer) => record("backend", chunk)),
+          )
+          .withWaitStrategy(Wait.forHttp("/api/health", 8080).forStatusCode(200))
+          .withStartupTimeout(120_000)
+          .start(),
+      );
+    } else {
+      console.log("Generating Prisma client and initializing the isolated BookIT schema...");
+      for (const command of [["generate"], ["db", "push"]]) {
+        const migrate = startProcess(
+          "schema",
+          ["--dir", "backend", "exec", "prisma", ...command],
+          env,
+        );
+        await new Promise<void>((resolve, reject) => {
+          migrate.once("error", reject);
+          migrate.once("exit", (code) =>
+            code === 0
+              ? resolve()
+              : reject(new Error(`BookIT schema setup failed: ${logs.schema ?? ""}`)),
+          );
+        });
+      }
+
+      const frontend = startProcess(
+        "frontend",
+        [
+          "--dir",
+          "frontend",
+          "dev",
+          "--host",
+          "127.0.0.1",
+          "--port",
+          String(frontendPort),
+          "--strictPort",
+        ],
         env,
       );
-      await new Promise<void>((resolve, reject) => {
-        migrate.once("error", reject);
-        migrate.once("exit", (code) =>
-          code === 0
-            ? resolve()
-            : reject(new Error(`BookIT schema setup failed: ${logs.schema ?? ""}`)),
-        );
-      });
-    }
+      const backend = startProcess("backend", ["--dir", "backend", "start"], env);
 
-    const frontend = startProcess(
-      "frontend",
-      [
-        "--dir",
-        "frontend",
-        "dev",
-        "--host",
-        "127.0.0.1",
-        "--port",
-        String(frontendPort),
-        "--strictPort",
-      ],
-      env,
-    );
-    const backend = startProcess("backend", ["--dir", "backend", "start"], env);
-
-    await expect
-      .poll(
-        async () => {
-          for (const child of [frontend, backend]) {
-            if (child.exitCode !== null || child.signalCode !== null) {
-              throw new Error(
-                `BookIT exited during startup.\n${logs.backend ?? ""}\n${logs.frontend ?? ""}`,
-              );
+      await expect
+        .poll(
+          async () => {
+            for (const child of [frontend, backend]) {
+              if (child.exitCode !== null || child.signalCode !== null) {
+                throw new Error(
+                  `BookIT exited during startup.\n${logs.backend ?? ""}\n${logs.frontend ?? ""}`,
+                );
+              }
             }
-          }
-          const front = await fetch(env.FRONTEND_URL, { signal: AbortSignal.timeout(2_000) }).catch(
-            () => undefined,
-          );
-          await front?.body?.cancel();
-          const back = await fetch(`${appUrl}/api/health`, {
-            redirect: "manual",
-            signal: AbortSignal.timeout(2_000),
-          }).catch(() => undefined);
-          await back?.body?.cancel();
-          return front?.status === 200 && back?.status === 200;
-        },
-        { timeout: 120_000, intervals: [500, 1000] },
-      )
-      .toBe(true);
+            const front = await fetch(env.FRONTEND_URL, {
+              signal: AbortSignal.timeout(2_000),
+            }).catch(() => undefined);
+            await front?.body?.cancel();
+            const back = await fetch(`${appUrl}/api/health`, {
+              redirect: "manual",
+              signal: AbortSignal.timeout(2_000),
+            }).catch(() => undefined);
+            await back?.body?.cancel();
+            return front?.status === 200 && back?.status === 200;
+          },
+          { timeout: 120_000, intervals: [500, 1000] },
+        )
+        .toBe(true);
+    }
 
     return {
       appUrl,

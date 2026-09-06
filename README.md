@@ -103,7 +103,13 @@ One `e2e/compose.ts` owns all Testcontainers orchestration and separate database
 
 CI enforces contracts, types, lint/format, unit/API tests, builds, dependency audit,
 the browser suite, and container builds. Browser failure artifacts are retained.
-Successful main builds publish the existing GHCR frontend/backend image names.
+After quality checks, CI publishes uniquely tagged GHCR candidates and runs E2E
+against their immutable digests. Successful main runs promote those same digests
+to the existing commit-SHA and latest tags without rebuilding. PR runs never
+update production tags. Fork/Dependabot PRs run quality checks only until reviewed
+and moved to a trusted branch; they receive no registry credentials.
+See [image-mode E2E](e2e/README.md#development-servers-or-published-images) for local
+digest-based runs, routing, explicit schema initialization, and registry access.
 Actions are SHA-pinned and Dependabot tracks future updates.
 
 ## Containers and deployment

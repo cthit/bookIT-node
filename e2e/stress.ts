@@ -7,7 +7,7 @@ async function main() {
   if (!appUrl || !gammaUrl)
     throw new Error("Usage: pnpm exec tsx e2e/stress.ts <local app URL> <local Gamma URL>");
   for (const url of [appUrl, gammaUrl]) {
-    if (!["localhost", "127.0.0.1"].includes(new URL(url).hostname)) {
+    if (!["localhost", "127.0.0.1", "gamma.localhost"].includes(new URL(url).hostname)) {
       throw new Error("Stress fixtures may only be added to a localhost test environment");
     }
   }

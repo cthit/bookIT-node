@@ -1,6 +1,9 @@
 import { defineConfig } from "vite-plus";
 export default defineConfig({
-  test: { include: ["backend/src/**/*.test.ts", "frontend/src/**/*.test.ts"], environment: "node" },
+  test: {
+    include: ["backend/src/**/*.test.ts", "frontend/src/**/*.test.ts", "e2e/**/*.test.ts"],
+    environment: "node",
+  },
   lint: {
     plugins: ["typescript", "react", "jsx-a11y", "import", "unicorn", "oxc"],
     overrides: [

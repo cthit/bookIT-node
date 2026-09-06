@@ -8,7 +8,7 @@ async function main() {
   if (!appUrl || !gammaUrl || !outputDirectory)
     throw new Error("Provide local app URL, Gamma URL and output directory");
   for (const url of [appUrl, gammaUrl]) {
-    if (!["localhost", "127.0.0.1"].includes(new URL(url).hostname))
+    if (!["localhost", "127.0.0.1", "gamma.localhost"].includes(new URL(url).hostname))
       throw new Error("Only localhost previews are supported");
   }
   await mkdir(outputDirectory, { recursive: true });
