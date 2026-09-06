@@ -32,6 +32,10 @@ jobs:
           version: "0.3.0"
           run-install: false
           cache: true
+      - name: Install the packageManager-pinned pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
       - name: Install approved dependencies from the lockfile
         run: vp install --frozen-lockfile
       - name: Generate GraphQL contracts and check they are committed
@@ -66,6 +70,10 @@ jobs:
           version: "0.3.0"
           run-install: false
           cache: true
+      - name: Install the packageManager-pinned pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+        with:
+          run_install: false
       - run: vp install --frozen-lockfile
       - run: pnpm codegen
       - name: Install Chromium and its system dependencies
