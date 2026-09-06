@@ -16,15 +16,15 @@ export function applicationImages(
     return undefined;
   }
 
-  const digestImage = (name: string): string => {
+  const image = (name: string): string => {
     const value = env[name];
-    if (!value || !/^[a-z0-9][a-z0-9._:/-]*@sha256:[a-f0-9]{64}$/.test(value))
-      throw new Error(`${name} must be a registry image pinned with @sha256:<64 hex characters>`);
+    if (!value || !/^[a-z0-9][a-z0-9._:/-]*(?::[a-f0-9]{40}|@sha256:[a-f0-9]{64})$/.test(value))
+      throw new Error(`${name} must use a full commit-SHA tag or an @sha256 image digest`);
     return value;
   };
 
   return {
-    frontend: digestImage("BOOKIT_FRONTEND_IMAGE"),
-    backend: digestImage("BOOKIT_BACKEND_IMAGE"),
+    frontend: image("BOOKIT_FRONTEND_IMAGE"),
+    backend: image("BOOKIT_BACKEND_IMAGE"),
   };
 }

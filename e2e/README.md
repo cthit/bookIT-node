@@ -23,17 +23,18 @@ To run the same suite locally against specific published images:
 # For private packages, authenticate Docker with read:packages access first.
 docker login ghcr.io
 E2E_MODE=images \
-BOOKIT_FRONTEND_IMAGE='ghcr.io/cthit/bookit-node-frontend@sha256:<frontend-digest>' \
-BOOKIT_BACKEND_IMAGE='ghcr.io/cthit/bookit-node-backend@sha256:<backend-digest>' \
+BOOKIT_FRONTEND_IMAGE='ghcr.io/cthit/bookit-node-frontend:<commit-sha>' \
+BOOKIT_BACKEND_IMAGE='ghcr.io/cthit/bookit-node-backend:<commit-sha>' \
 pnpm test:e2e
 ```
 
-Replace each placeholder with its 64-character digest from the CI image job
-outputs/logs. Tags such as `latest` are rejected. Docker/Testcontainers use the
+Use the full 40-character commit SHA. Image digests (`@sha256:<64 hex characters>`)
+also work; tags such as `latest` are rejected. Images are pulled on each run.
+Docker/Testcontainers use the
 host's Docker credential store; credentials are not forwarded into containers.
 Public images do not require a login.
 
-Image mode runs the exact backend digest once with `prisma db push` against the
+Image mode runs the backend image once with `prisma db push` against the
 empty, isolated BookIT database, and checks its exit status before starting the
 application. It does not generate a client from the checkout or migrate on normal
 backend startup. No production database is touched.
@@ -53,18 +54,19 @@ are involved.
 ## CI image lifecycle and fork PRs
 
 Each branch push runs quality checks, publishes frontend/backend images to GHCR
-as `:<commit-sha>`, then runs E2E against their immutable digests. Same-repository
+as `:<commit-sha>`. E2E waits for publication, then pulls those commit tags directly.
+Same-repository
 PRs use that branch CI; fork PRs run quality checks separately. Publication has
 package-write permission; E2E has package-read permission.
 
-Publishing a GitHub Release copies the successful push CI run's tested digests
-to the release tag (for example, `v1.2.0`). No rebuild, main-merge promotion, or
+Publishing a GitHub Release requires the latest CI run for its commit to pass,
+then copies the commit images to the release tag (for example, `v1.2.0`).
+No rebuild, main-merge promotion, or
 `latest` update occurs. Release tags must be valid Docker tags, not `latest` or
 commit SHAs. Prereleases use their exact release tag too.
 
-The tested-digest artifact is retained for 90 days. Missing or expired evidence
-blocks release tagging: rerun CI for that commit, then rerun the release workflow.
-E2E dry-runs the manifest-copy operation without writing registry tags.
+CI and releases share a per-commit concurrency group so publication and release
+tagging cannot race. There is no image-metadata artifact to download.
 
 Fork PRs and Dependabot PRs run quality checks only. They receive no registry
 credentials and skip publication/image E2E. After reviewing their code,

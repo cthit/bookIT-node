@@ -24,18 +24,36 @@ describe("E2E application mode", () => {
     ).toEqual({ frontend, backend });
   });
 
-  it.each([undefined, "ghcr.io/cthit/bookit-node-backend:latest", "backend@sha256:abc"])(
-    "rejects missing or mutable image references: %s",
-    (value) => {
-      expect(() =>
-        applicationImages({
-          E2E_MODE: "images",
-          BOOKIT_FRONTEND_IMAGE: frontend,
-          BOOKIT_BACKEND_IMAGE: value,
-        }),
-      ).toThrow("BOOKIT_BACKEND_IMAGE must be");
-    },
-  );
+  it("accepts commit tags from CI", () => {
+    const commit = "c".repeat(40);
+    const images = {
+      frontend: `ghcr.io/cthit/bookit-node-frontend:${commit}`,
+      backend: `ghcr.io/cthit/bookit-node-backend:${commit}`,
+    };
+    expect(
+      applicationImages({
+        E2E_MODE: "images",
+        CI: "true",
+        BOOKIT_FRONTEND_IMAGE: images.frontend,
+        BOOKIT_BACKEND_IMAGE: images.backend,
+      }),
+    ).toEqual(images);
+  });
+
+  it.each([
+    undefined,
+    "ghcr.io/cthit/bookit-node-backend:latest",
+    "ghcr.io/cthit/bookit-node-backend:abc1234",
+    "backend@sha256:abc",
+  ])("rejects missing or unpinned image references: %s", (value) => {
+    expect(() =>
+      applicationImages({
+        E2E_MODE: "images",
+        BOOKIT_FRONTEND_IMAGE: frontend,
+        BOOKIT_BACKEND_IMAGE: value,
+      }),
+    ).toThrow("BOOKIT_BACKEND_IMAGE must use");
+  });
 
   it("does not silently ignore image references in development mode", () => {
     expect(() => applicationImages({ BOOKIT_FRONTEND_IMAGE: frontend })).toThrow(

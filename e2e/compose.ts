@@ -1,6 +1,12 @@
 import { expect, type Browser, type Page } from "@playwright/test";
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from "@testcontainers/postgresql";
-import { GenericContainer, Network, Wait, type StartedTestContainer } from "testcontainers";
+import {
+  GenericContainer,
+  Network,
+  PullPolicy,
+  Wait,
+  type StartedTestContainer,
+} from "testcontainers";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createServer, type AddressInfo } from "node:net";
 import { resolve } from "node:path";
@@ -356,9 +362,10 @@ export async function compose(browser: Browser): Promise<Environment> {
     if (appImages) {
       record("images", JSON.stringify(appImages));
       console.log(`Using published BookIT images: ${JSON.stringify(appImages)}`);
-      console.log("Initializing the isolated database with the candidate backend image...");
+      console.log("Initializing the isolated database with the published backend image...");
       await track(
         new GenericContainer(appImages.backend)
+          .withPullPolicy(PullPolicy.alwaysPull())
           .withPlatform("linux/amd64")
           .withNetwork(network)
           .withEnvironment({ DATABASE_URL: env.DATABASE_URL })
@@ -372,6 +379,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       );
       await track(
         new GenericContainer(appImages.frontend)
+          .withPullPolicy(PullPolicy.alwaysPull())
           .withPlatform("linux/amd64")
           .withNetwork(network)
           .withNetworkAliases("bookit-frontend")
@@ -385,6 +393,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       );
       await track(
         new GenericContainer(appImages.backend)
+          .withPullPolicy(PullPolicy.alwaysPull())
           .withPlatform("linux/amd64")
           .withNetwork(network)
           .withEnvironment(env)
