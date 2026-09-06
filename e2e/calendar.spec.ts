@@ -1,5 +1,5 @@
 import { test, expect } from "./fixtures";
-import { createBooking } from "./booking-helpers";
+import { createBooking, graphql } from "./booking-helpers";
 
 test("calendar filtering, period navigation and language work on desktop and mobile", async ({
   page,
@@ -7,6 +7,50 @@ test("calendar filtering, period navigation and language work on desktop and mob
   const title = "E2E calendar meeting";
   await createBooking(page, title);
   const event = page.getByRole("button").filter({ hasText: title });
+
+  // Prime the detail cache, then move and edit before its 20-second freshness
+  // window expires. Saving another field must not restore the pre-drag times.
+  const readBooking = async () => {
+    const { events } = await graphql<{
+      events: { title: string; start: string; end: string }[];
+    }>(page, "{ events { title start end } }");
+    const booking = events.find((entry) => entry.title === title);
+    if (!booking) throw new Error("Calendar booking is missing");
+    return booking;
+  };
+  const originalBooking = await readBooking();
+  await event.first().click();
+  await expect(page.getByRole("dialog", { name: "Booking details", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await event.first().scrollIntoViewIfNeeded();
+  const box = await event.first().boundingBox();
+  if (!box) throw new Error("Calendar booking has no drag target");
+  const movedResponse = page.waitForResponse(
+    (response) =>
+      response.url().endsWith("/api/graphql/v1") &&
+      Boolean(response.request().postData()?.includes("mutation UpdateBooking")),
+  );
+  await page.mouse.move(box.x + box.width / 2, box.y + 10);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height + 10, { steps: 20 });
+  await page.mouse.up();
+  expect((await (await movedResponse).json()).data.editEvent).toBeNull();
+  const movedBooking = await readBooking();
+  expect(movedBooking.start).not.toBe(originalBooking.start);
+  await event.first().click();
+  await page.getByRole("button", { name: "Edit", exact: true }).click();
+  const editStart = await page.getByLabel("Begins at", { exact: true }).inputValue();
+  expect(await page.evaluate((value) => new Date(value).toISOString(), editStart)).toBe(
+    movedBooking.start,
+  );
+  await page.getByLabel("Description", { exact: true }).fill("Updated after moving the booking.");
+  await page.getByRole("button", { name: "Save booking", exact: true }).click();
+  await expect(page).toHaveURL(/\/$/);
+  const savedBooking = await readBooking();
+  expect(savedBooking.start).toBe(movedBooking.start);
+  expect(savedBooking.end).toBe(movedBooking.end);
+
   const roomFilter = page.getByRole("button", { name: "Storhubben", exact: true });
   await expect(roomFilter).toHaveAttribute("aria-pressed", "true");
   await roomFilter.click();

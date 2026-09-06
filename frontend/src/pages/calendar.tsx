@@ -77,8 +77,11 @@ export function CalendarPage() {
       });
       checkMutation(editEvent, language);
     },
-    onSuccess: async () => {
-      await cache.invalidateQueries({ queryKey: ["calendar"] });
+    onSuccess: async (_result, { booking }) => {
+      await Promise.all([
+        cache.invalidateQueries({ queryKey: ["calendar"] }),
+        cache.invalidateQueries({ queryKey: ["booking", booking.id] }),
+      ]);
       toast.success(t("Booking moved", "Bokningen flyttades"));
     },
   });
