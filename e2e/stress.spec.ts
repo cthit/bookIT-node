@@ -30,6 +30,23 @@ test("a busy fortnight preserves bookings, diagonal stripes and rule pagination"
     .first();
   await expect(stripedBooking).toBeVisible();
   await expect(stripedBooking).toHaveCSS("background-image", /repeating-linear-gradient\(45deg/);
+
+  // Both the time and title must fit inside narrow striped cards.
+  await page.setViewportSize({ width: 1174, height: 1039 });
+  const labelsFit = await stripedBooking.evaluate((card) => {
+    const bounds = card.getBoundingClientRect();
+    const labels = [...card.querySelectorAll(".booking-event-label > *")];
+
+    return (
+      labels.length === 2 &&
+      labels.every((label) => {
+        const rect = label.getBoundingClientRect();
+        return rect.left >= bounds.left && rect.right <= bounds.right;
+      })
+    );
+  });
+  expect(labelsFit).toBe(true);
+
   await stripedBooking.click();
   const details = page.getByRole("dialog", { name: "Booking details", exact: true });
   await expect(details).toContainText("Storhubben");

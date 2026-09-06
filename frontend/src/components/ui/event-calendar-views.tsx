@@ -101,9 +101,9 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           !info.isSelected && info.isDragging && "opacity-75",
         )
       }
-      blockEventInnerClass="booking-event-label text-(--fc-event-contrast-color) print:text-black"
-      blockEventTimeClass="whitespace-nowrap overflow-hidden"
-      blockEventTitleClass="whitespace-normal overflow-hidden line-clamp-2 leading-snug"
+      blockEventInnerClass="booking-event-label min-w-0 max-w-full overflow-hidden text-(--fc-event-contrast-color) print:text-black"
+      blockEventTimeClass="min-w-0 max-w-full truncate"
+      blockEventTitleClass="min-w-0 max-w-full whitespace-normal wrap-anywhere overflow-hidden line-clamp-2 leading-snug"
 
       /* Row Event
       ----------------------------------------------------------------------------------------- */

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { EventCalendar } from "@/components/event-calendar";
+import { CalendarBlockLabel } from "@/components/calendar-block-label";
 import svLocale from "@fullcalendar/react/locales/sv";
 import enLocale from "@fullcalendar/react/locales/en-gb";
 import { addDays, startOfDay, startOfWeek } from "date-fns";
@@ -16,6 +17,7 @@ import {
 } from "@/generated/graphql";
 import { rooms } from "@/lib/rooms";
 import { bookingRoomClass, bookingRoomStyles } from "@/lib/booking-colors";
+import { calendarBlocks } from "@/lib/calendar-blocks";
 import { parseDate, localInput } from "@/lib/dates";
 import { useLanguage } from "@/lib/language";
 import { useUser } from "@/lib/user";
@@ -140,6 +142,17 @@ export function CalendarPage() {
         slotHeaderFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
         dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
         views={{ dayGridMonth: { dayHeaderFormat: { weekday: "short" }, dayMaxEvents: 3 } }}
+        backgroundEventInnerClass="overflow-hidden min-w-0"
+        backgroundEventContent={({ event }) => (
+          <CalendarBlockLabel
+            title={event.title}
+            description={
+              typeof event.extendedProps.description === "string"
+                ? event.extendedProps.description
+                : event.title
+            }
+          />
+        )}
         datesSet={(info) =>
           setRange((current) =>
             current.from === info.start.toISOString() && current.to === info.end.toISOString()
@@ -185,15 +198,15 @@ export function CalendarPage() {
             editable: Boolean(user?.is_admin || user?.groups?.includes(event.booked_as)),
             durationEditable: false,
           })),
-          ...(query.data?.illegalSlots ?? [])
-            .filter((slot) => slot.room.some((room) => selectedRooms.includes(room)))
-            .map((slot) => ({
-              start: parseDate(slot.start),
-              end: parseDate(slot.end),
-              display: "background",
-              color: "#EF9A9A",
-              title: slot.title + (slot.description ? ` — ${slot.description}` : ""),
-            })),
+          ...calendarBlocks(
+            (query.data?.illegalSlots ?? []).filter((slot) =>
+              slot.room.some((room) => selectedRooms.includes(room)),
+            ),
+          ).map((block) => ({
+            ...block,
+            display: "background",
+            color: "#EF9A9A",
+          })),
           ...(new Date(range.to) > startOfDay(addDays(new Date(), 63))
             ? [
                 {
