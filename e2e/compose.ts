@@ -40,6 +40,7 @@ export const users = {
     groups: [],
   },
 } as const;
+
 export type UserRole = keyof typeof users;
 export const testPassword = "password1337";
 
@@ -88,9 +89,11 @@ async function unusedPort(): Promise<number> {
 
 async function stopProcess(child: ChildProcess): Promise<void> {
   if (!child.pid || child.exitCode !== null || child.signalCode !== null) return;
+
   const exited = new Promise<void>((resolve) => child.once("exit", () => resolve()));
   process.kill(-child.pid, "SIGTERM");
   await Promise.race([exited, delay(10_000)]);
+
   if (child.exitCode === null && child.signalCode === null) {
     process.kill(-child.pid, "SIGKILL");
     await exited;
@@ -99,6 +102,7 @@ async function stopProcess(child: ChildProcess): Promise<void> {
 
 async function provisionClient(browser: Browser, gammaUrl: string, appUrl: string) {
   const context = await browser.newContext();
+
   try {
     const page = await context.newPage();
     page.setDefaultTimeout(30_000);
@@ -107,6 +111,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
     await page.locator('[name="password"]').fill(testPassword);
     await page.getByRole("button", { name: "Login", exact: true }).click();
     await expect(page.getByText("Hey, admin!")).toBeVisible();
+
     await page.goto(`${gammaUrl}/clients/create`);
     await page.locator('[name="prettyName"]').fill("BookIT isolated E2E");
     await page.locator('[name="svDescription"]').fill("Lokalt integrationstest");
@@ -115,6 +120,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
     await page.locator('[name="generateApiKey"]').check();
     await page.getByRole("button", { name: "Create", exact: true }).click();
     await expect(page.getByText("Client details", { exact: true })).toBeVisible();
+
     const clientId = (await page.locator('li:has-text("Client id:") span').innerText()).trim();
     const credentials = page
       .locator("article")
@@ -125,9 +131,11 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
       .filter({ hasText: "Authorization: pre-shared" })
       .innerText();
     const apiKey = authorization.replace("Authorization: pre-shared", "").trim();
+
     if (!clientId || !clientSecret || !/^[\w-]+:\S+$/.test(apiKey)) {
       throw new Error("Gamma did not return complete OAuth and CLIENT API credentials");
     }
+
     // BookIT admin means this client's authority, not Gamma's global admin flag.
     await page.locator('[name="authority"]').fill("admin");
     await page.getByRole("button", { name: "Add user authority", exact: true }).click();
@@ -136,6 +144,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
     await expect(
       page.locator("article").filter({ has: page.locator("header", { hasText: /^\s*admin\s*$/ }) }),
     ).toBeVisible();
+
     return { clientId, clientSecret, apiKey };
   } finally {
     await context.close();
@@ -149,13 +158,16 @@ export async function loginAs(page: Page, environment: Environment, role: UserRo
   await page.locator('[name="username"]').fill(users[role].cid);
   await page.locator('[name="password"]').fill(testPassword);
   await page.getByRole("button", { name: "Login", exact: true }).click();
+
   await Promise.race([
     page.waitForURL((url) => url.origin === environment.appUrl),
     page.getByRole("button", { name: "Authorize", exact: true }).waitFor(),
   ]);
+
   if (new URL(page.url()).origin === environment.gammaUrl) {
     await page.getByRole("button", { name: "Authorize", exact: true }).click();
   }
+
   await page.waitForURL(
     (url) => url.origin === environment.appUrl && url.pathname !== "/api/callback",
   );
@@ -167,6 +179,7 @@ export async function compose(browser: Browser): Promise<Environment> {
   const processes: ChildProcess[] = [];
   const logs: Record<string, string> = {};
   let stopped = false;
+
   const record = (name: string, chunk: Buffer | string) => {
     // Gamma's development bootstrap prints synthetic credentials. Keep them out of CI artifacts.
     const text = String(chunk)
@@ -174,15 +187,18 @@ export async function compose(browser: Browser): Promise<Environment> {
       .replace(/(and code:)\s*\S+/g, "$1 [REDACTED]");
     logs[name] = ((logs[name] ?? "") + text).slice(-100_000);
   };
+
   const track = async <T extends StartedTestContainer>(pending: Promise<T>): Promise<T> => {
     const container = await pending;
     containers.push(container);
     return container;
   };
+
   const stop = async () => {
     if (stopped) return;
     stopped = true;
     const failures: unknown[] = [];
+
     for (const child of processes.toReversed()) {
       try {
         await stopProcess(child);
@@ -190,6 +206,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         failures.push(error);
       }
     }
+
     for (const container of containers.toReversed()) {
       try {
         await container.stop();
@@ -197,13 +214,16 @@ export async function compose(browser: Browser): Promise<Environment> {
         failures.push(error);
       }
     }
+
     try {
       await network.stop();
     } catch (error) {
       failures.push(error);
     }
+
     if (failures.length) throw new AggregateError(failures, "E2E environment cleanup failed");
   };
+
   const startProcess = (name: string, args: string[], env: Record<string, string>) => {
     const child = spawn("pnpm", args, {
       cwd: root,
@@ -211,6 +231,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       detached: true,
       stdio: ["ignore", "pipe", "pipe"],
     });
+
     processes.push(child);
     child.stdout?.on("data", (chunk: Buffer) => record(name, chunk));
     child.stderr?.on("data", (chunk: Buffer) => record(name, chunk));
@@ -219,8 +240,10 @@ export async function compose(browser: Browser): Promise<Environment> {
       if (code !== null && code !== 0 && !stopped)
         console.error(`[${name}] exited with code ${code}\n${logs[name] ?? ""}`);
     });
+
     return child;
   };
+
   try {
     console.log("Starting isolated PostgreSQL, Redis and Gamma containers...");
     const gammaDb = await track(
@@ -232,6 +255,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withPassword("gamma_test")
         .start(),
     );
+
     await track(
       new GenericContainer(images.gammaRedis)
         .withNetwork(network)
@@ -239,6 +263,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withWaitStrategy(Wait.forLogMessage("Ready to accept connections"))
         .start(),
     );
+
     const bookitDb: StartedPostgreSqlContainer = await track(
       new PostgreSqlContainer(images.bookitPostgres)
         .withNetwork(network)
@@ -248,6 +273,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withPassword("bookit_test")
         .start(),
     );
+
     const bookitRedis = await track(
       new GenericContainer(images.bookitRedis)
         .withNetwork(network)
@@ -256,11 +282,13 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withWaitStrategy(Wait.forLogMessage("Ready to accept connections"))
         .start(),
     );
+
     const gammaPort = await unusedPort();
     const gammaUrl = `http://localhost:${gammaPort}`;
     const appPort = await unusedPort();
     const appUrl = `http://localhost:${appPort}`;
     const frontendPort = await unusedPort();
+
     await track(
       new GenericContainer(images.gamma)
         .withPlatform("linux/amd64")
@@ -295,8 +323,10 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withStartupTimeout(240_000)
         .start(),
     );
+
     console.log("Provisioning BookIT OAuth client and roles through Gamma...");
     const client = await provisionClient(browser, gammaUrl, appUrl);
+
     const env = {
       NODE_ENV: "test",
       TZ: "Europe/Stockholm",
@@ -315,6 +345,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       CLIENT_SECRET: client.clientSecret,
       API_KEY: client.apiKey,
     };
+
     console.log("Generating Prisma client and initializing the isolated BookIT schema...");
     for (const command of [["generate"], ["db", "push"]]) {
       const migrate = startProcess(
@@ -331,6 +362,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         );
       });
     }
+
     const frontend = startProcess(
       "frontend",
       [
@@ -346,6 +378,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       env,
     );
     const backend = startProcess("backend", ["--dir", "backend", "start"], env);
+
     await expect
       .poll(
         async () => {
@@ -370,11 +403,13 @@ export async function compose(browser: Browser): Promise<Environment> {
         { timeout: 120_000, intervals: [500, 1000] },
       )
       .toBe(true);
+
     return {
       appUrl,
       gammaUrl,
       logs,
       stop,
+
       async resetBookings() {
         const result = await bookitDb.exec([
           "psql",
@@ -387,6 +422,7 @@ export async function compose(browser: Browser): Promise<Environment> {
           "--command",
           "TRUNCATE TABLE event, rule;",
         ]);
+
         if (result.exitCode !== 0)
           throw new Error(`Could not reset isolated BookIT database: ${result.output}`);
       },
@@ -394,6 +430,7 @@ export async function compose(browser: Browser): Promise<Environment> {
   } catch (error) {
     for (const [name, log] of Object.entries(logs))
       console.error(`[${name}]\n${log.slice(-8_000)}`);
+
     await stop();
     throw error;
   }

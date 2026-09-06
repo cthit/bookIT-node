@@ -11,6 +11,7 @@ export const test = base.extend<TestFixtures, { environment: Environment }>({
   environment: [
     async ({ browser }, use) => {
       const environment = await compose(browser);
+
       try {
         await use(environment);
       } finally {
@@ -19,14 +20,18 @@ export const test = base.extend<TestFixtures, { environment: Environment }>({
     },
     { scope: "worker", timeout: 480_000 },
   ],
+
   role: ["member", { option: true }],
   authenticate: [true, { option: true }],
+
   baseURL: async ({ environment }, use) => {
     await use(environment.appUrl);
   },
+
   isolatedBookings: [
     async ({ environment }, use, testInfo) => {
       await environment.resetBookings();
+
       try {
         await use();
       } finally {
@@ -39,8 +44,10 @@ export const test = base.extend<TestFixtures, { environment: Environment }>({
     },
     { auto: true },
   ],
+
   page: async ({ page, environment, role, authenticate }, use) => {
     if (authenticate) await loginAs(page, environment, role);
+
     await use(page);
   },
 });

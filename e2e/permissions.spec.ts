@@ -8,14 +8,16 @@ import type {
   BookingDetailQuery,
 } from "../frontend/src/generated/graphql";
 
-test("Gamma membership controls the UI and the API rejects a forged group booking", async ({
+test("an outsider can view bookings but cannot access editing or administration", async ({
   page,
   environment,
 }) => {
   await createBooking(page, "E2E protected group booking");
   const id = await openBooking(page, "E2E protected group booking");
   await loginAs(page, environment, "outsider");
+
   const identity = await graphql<CurrentUserQuery>(page, "{ user { sub cid groups is_admin } }");
+
   expect(identity.user?.cid).toBe("bookguest");
   expect(identity.user?.groups).toEqual([]);
   expect(identity.user?.is_admin).toBe(false);
@@ -25,22 +27,38 @@ test("Gamma membership controls the UI and the API rejects a forged group bookin
     "You need membership in an active group to make a booking.",
   );
   await expect(page.getByRole("button", { name: "Save booking", exact: true })).toHaveCount(0);
+
   await page.goto("/rules");
   await expect(page.getByRole("heading", { name: "Rules", exact: true })).toBeVisible();
   await expect(page.getByRole("button", { name: "New rule", exact: true })).toHaveCount(0);
+
   await page.goto(`/bookings/${id}`);
   await expect(
     page.getByRole("heading", { name: "E2E protected group booking", exact: true }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Edit", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Delete", exact: true })).toHaveCount(0);
+});
+
+test("the API rejects unauthorized deletion, group booking and rule creation", async ({
+  page,
+  environment,
+}) => {
+  const title = "E2E protected group booking";
+
+  await createBooking(page, title);
+  const id = await openBooking(page, title);
+
+  await loginAs(page, environment, "outsider");
 
   const deletion = await graphql<DeleteBookingMutation>(
     page,
     "mutation($id: String!) { deleteEvent(id: $id) { en sv } }",
     { id },
   );
+
   expect(deletion.deleteEvent?.en).toBe("You may not delete this event");
+
   const date = await bookingDate(page);
   const forged = await graphql<CreateBookingMutation>(
     page,
@@ -57,7 +75,9 @@ test("Gamma membership controls the UI and the API rejects a forged group bookin
       },
     },
   );
+
   expect(forged.createEvent?.en).toBe("Booking group not specified");
+
   const rule = await graphql<CreateRuleMutation>(
     page,
     "mutation($rule: InputRule!) { createRule(rule: $rule) { en sv } }",
@@ -75,11 +95,14 @@ test("Gamma membership controls the UI and the API rejects a forged group bookin
       },
     },
   );
+
   expect(rule.createRule?.en).toBe("You do not have permission to create rules");
+
   const unchanged = await graphql<BookingDetailQuery>(
     page,
     "query($id: String!) { event(id: $id) { id title } }",
     { id },
   );
+
   expect(unchanged.event?.title).toBe("E2E protected group booking");
 });

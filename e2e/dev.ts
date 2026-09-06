@@ -5,24 +5,29 @@ async function main() {
   const browser = await chromium.launch();
   let stopEnvironment: (() => Promise<void>) | undefined;
   let stopping = false;
+
   async function stop() {
     if (stopping) return;
     stopping = true;
+
     try {
       await stopEnvironment?.();
     } finally {
       await browser.close();
     }
   }
+
   process.once("SIGINT", () => {
     void stop();
   });
   process.once("SIGTERM", () => {
     void stop();
   });
+
   try {
     const environment = await compose(browser);
     stopEnvironment = () => environment.stop();
+
     console.log(`BookIT smoke environment: ${environment.appUrl}`);
     console.log(`Gamma: ${environment.gammaUrl}`);
     console.log(

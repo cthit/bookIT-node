@@ -11,6 +11,25 @@ must be running. A worker shares the container environment, while each test gets
 a fresh browser context and cleared BookIT bookings/rules. Run with one worker
 to keep the suite's resource usage predictable.
 
+The four spec files contain focused, independent tests rather than one long test
+per file. Booking lifecycle and concurrency, calendar navigation and drag/edit
+consistency, language persistence, mobile layout, rule validation/lifecycle, and
+UI/API permissions have separate results. Each test gets its own login and data
+reset; the services stay shared for the worker.
+
+Prefer `getByRole` with an accessible name and scope it to the relevant dialog or
+navigation when needed. Use `getByLabel` for native date/time inputs, which have
+no useful implicit role; do not add artificial roles just to satisfy a selector.
+
+E2E source uses the same Vite+ formatter as the application:
+
+```sh
+pnpm exec vp fmt e2e playwright.config.ts
+```
+
+Use `pnpm format` for the whole repository. `pnpm check` checks E2E formatting and
+lint in CI as well.
+
 For the manual smoke test, run `pnpm e2e:dev` and open the printed BookIT URL.
 The command prints synthetic login credentials and keeps the environment alive.
 Ctrl+C stops application processes and removes the test containers and network.
