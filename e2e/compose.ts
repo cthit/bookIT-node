@@ -317,7 +317,7 @@ export async function compose(browser: Browser): Promise<Environment> {
       REDIS_HOST: "bookit-redis",
       REDIS_PORT: "6379",
       REDIS_PASS: "",
-      SESSION_SECRET: "bookit-isolated-e2e-session-secret",
+      SESSION_SECRET: "secret",
       SECRET: "bookit-isolated-e2e-oidc-secret-at-least-32-characters",
       BASE_URL: appUrl,
       BACKEND_URL: appUrl,

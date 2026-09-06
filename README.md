@@ -55,6 +55,8 @@ The GraphQL endpoint is `/api/graphql/v1`.
 Ordinary startup preserves database contents; do not use `docker compose down -v`
 to stop development. Use `docker compose stop` instead. Compose is development-only;
 deployments must provide their own authentication settings with `NODE_ENV=production`.
+Existing deployments can keep `SECRET` for OIDC; `SESSION_SECRET` is used if `SECRET` is absent.
+Deploy matching frontend/backend versions together; open tabs may need a refresh and a new sign-in.
 
 Run `pnpm check`, `pnpm test` and `pnpm build` for the project checks.
 See [browser tests](e2e/README.md) for Playwright setup and CI image testing.

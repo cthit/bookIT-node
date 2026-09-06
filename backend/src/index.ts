@@ -74,9 +74,9 @@ async function main() {
       baseURL: requiredEnvironment("BASE_URL"),
       clientID: requiredEnvironment("CLIENT_ID"),
       clientSecret: requiredEnvironment("CLIENT_SECRET"),
-      secret: requiredEnvironment("SESSION_SECRET"),
+      secret: process.env.SECRET || requiredEnvironment("SESSION_SECRET"),
       idpLogout: true,
-      authRequired: true,
+      authRequired: false,
       authorizationParams: { scope: "openid profile", response_type: "code" },
       clientAuthMethod: "client_secret_basic",
       routes: { callback: "/api/callback", login: "/api/login", logout: "/api/logout" },
@@ -111,6 +111,22 @@ async function main() {
       },
     }),
   );
+
+  app.use(async (req, res, next) => {
+    if (req.oidc.isAuthenticated()) {
+      next();
+
+      return;
+    }
+
+    if (req.path.startsWith("/api/")) {
+      res.status(401).json({ error: "Authentication required" });
+
+      return;
+    }
+
+    await res.oidc.login({ returnTo: req.originalUrl });
+  });
 
   await Promise.all([redis.connect(), prisma.$connect()]);
 

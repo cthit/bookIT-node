@@ -1,6 +1,8 @@
 import { print } from "graphql";
 import type { TypedDocumentNode } from "@graphql-typed-document-node/core";
 
+let redirectingToLogin = false;
+
 export async function request<T, V extends Record<string, unknown>>(
   document: TypedDocumentNode<T, V>,
   variables: V,
@@ -13,6 +15,11 @@ export async function request<T, V extends Record<string, unknown>>(
   });
 
   if (response.status === 401 || response.redirected) {
+    if (!redirectingToLogin) {
+      redirectingToLogin = true;
+      window.location.replace("/api/login");
+    }
+
     throw new Error("Your session expired. Please sign in again.");
   }
 

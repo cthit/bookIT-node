@@ -1,6 +1,38 @@
 import { test, expect, loginAs } from "./fixtures";
 import { createBooking, openBooking } from "./booking-helpers";
 
+test("an expired session navigates to sign-in and returns to the calendar", async ({
+  page,
+  environment,
+}) => {
+  await createBooking(page, "E2E session expiry booking");
+  await page.context().clearCookies();
+  await page.getByRole("button", { name: /next/i }).click();
+
+  await expect(page).toHaveURL(
+    (url) => url.origin === environment.gammaUrl && url.pathname === "/login",
+  );
+  await page.locator('[name="username"]').fill("bookmember");
+  await page.locator('[name="password"]').fill("password1337");
+  await page.getByRole("button", { name: "Login", exact: true }).click();
+
+  await expect(page).toHaveURL(`${environment.appUrl}/`);
+  await expect(page.getByText("BookIT Member", { exact: true })).toBeVisible();
+  await openBooking(page, "E2E session expiry booking");
+});
+
+test("an expired BookIT session can sign in again through an existing Gamma session", async ({
+  page,
+  environment,
+}) => {
+  await createBooking(page, "E2E Gamma session booking");
+  await page.context().clearCookies({ domain: "localhost" });
+  await page.getByRole("button", { name: /next/i }).click();
+
+  await expect(page).toHaveURL(`${environment.appUrl}/`);
+  await openBooking(page, "E2E Gamma session booking");
+});
+
 test("an outsider can view bookings but cannot access editing or administration", async ({
   page,
   environment,
