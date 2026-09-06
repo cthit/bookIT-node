@@ -17,6 +17,7 @@ import { useUser } from "@/lib/user";
 import { useLanguage } from "@/lib/language";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -181,10 +182,9 @@ export function BookingForm({
         </div>
         <div className="field">
           <Label htmlFor="booked_as">{t("Booking as", "Bokas som")}</Label>
-          <select
+          <NativeSelect
             id="booked_as"
             name="booked_as"
-            className="native-select"
             defaultValue={booking?.booked_as ?? ""}
             required
           >
@@ -196,7 +196,7 @@ export function BookingForm({
                 {group}
               </option>
             ))}
-          </select>
+          </NativeSelect>
         </div>
       </div>
       <fieldset>

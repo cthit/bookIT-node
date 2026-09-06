@@ -5,35 +5,52 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-card-foreground: var(--foreground);
-  --color-popover: var(--card);
-  --color-popover-foreground: var(--foreground);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
-  --color-primary-foreground: #fff;
-  --color-secondary: #e8f3fb;
-  --color-secondary-foreground: #1769aa;
-  --color-muted: #f1f5f8;
-  --color-muted-foreground: #617083;
-  --color-accent: #e8f3fb;
-  --color-accent-foreground: #1769aa;
-  --color-destructive: #b42339;
-  --color-border: #dfe6ed;
-  --color-input: #d1dae4;
-  --color-ring: #2196f3;
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-brand: var(--brand);
   --color-chart-1: var(--chart-1);
   --color-chart-3: var(--chart-3);
-  --radius-sm: 0.375rem;
-  --radius-md: 0.5rem;
-  --radius-lg: 0.75rem;
-  --radius-xl: 1rem;
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
 }
 
 :root {
   --background: #f6f8fb;
   --foreground: #17283a;
   --card: #fff;
+  --card-foreground: #17283a;
+  --popover: #fff;
+  --popover-foreground: #17283a;
   --primary: #1769aa;
   --primary-foreground: #fff;
+  --secondary: #e8f3fb;
+  --secondary-foreground: #1769aa;
+  --muted: #f1f5f8;
+  --muted-foreground: #617083;
+  --accent: #e8f3fb;
+  --accent-foreground: #1769aa;
+  --destructive: #b42339;
+  --border: #dfe6ed;
+  --input: #d1dae4;
+  --ring: #2196f3;
+  --brand: #2196f3;
+  --eyebrow: #697a8d;
+  --radius: 0.5rem;
   --chart-1: #2196f3;
   --chart-3: #ff9100;
   font-family: "Inter", "Segoe UI", Arial, sans-serif;
@@ -84,7 +101,7 @@ textarea {
   font-weight: 700;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #697a8d;
+  color: var(--eyebrow);
 }
 
 .page-title {
@@ -97,16 +114,6 @@ textarea {
 .field {
   display: grid;
   gap: 0.55rem;
-}
-
-.native-select {
-  min-height: 2.5rem;
-  width: 100%;
-  border: 1px solid var(--color-input);
-  border-radius: 0.5rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
-  background: white;
 }
 
 .booking-multi-room {

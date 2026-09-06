@@ -10,6 +10,7 @@ import { useLanguage } from "@/lib/language";
 import { ruleWeekdays } from "@/lib/rules";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { NativeSelect } from "@/components/ui/native-select";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -86,10 +87,10 @@ export function RuleForm({
         </div>
         <div className="field">
           <Label htmlFor="allow">{t("Availability", "Tillgänglighet")}</Label>
-          <select id="allow" name="allow" className="native-select">
+          <NativeSelect id="allow" name="allow">
             <option value="true">{t("Allowed", "Tillåten")}</option>
             <option value="false">{t("Blocked", "Spärrad")}</option>
-          </select>
+          </NativeSelect>
         </div>
         <DatePicker
           label={t("Start date", "Startdatum")}

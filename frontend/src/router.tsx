@@ -37,11 +37,11 @@ function Layout() {
         <div className="max-w-[1560px] mx-auto px-4 sm:px-12 flex items-center justify-between min-h-20 gap-4">
           <div className="flex items-center gap-2 sm:gap-12">
             <Link to="/" aria-label="BookIT home" className="flex items-center gap-2.5">
-              <span className="size-9 rounded-lg bg-[#2196f3] text-white grid place-items-center">
+              <span className="size-9 rounded-lg bg-brand text-white grid place-items-center">
                 <CalendarDays className="size-5" />
               </span>
               <span className="hidden sm:inline text-2xl tracking-tight font-bold">
-                book<span className="text-[#2196f3]">IT</span>
+                book<span className="text-brand">IT</span>
               </span>
             </Link>
             <nav aria-label={t("Main navigation", "Huvudnavigation")} className="flex gap-1">
