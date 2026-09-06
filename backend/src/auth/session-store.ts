@@ -30,8 +30,17 @@ export function createSessionStore(client: SessionRedis): OidcStore {
     },
     set(sid, payload, callback) {
       const ttl = Math.ceil(payload.header.exp - Date.now() / 1000);
+      const stored = {
+        ...payload,
+        data: {
+          id_token: payload.data.id_token,
+          sessionExpiresAt: payload.data.sessionExpiresAt,
+          groups: payload.data.groups,
+          is_admin: payload.data.is_admin,
+        },
+      };
       const operation =
-        ttl > 0 ? client.set(key(sid), JSON.stringify(payload), { EX: ttl }) : client.del(key(sid));
+        ttl > 0 ? client.set(key(sid), JSON.stringify(stored), { EX: ttl }) : client.del(key(sid));
       void operation.then(
         () => callback?.(),
         (error: unknown) => callback?.(error),

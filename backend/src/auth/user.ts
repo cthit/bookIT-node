@@ -27,14 +27,9 @@ export function authenticatedUser(req: Request): User {
   return {
     sub: claims.sub,
     cid: claims.cid,
-    sid: claim("sid"),
-    given_name: claim("given_name"),
-    locale: claim("locale"),
-    picture: claim("picture"),
     name: claim("name"),
     nickname: claim("nickname"),
-    family_name: claim("family_name"),
-    jti: claim("jti"),
+    locale: claim("locale"),
     groups: Array.isArray(groups)
       ? groups.filter((group): group is string => typeof group === "string")
       : [],

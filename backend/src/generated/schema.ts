@@ -164,15 +164,10 @@ export type InputRule = {
 
 export type User = {
   __typename?: 'User';
-  sid?: Maybe<Scalars['String']['output']>;
   sub?: Maybe<Scalars['String']['output']>;
-  given_name?: Maybe<Scalars['String']['output']>;
-  locale?: Maybe<Scalars['String']['output']>;
-  picture?: Maybe<Scalars['String']['output']>;
   name?: Maybe<Scalars['String']['output']>;
   nickname?: Maybe<Scalars['String']['output']>;
-  family_name?: Maybe<Scalars['String']['output']>;
-  jti?: Maybe<Scalars['String']['output']>;
+  locale?: Maybe<Scalars['String']['output']>;
   cid?: Maybe<Scalars['String']['output']>;
   groups?: Maybe<Array<Maybe<Scalars['String']['output']>>>;
   is_admin?: Maybe<Scalars['Boolean']['output']>;
@@ -344,15 +339,10 @@ export type RuleResolvers<ContextType = Context, ParentType extends ResolversPar
 };
 
 export type UserResolvers<ContextType = Context, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
-  sid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   sub?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  given_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  locale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  picture?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   nickname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  family_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  jti?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  locale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   cid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   groups?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   is_admin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
