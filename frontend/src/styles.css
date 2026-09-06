@@ -1,0 +1,102 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: #fff;
+  --color-secondary: #e8f3fb;
+  --color-secondary-foreground: #1769aa;
+  --color-muted: #f1f5f8;
+  --color-muted-foreground: #617083;
+  --color-accent: #e8f3fb;
+  --color-accent-foreground: #1769aa;
+  --color-destructive: #b42339;
+  --color-border: #dfe6ed;
+  --color-input: #d1dae4;
+  --color-ring: #2196f3;
+  --color-chart-1: var(--chart-1);
+  --color-chart-3: var(--chart-3);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+}
+:root {
+  --background: #f6f8fb;
+  --foreground: #17283a;
+  --card: #fff;
+  --primary: #1769aa;
+  --primary-foreground: #fff;
+  --chart-1: #2196f3;
+  --chart-3: #ff9100;
+  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: var(--foreground);
+  background: var(--background);
+}
+* {
+  border-color: var(--color-border);
+}
+body {
+  margin: 0;
+  min-width: 320px;
+}
+button,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+[role="button"] {
+  cursor: pointer;
+}
+a,
+button,
+input,
+select,
+textarea {
+  outline-offset: 4px;
+}
+.app-shell {
+  max-width: 1560px;
+  margin: auto;
+  padding: 2.5rem 3rem 4rem;
+}
+.eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #697a8d;
+}
+.page-title {
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  line-height: 1.2;
+  letter-spacing: -0.045em;
+  font-weight: 700;
+}
+.field {
+  display: grid;
+  gap: 0.55rem;
+}
+.native-select {
+  min-height: 2.5rem;
+  width: 100%;
+  border: 1px solid var(--color-input);
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  background: white;
+}
+@media (max-width: 760px) {
+  .app-shell {
+    padding: 1.5rem 1rem;
+  }
+}

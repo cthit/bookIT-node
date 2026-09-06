@@ -11,31 +11,31 @@ type Rule {
   title: String
   created_at: String
   updated_at: String
-  room: [Room]
+  room: [Room!]
 }
 
 input InputRule {
   id: String
-  day_mask: Int
+  day_mask: Int = 0
   start_date: String!
   end_date: String!
   start_time: String!
   end_time: String!
   description: String!
-  allow: Boolean
-  priority: Int
+  allow: Boolean = true
+  priority: Int = 10
   title: String!
   created_at: String
   updated_at: String
-  room: [Room]!
+  room: [Room!]!
 }
 
 type Query {
   rules: [Rule]
-  rule(id: String): Rule
+  rule(id: String!): Rule
 }
 
 type Mutation {
-  createRule(rule: InputRule): Error
-  deleteRule(id: String): Boolean
+  createRule(rule: InputRule!): Error
+  deleteRule(id: String!): Error
 }

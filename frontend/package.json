@@ -1,51 +1,39 @@
 {
-  "name": "frontend",
-  "version": "0.1.0",
+  "name": "@bookit/frontend",
   "private": true,
-  "dependencies": {
-    "@cthit/react-digit-components": "^1.0.4-alpha.2",
-    "@fullcalendar/core": "^5.9.0",
-    "@fullcalendar/daygrid": "^5.9.0",
-    "@fullcalendar/interaction": "^5.9.0",
-    "@fullcalendar/list": "^5.9.0",
-    "@fullcalendar/moment": "^5.9.0",
-    "@fullcalendar/react": "^5.9.0",
-    "@fullcalendar/timegrid": "^5.9.0",
-    "@material-ui/icons": "^4.11.2",
-    "axios": "^0.21.1",
-    "moment": "^2.29.1",
-    "prop-types": "^15.7.2",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1",
-    "react-router-dom": "^5.2.0",
-    "react-scripts": "4.0.3",
-    "typescript": "^4.9.5",
-    "web-vitals": "^1.0.1"
-  },
+  "type": "module",
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "eject": "react-scripts eject"
+    "dev": "vp dev",
+    "build": "vp build",
+    "preview": "vp preview",
+    "typecheck": "tsc --noEmit"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "dependencies": {
+    "@fullcalendar/react": "7.1.0",
+    "@graphql-typed-document-node/core": "^3.2.0",
+    "@tanstack/react-query": "^5.102.8",
+    "@tanstack/react-router": "^1.170.32",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cn": "^0.2.5",
+    "date-fns": "^4.4.0",
+    "graphql": "^16.12.0",
+    "lucide-react": "^1.41.0",
+    "radix-ui": "^1.6.7",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "sonner": "^2.0.8",
+    "tailwind-merge": "^3.6.0",
+    "temporal-polyfill": "^1.0.4"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "resolutions": {
-    "react-error-overlay": "6.0.9"
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.3",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
+    "tailwindcss": "^4.3.3",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "^7.0.2",
+    "vite-plus": "0.3.0"
   }
 }

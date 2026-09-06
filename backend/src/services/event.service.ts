@@ -1,4 +1,4 @@
-import { PrismaClient, event, room } from "@prisma/client";
+import { Prisma, PrismaClient, event, room } from "@prisma/client";
 import { Error, User } from "../models";
 import { Event } from "../models/event";
 import { checkRules } from "./rule.service";
@@ -51,19 +51,18 @@ const roomSpecified = (event: Event) => {
  * The new event may not overlap with any existing events
  */
 const overlappingEvent = async (
-  prisma: PrismaClient,
+  prisma: Prisma.TransactionClient,
   event: Event,
-  user: User,
-): Promise<Boolean> => {
-  let query: any = {
+): Promise<boolean> => {
+  const query: Prisma.eventCountArgs = {
     where: {
       end: { gt: new Date(event.start) },
-      start: { lte: new Date(event.end) },
-      room: { hasSome: event.room.map(e => e.toString()) },
+      start: { lt: new Date(event.end) },
+      room: { hasSome: event.room.map((e) => e.toString()) },
     },
   };
 
-  if (event.id) {
+  if (event.id && query.where) {
     query.where.id = { not: event.id };
   }
 
@@ -78,14 +77,15 @@ const bookingTermsAccepted = (event: Event) => {
   return event.booking_terms;
 };
 
-const validPhoneNumber = (phoneNumber: string) => {
-  return /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,5}$/im.test(
-    phoneNumber,
+const validPhoneNumber = (phoneNumber: string | null | undefined) => {
+  return (
+    typeof phoneNumber === "string" &&
+    /^[+]?[(]?[0-9]{3}[)]?[-\s.]?[0-9]{3}[-\s.]?[0-9]{4,5}$/.test(phoneNumber)
   );
 };
 
 const validEvent = async (
-  prisma: PrismaClient,
+  prisma: Prisma.TransactionClient,
   event: Event,
 
   user: User,
@@ -105,7 +105,7 @@ const validEvent = async (
     };
   }
 
-  if (!userIsInBookingGroup(event, user)) {
+  if (!event.booked_as.trim() || !userIsInBookingGroup(event, user)) {
     return {
       sv: "Bokande grupp ej specificerad",
       en: "Booking group not specified",
@@ -134,13 +134,14 @@ const validEvent = async (
   }
 
   try {
-    if (await overlappingEvent(prisma, event, user)) {
+    if (await overlappingEvent(prisma, event)) {
       return {
         sv: "Den angivna tiden är upptagen",
         en: "The time slot is already taken",
       };
     }
   } catch (e) {
+    if (isSerializationFailure(e)) throw e;
     console.log(e);
     return {
       sv: "Kunde inte kontrollera överlappande bokningar",
@@ -172,9 +173,48 @@ const toEvent = (event: Event) => ({
   end: new Date(event.end),
   booked_as: event.booked_as,
   booked_by: event.booked_by || "",
-  phone: event.phone,
-  room: event.room.map(e => e.toString()),
+  phone: event.phone ?? "",
+  room: event.room.map((e) => e.toString()),
 });
+
+const isSerializationFailure = (error: unknown): boolean => {
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return true;
+  // Prisma's PostgreSQL driver can surface commit failures directly instead of
+  // wrapping them as P2034. Its structured kind maps SQLSTATE 40001/40P01;
+  // matching the message alone could accidentally retry unrelated failures.
+  return (
+    error instanceof globalThis.Error &&
+    error.name === "DriverAdapterError" &&
+    typeof error.cause === "object" &&
+    error.cause !== null &&
+    "kind" in error.cause &&
+    error.cause.kind === "TransactionWriteConflict"
+  );
+};
+
+// Checking availability and writing must share a serializable transaction.
+// PostgreSQL then rejects concurrent writes based on the same availability
+// snapshot; retrying rechecks the winner's booking before writing again.
+export const withBookingTransaction = async (
+  prisma: PrismaClient,
+  operation: (transaction: Prisma.TransactionClient) => Promise<Error | null>,
+): Promise<Error | null> => {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      return await prisma.$transaction(operation, {
+        isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        maxWait: 5_000,
+        timeout: 10_000,
+      });
+    } catch (error) {
+      if (!isSerializationFailure(error)) throw error;
+    }
+  }
+  return {
+    sv: "Bokningen ändrades samtidigt. Försök igen.",
+    en: "A booking changed concurrently. Please try again.",
+  };
+};
 
 export const editEvent = async (
   prisma: PrismaClient,
@@ -189,46 +229,30 @@ export const editEvent = async (
     };
   }
 
-  let err = await validEvent(prisma, event, user);
-  if (err) {
-    return err;
-  }
-  err = await checkRules(prisma, event);
-  if (err) {
-    return err;
-  }
-  // Getting old event
-  let old_event = await prisma.event.findFirst({
-    where: { id: event.id },
+  const id = event.id;
+  return withBookingTransaction(prisma, async (transaction) => {
+    const previous = await transaction.event.findUnique({ where: { id } });
+    if (!previous) return { sv: "Kunde inte hämta gamla bokningen", en: "Failed to get event" };
+    if (!userIsInBookingGroup(previous, user)) {
+      return {
+        sv: "Du har inte behörighet att redigera denna bokning",
+        en: "You do not have permission to edit this event",
+      };
+    }
+    // Group members may edit bookings without access to the author's phone.
+    // Keep both fields together: changing the author would grant the editor
+    // access to a phone number that belonged to someone else.
+    const updated = {
+      ...event,
+      phone: event.phone ?? previous.phone,
+      booked_by: previous.booked_by,
+    };
+    const error =
+      (await validEvent(transaction, updated, user)) || (await checkRules(transaction, updated));
+    if (error) return error;
+    await transaction.event.update({ where: { id }, data: toEvent(updated) });
+    return null;
   });
-  if (!old_event) {
-    console.log("Failed to get event with id: " + event.id);
-    return {
-      sv: "Kunde inte hämta gamla bokningen",
-      en: "Failed to get event",
-    };
-  }
-
-  if (!userIsInBookingGroup(old_event, user)) {
-    return {
-      sv: "Du har inte behörighet att redigera denna bokning",
-      en: "You do not have permission to edit this event",
-    };
-  }
-  // Updates event in the database
-  let res = await prisma.event.update({
-    where: { id: event.id },
-    data: toEvent(event),
-  });
-
-  if (!res) {
-    return {
-      sv: "Misslyckades att uppdatera bokning",
-      en: "Failed to update event",
-    };
-  }
-
-  return null;
 };
 
 export const createEvent = async (
@@ -236,60 +260,47 @@ export const createEvent = async (
   event: Event,
   user: User,
 ): Promise<Error | null> => {
-  // Sanity checks
-  let err = await validEvent(prisma, event, user);
-  if (err) {
-    return err;
-  }
-
-  err = await checkRules(prisma, event);
-  if (err) {
-    return err;
-  }
-
-  // Adds event in the database
-  let res = await prisma.event.create({
-    data: toEvent(event),
-  });
-
-  if (!res) {
+  if (event.id != null) {
     return {
-      sv: "Misslyckades att skapa bokning",
-      en: "Failed to create event",
+      sv: "Nya bokningar får inte ange ett befintligt boknings-id",
+      en: "New bookings must not specify an existing booking ID",
     };
   }
-
-  return null;
+  return withBookingTransaction(prisma, async (transaction) => {
+    const error =
+      (await validEvent(transaction, event, user)) || (await checkRules(transaction, event));
+    if (error) return error;
+    await transaction.event.create({ data: toEvent(event) });
+    return null;
+  });
 };
 
-export const deleteEvent = async (
-  prisma: PrismaClient,
-  id: string,
-  user: User,
-) => {
-  const event: event | null = await prisma.event.findUnique({
-    where: {
-      id: id,
-    },
-  });
-  if (!event) {
-    return {
-      sv: "Kunde ej hitta bokningen",
-      en: "Could not find the event",
-    };
-  }
+export const deleteEvent = async (prisma: PrismaClient, id: string, user: User) => {
+  return withBookingTransaction(prisma, async (transaction) => {
+    const event: event | null = await transaction.event.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    if (!event) {
+      return {
+        sv: "Kunde ej hitta bokningen",
+        en: "Could not find the event",
+      };
+    }
 
-  if (!userIsInBookingGroup(event, user)) {
-    return {
-      sv: "Du får ej radera denna bokning",
-      en: "You may not delete this event",
-    };
-  }
+    if (!userIsInBookingGroup(event, user)) {
+      return {
+        sv: "Du får ej radera denna bokning",
+        en: "You may not delete this event",
+      };
+    }
 
-  await prisma.event.delete({
-    where: {
-      id: id,
-    },
+    await transaction.event.delete({
+      where: {
+        id: id,
+      },
+    });
+    return null;
   });
-  return null;
 };

@@ -1,0 +1,88 @@
+fragment Booking on Event {
+  id
+  title
+  description
+  start
+  end
+  room
+  phone
+  booked_as
+  booked_by
+  created_at
+  updated_at
+}
+query CurrentUser {
+  user {
+    sub
+    cid
+    name
+    nickname
+    locale
+    groups
+    is_admin
+  }
+}
+query Calendar($from: String!, $to: String!) {
+  eventsFT(from: $from, to: $to) {
+    ...Booking
+  }
+  illegalSlots(from: $from, to: $to) {
+    start
+    end
+    title
+    description
+    room
+  }
+}
+query BookingDetail($id: String!) {
+  event(id: $id) {
+    ...Booking
+  }
+}
+mutation CreateBooking($event: InputEvent!) {
+  createEvent(event: $event) {
+    en
+    sv
+  }
+}
+mutation UpdateBooking($event: InputEvent!) {
+  editEvent(event: $event) {
+    en
+    sv
+  }
+}
+mutation DeleteBooking($id: String!) {
+  deleteEvent(id: $id) {
+    en
+    sv
+  }
+}
+query Rules {
+  rules {
+    id
+    created_at
+    updated_at
+    title
+    description
+    day_mask
+    start_date
+    end_date
+    start_time
+    end_time
+    priority
+    allow
+    room
+  }
+}
+mutation CreateRule($rule: InputRule!) {
+  createRule(rule: $rule) {
+    en
+    sv
+  }
+}
+mutation DeleteRule($id: String!) {
+  deleteRule(id: $id) {
+    en
+    sv
+  }
+}

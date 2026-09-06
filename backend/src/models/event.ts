@@ -1,16 +1,5 @@
-import { room } from "@prisma/client";
+import type { InputEvent } from "../generated/schema";
 
-export interface Event {
-  id: string | null;
-  start: string;
-  end: string;
-  description: string | null;
-  title: string;
-  created_at: string;
-  updated_at: string;
-  room: room[];
-  phone: string;
+export interface Event extends InputEvent {
   booked_by: string;
-  booked_as: string;
-  booking_terms: boolean;
 }

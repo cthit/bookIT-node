@@ -1,60 +1,116 @@
+import { createServer } from "node:http";
 import express from "express";
-import session from "express-session";
-import { setupRoutes } from "./routes";
-import redis from "redis";
+import { createClient } from "redis";
 import { PrismaClient } from "@prisma/client";
-const RedisStore = require("connect-redis")(session);
+import { PrismaPg } from "@prisma/adapter-pg";
 import { auth } from "express-openid-connect";
-import { UserInfo } from "./models/user";
+import { setupRoutes } from "./routes";
+import type { UserInfo } from "./models/user";
 import { authRequest } from "./utils";
+import { createSessionStore } from "./auth/session-store";
 
-const app = express();
-const session_store = new RedisStore({
-  client: redis.createClient({
-    host: process.env.REDIS_HOST,
-    port: Number(process.env.REDIS_PORT),
-    password: process.env.REDIS_PASS,
-    db: 1,
-  }),
-})
+interface GammaGroup {
+  superGroup?: { type: string; name: string };
+}
 
-app.use(
-  session({
-    secret: String(process.env.SESSION_SECRET),
-    store: session_store,
-    resave: false,
-    saveUninitialized: false,
-  }),
-);
+const requiredEnvironment = (name: string): string => {
+  const value = process.env[name];
+  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  return value;
+};
 
-app.use(
-  auth({
-    idpLogout: true,
-    authRequired: true,
-    authorizationParams: { scope: "openid profile", response_type: "code" },
-    clientAuthMethod: "client_secret_basic",
-    routes: { callback: "/api/callback" },
-    session: {
-      store: session_store,
+async function main() {
+  // Booking rule clock times belong to the division's local time zone.
+  process.env.TZ ??= "Europe/Stockholm";
+  const app = express();
+  app.disable("x-powered-by");
+  if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
+  const httpServer = createServer(app);
+  const redis = createClient({
+    // Redis 5 predates HELLO/RESP3. Keep the modern client on its supported
+    // RESP2 protocol until the separately planned Redis server upgrade.
+    RESP: 2,
+    maintNotifications: "disabled",
+    socket: {
+      host: process.env.REDIS_HOST || "localhost",
+      port: Number(process.env.REDIS_PORT || 6379),
     },
-    afterCallback: async (req, res, session, decodedState) => {
-      const userInfo: UserInfo = await authRequest("/oauth2/userinfo", session.access_token)
-      const authorities: string[] = await authRequest(`/api/client/v1/authorities/for/${userInfo.sub}`)
-      const groups: any[] = await authRequest(`/api/client/v1/groups/for/${userInfo.sub}`)
-      return {
-        ...session,
-        is_admin: authorities.includes("admin"),
-        groups: groups
-          .map((group) => group?.superGroup)
-          .filter(group => group?.type !== "alumni")
-          .map(group => group?.name)
-      };
-    }
-  }),
-);
+    password: process.env.REDIS_PASS || undefined,
+    database: 1,
+  });
+  redis.on("error", (error) => console.error("Redis connection error", error));
+  const prisma = new PrismaClient({
+    adapter: new PrismaPg({ connectionString: requiredEnvironment("DATABASE_URL") }),
+  });
 
-const prisma = new PrismaClient();
+  app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+  app.use(
+    auth({
+      secret: requiredEnvironment("SESSION_SECRET"),
+      idpLogout: true,
+      authRequired: true,
+      authorizationParams: { scope: "openid profile", response_type: "code" },
+      clientAuthMethod: "client_secret_basic",
+      routes: { callback: "/api/callback", login: "/api/login", logout: "/api/logout" },
+      session: {
+        store: createSessionStore(redis),
+        signSessionStoreCookie: true,
+        requireSignedSessionStoreCookie: true,
+      },
+      afterCallback: async (_req, _res, session) => {
+        const userInfo = await authRequest<UserInfo>("/oauth2/userinfo", session.access_token);
+        const [authorities, groups] = await Promise.all([
+          authRequest<string[]>(
+            `/api/client/v1/authorities/for/${encodeURIComponent(userInfo.sub)}`,
+          ),
+          authRequest<GammaGroup[]>(
+            `/api/client/v1/groups/for/${encodeURIComponent(userInfo.sub)}`,
+          ),
+        ]);
+        return {
+          ...session,
+          is_admin: authorities.includes("admin"),
+          groups: [
+            ...new Set(
+              groups.flatMap(({ superGroup }) =>
+                superGroup && superGroup.type.toLowerCase() !== "alumni" ? [superGroup.name] : [],
+              ),
+            ),
+          ],
+        };
+      },
+    }),
+  );
 
-setupRoutes(app, { prisma });
+  await Promise.all([redis.connect(), prisma.$connect()]);
+  const apollo = await setupRoutes(app, { prisma }, httpServer);
+  app.use(((error, _req, res, _next) => {
+    console.error("Request failed", error instanceof Error ? error.message : "Unknown error");
+    res.status(500).json({ error: "Request failed" });
+  }) satisfies express.ErrorRequestHandler);
+  const port = Number(process.env.PORT || 8080);
+  await new Promise<void>((resolve, reject) => {
+    httpServer.once("error", reject);
+    httpServer.listen(port, resolve);
+  });
+  console.log(`BookIT listening on port ${port}`);
+  let stopping = false;
+  const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    void apollo
+      .stop()
+      .then(() => Promise.all([redis.close(), prisma.$disconnect()]))
+      .catch((error) => {
+        console.error("Shutdown failed", error);
+        process.exitCode = 1;
+      });
+  };
+  process.once("SIGTERM", stop);
+  process.once("SIGINT", stop);
+}
 
-app.listen(Number(process.env.PORT) || 8080);
+void main().catch((error) => {
+  console.error("BookIT startup failed", error instanceof Error ? error.message : "Unknown error");
+  process.exit(1);
+});

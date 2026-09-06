@@ -1,4 +1,5 @@
 type IllegalSlot {
+  room: [Room!]!
   start: String!
   end: String!
   description: String

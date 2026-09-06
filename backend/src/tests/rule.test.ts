@@ -1,11 +1,15 @@
-import assert from "assert";
+import assert from "node:assert/strict";
+import { describe, it } from "vite-plus/test";
 import {
   toExplicitRules,
   ExplicitRule,
   day,
   dayApplies,
   mergeRules,
+  doesObeyRules,
+  ruleDateBounds,
 } from "../services/rule.service";
+import type { Event } from "../models/event";
 import { rule } from "@prisma/client";
 
 const defaultRule: rule = {
@@ -61,48 +65,41 @@ describe("Rule utility functions", () => {
     );
   });
   it("Should allow day", () => {
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b0001000),
-      true,
-      "0b0001000",
-    );
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b0001100),
-      true,
-      "0b0001100",
-    );
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b0011000),
-      true,
-      "0b0011000",
-    );
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b0001000), true, "0b0001000");
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b0001100), true, "0b0001100");
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b0011000), true, "0b0011000");
   });
   it("Should not allow day", () => {
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b1110111),
-      false,
-      "0b1110111",
-    );
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b0000000),
-      false,
-      "0b0000000",
-    );
-    assert.equal(
-      dayApplies(new Date("2021-08-19"), 0b0000111),
-      false,
-      "0b0000111",
-    );
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b1110111), false, "0b1110111");
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b0000000), false, "0b0000000");
+    assert.equal(dayApplies(new Date("2021-08-19"), 0b0000111), false, "0b0000111");
   });
 });
 
 const assertExplicitRuleEqual = (exp: ExplicitRule, got: ExplicitRule) => {
   assert.equal(got.start.toISOString(), exp.start.toISOString());
+  assert.equal(got.end.toISOString(), exp.end.toISOString());
   assert.equal(got.description, exp.description);
   assert.equal(got.allow, exp.allow);
 };
 
 describe("Rules to ExplicitRules", () => {
+  it("returns no rules for an inverted or invalid range", () => {
+    assert.deepEqual(
+      toExplicitRules(dummyRules, new Date("2021-08-20"), new Date("2021-08-19")),
+      [],
+    );
+    assert.deepEqual(toExplicitRules(dummyRules, new Date("invalid"), new Date("2021-08-19")), []);
+  });
+  it("does not expand a rule outside its effective dates", () => {
+    const rules = [
+      { ...dummyRules[0], start_date: new Date("2021-08-19"), end_date: new Date("2021-08-20") },
+    ];
+    const result = toExplicitRules(rules, new Date("2021-08-01"), new Date("2021-08-31"));
+    assert.equal(result.length, 2);
+    assert.equal(day(result[0].start), "2021-08-19");
+    assert.equal(day(result[1].start), "2021-08-20");
+  });
   it("Should create one mini rule", () => {
     const expected: ExplicitRule[] = [
       {
@@ -124,7 +121,7 @@ describe("Rules to ExplicitRules", () => {
       {
         ...defaultExplicitRules,
         start: new Date("2021-08-19T08:00"),
-        end: new Date("2021-08-20T17:00"),
+        end: new Date("2021-08-19T17:00"),
       },
       {
         ...defaultExplicitRules,
@@ -165,12 +162,88 @@ describe("Rules to ExplicitRules", () => {
   });
 });
 
+describe("Booking rule scope", () => {
+  it("includes the complete final calendar day of a rule", () => {
+    const bounds = ruleDateBounds(
+      new Date("2026-09-06T12:00:00+02:00"),
+      new Date("2026-09-06T13:00:00+02:00"),
+    );
+    assert.equal(bounds.end_date.gte.toISOString(), "2026-09-06T00:00:00.000Z");
+    assert.equal(bounds.start_date.lte.toISOString(), "2026-09-06T00:00:00.000Z");
+  });
+  it("uses the Stockholm calendar date even when UTC is on the previous day", () => {
+    const bounds = ruleDateBounds(
+      new Date("2026-10-24T22:30:00Z"),
+      new Date("2026-10-24T23:30:00Z"),
+    );
+    assert.equal(bounds.end_date.gte.toISOString(), "2026-10-25T00:00:00.000Z");
+  });
+  it("does not let permission in one room override restrictions in another", () => {
+    const booking: Event = {
+      title: "Two rooms",
+      start: "2021-08-20T11:00",
+      end: "2021-08-20T12:00",
+      room: ["BIG_HUB", "GROUP_ROOM"],
+      phone: "0701234567",
+      booked_by: "member",
+      booked_as: "digit",
+      booking_terms: true,
+    };
+    const base = {
+      ...defaultRule,
+      start_date: new Date("2021-08-01"),
+      end_date: new Date("2021-08-31"),
+      start_time: "08:00",
+      end_time: "17:00",
+    };
+    const allowed: rule = {
+      ...base,
+      title: "Hub permission",
+      room: ["BIG_HUB"],
+      allow: true,
+      priority: 1,
+    };
+    const denied: rule = {
+      ...base,
+      title: "Group room closed",
+      room: ["GROUP_ROOM"],
+      allow: false,
+      priority: 10,
+    };
+    assert.equal(
+      doesObeyRules([allowed, denied], booking)?.en,
+      "Booking breaks rule: Group room closed",
+    );
+    assert.equal(doesObeyRules([allowed, denied], { ...booking, room: ["BIG_HUB"] }), null);
+  });
+});
+
 describe("Merge rules", () => {
+  it("preserves later restrictions when an inserted interval is already covered", () => {
+    const first = {
+      ...defaultExplicitRules,
+      start: new Date("2021-08-20T08:00"),
+      end: new Date("2021-08-20T10:00"),
+      priority: 1,
+    };
+    const later = {
+      ...defaultExplicitRules,
+      start: new Date("2021-08-20T14:00"),
+      end: new Date("2021-08-20T16:00"),
+      priority: 1,
+    };
+    const covered = {
+      ...defaultExplicitRules,
+      start: new Date("2021-08-20T08:00"),
+      end: new Date("2021-08-20T09:00"),
+      priority: 2,
+      allow: true,
+    };
+    assert.deepEqual(mergeRules([first, later, covered]), [first, later]);
+  });
   it("No rules", () => {
     const expected: ExplicitRule[] = [];
-    const got = mergeRules(
-      toExplicitRules([], new Date("2021-08-18"), new Date("2021-08-20")),
-    );
+    const got = mergeRules(toExplicitRules([], new Date("2021-08-18"), new Date("2021-08-20")));
     assert.deepEqual(got, expected);
   });
   it("One rule", () => {
@@ -182,11 +255,7 @@ describe("Merge rules", () => {
       },
     ];
     const got = mergeRules(
-      toExplicitRules(
-        [dummyRules[0]],
-        new Date("2021-08-20"),
-        new Date("2021-08-21"),
-      ),
+      toExplicitRules([dummyRules[0]], new Date("2021-08-20"), new Date("2021-08-21")),
     );
 
     assert.equal(expected.length, got.length);
@@ -229,9 +298,7 @@ describe("Merge rules", () => {
         end: new Date("2021-08-20T17:00"),
       },
     ];
-    const got = mergeRules(
-      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
-    );
+    const got = mergeRules(toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")));
     assert.equal(got.length, expected.length);
     assertExplicitRuleEqual(expected[0], got[0]);
     assertExplicitRuleEqual(expected[1], got[1]);
@@ -278,9 +345,7 @@ describe("Merge rules", () => {
         end: new Date("2021-08-20T17:00"),
       },
     ];
-    const got = mergeRules(
-      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
-    );
+    const got = mergeRules(toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")));
     assert.equal(got.length, expected.length);
     assertExplicitRuleEqual(expected[0], got[0]);
     assertExplicitRuleEqual(expected[1], got[1]);
@@ -343,9 +408,7 @@ describe("Merge rules", () => {
         end: new Date("2021-08-20T19:00"),
       },
     ];
-    const got = mergeRules(
-      toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")),
-    );
+    const got = mergeRules(toExplicitRules(rules, new Date("2021-08-20"), new Date("2021-08-20")));
     assert.equal(got.length, expected.length);
     assertExplicitRuleEqual(expected[0], got[0]);
     assertExplicitRuleEqual(expected[1], got[1]);

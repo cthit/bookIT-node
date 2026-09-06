@@ -1,0 +1,16 @@
+.git
+**/node_modules
+**/.env
+**/.env.*
+!**/.env.example
+**/build
+**/dist
+**/.vite
+**/.cache
+**/coverage
+playwright-report
+test-results
+e2e
+.codex
+.agents
+*.log

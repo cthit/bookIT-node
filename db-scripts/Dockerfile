@@ -1,18 +1,11 @@
 
-FROM jobber
-
-USER root
-WORKDIR /home/jobberuser
-
-RUN apk update
-RUN apk add vim postgresql-client
-
-COPY .jobber ./
-RUN chmod 744 .jobber
+FROM postgres:12.22-alpine
+WORKDIR /cleanup
 COPY delete-data.sql ./
-
-ENV PGPASSWORD=password
+COPY cleanup.sh ./
+USER postgres
 ENV DB_USER=postgres
 ENV DB_HOST=db
 ENV DB_PORT=5432
 ENV DB_NAME=bookit
+ENTRYPOINT ["sh", "/cleanup/cleanup.sh"]

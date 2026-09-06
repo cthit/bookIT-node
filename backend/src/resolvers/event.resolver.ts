@@ -1,49 +1,39 @@
 import { Tools } from "../utils/commonTypes";
-import { Event } from "../models/event";
+import type { InputEvent } from "../generated/schema";
 import { User } from "../models/user";
 import { createEvent, editEvent, deleteEvent } from "../services/event.service";
+import { eventResult } from "./serialize";
 
 export const getEventQResolvers = ({ prisma }: Tools) => ({
   events: async () => {
-    return await prisma.event.findMany();
+    return (await prisma.event.findMany()).map(eventResult);
   },
-  eventsFT: async (_: any, ft: { from: string; to: string }) => {
-    return await prisma.event.findMany({
-      where: {
-        end: { gte: new Date(ft.from) },
-        start: { lte: new Date(ft.to) },
-      },
-    });
+  eventsFT: async (_: unknown, ft: { from: string; to: string }) => {
+    return (
+      await prisma.event.findMany({
+        where: {
+          end: { gte: new Date(ft.from) },
+          start: { lte: new Date(ft.to) },
+        },
+      })
+    ).map(eventResult);
   },
-  event: async (_: any, { id }: { id: string }) => {
-    return await prisma.event.findFirst({
+  event: async (_: unknown, { id }: { id: string }) => {
+    const result = await prisma.event.findFirst({
       where: { id: id },
     });
+    return result ? eventResult(result) : null;
   },
 });
 
 export const getEventMResolvers = ({ prisma }: Tools) => ({
-  createEvent: async (
-    _: any,
-    { event }: { event: Event },
-    { user }: { user: User },
-  ) => {
-    event.booked_by = user.cid;
-    return createEvent(prisma, event, user);
+  createEvent: async (_: unknown, { event }: { event: InputEvent }, { user }: { user: User }) => {
+    return createEvent(prisma, { ...event, booked_by: user.cid }, user);
   },
-  editEvent: async (
-    _: any,
-    { event }: { event: Event },
-    { user }: { user: User },
-  ) => {
-    event.booked_by = user.cid;
-    return editEvent(prisma, event, user);
+  editEvent: async (_: unknown, { event }: { event: InputEvent }, { user }: { user: User }) => {
+    return editEvent(prisma, { ...event, booked_by: user.cid }, user);
   },
-  deleteEvent: async (
-    _: any,
-    { id }: { id: string },
-    { user }: { user: User },
-  ) => {
+  deleteEvent: async (_: unknown, { id }: { id: string }, { user }: { user: User }) => {
     return deleteEvent(prisma, id, user);
   },
 });

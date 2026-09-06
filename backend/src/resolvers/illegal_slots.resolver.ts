@@ -1,19 +1,25 @@
 import { Tools } from "../utils/commonTypes";
-import {
-  mergeRules,
-  toExplicitRules,
-  getRulesBetween,
-} from "../services/rule.service";
+import { room } from "@prisma/client";
+import { slotResult } from "./serialize";
+import { mergeRules, toExplicitRules, getRulesBetween } from "../services/rule.service";
 
 export const getIllegalSlotsQResolvers = ({ prisma }: Tools) => ({
-  illegalSlots: async (_: any, ft: { from: string; to: string }) => {
+  illegalSlots: async (_: unknown, ft: { from: string; to: string }) => {
     const from = new Date(ft.from);
     const to = new Date(ft.to);
 
-    const rules = await await getRulesBetween(prisma, from, to);
+    const rules = await getRulesBetween(prisma, from, to);
 
-    return mergeRules(toExplicitRules(rules, from, to)).filter(
-      rule => !rule.allow,
+    return Object.values(room).flatMap((selectedRoom) =>
+      mergeRules(
+        toExplicitRules(
+          rules.filter((rule) => rule.room.includes(selectedRoom)),
+          from,
+          to,
+        ),
+      )
+        .filter((rule) => !rule.allow)
+        .map((rule) => ({ ...slotResult(rule), room: [selectedRoom] })),
     );
   },
 });
