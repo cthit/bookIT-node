@@ -151,7 +151,11 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
   }
 }
 
-export async function loginAs(page: Page, environment: Environment, role: UserRole): Promise<void> {
+export async function loginAs(
+  page: Page,
+  environment: Pick<Environment, "appUrl" | "gammaUrl">,
+  role: UserRole,
+): Promise<void> {
   await page.context().clearCookies();
   await page.goto(`${environment.appUrl}/api/login`);
   await page.waitForURL((url) => url.origin === environment.gammaUrl && url.pathname === "/login");

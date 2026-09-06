@@ -63,13 +63,16 @@ export function EventCalendarToolbar({
           {controller.view?.title}
         </h3>
       </div>
-      <Tabs value={controller.view?.type ?? availableViews[0]}>
-        <TabsList>
+      <Tabs
+        value={controller.view?.type ?? availableViews[0]}
+        onValueChange={(view) => controller.changeView(view)}
+      >
+        <TabsList className="gap-1 p-1 group-data-[orientation=horizontal]/tabs:h-11">
           {availableViews.map((availableView) => (
             <TabsTrigger
               key={availableView}
               value={availableView}
-              onClick={() => controller.changeView(availableView)}
+              className="min-w-16 px-4 py-2"
               aria-label={buttons[availableView]?.hint}
             >
               {buttons[availableView]?.text}

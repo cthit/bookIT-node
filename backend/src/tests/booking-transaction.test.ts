@@ -112,7 +112,7 @@ describe("Booking transaction recovery", () => {
     expect(await withBookingTransaction(prisma, async () => null)).toMatchObject({
       en: "A booking changed concurrently. Please try again.",
     });
-    expect(transaction).toHaveBeenCalledTimes(3);
+    expect(transaction).toHaveBeenCalledTimes(5);
   });
 
   it("retries the PostgreSQL adapter's direct commit conflict and returns the rechecked overlap", async () => {
@@ -130,7 +130,7 @@ describe("Booking transaction recovery", () => {
     expect(await withBookingTransaction(prisma, async () => null)).toMatchObject({
       en: "A booking changed concurrently. Please try again.",
     });
-    expect(transaction).toHaveBeenCalledTimes(3);
+    expect(transaction).toHaveBeenCalledTimes(5);
   });
 
   it.each([

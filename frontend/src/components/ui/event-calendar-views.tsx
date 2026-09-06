@@ -20,9 +20,11 @@ const dayRowCommonClasses: CalendarOptions = {
   /* Day Row > List-Item Event
   ----------------------------------------------------------------------------------------------- */
 
-  listItemEventClass: (info) => cn("mb-px p-px rounded-sm", info.isNarrow ? "mx-px" : "mx-0.5"),
-  listItemEventBeforeClass: (info) => cn("border-4", info.isNarrow ? "ms-0.5" : "ms-1"),
-  listItemEventInnerClass: (info) => (info.isNarrow ? `py-px ${xxsTextClass}` : "py-0.5 text-xs"),
+  listItemEventClass: (info) => cn("mb-1 p-0.5 rounded-sm", info.isNarrow ? "mx-px" : "mx-1"),
+  listItemEventBeforeClass: (info) =>
+    cn("border-4 rounded-full border-(--fc-event-color)", info.isNarrow ? "ms-0.5" : "ms-1"),
+  listItemEventInnerClass: (info) =>
+    cn("booking-event-label", info.isNarrow ? `py-0.5 ${xxsTextClass}` : "py-1 text-xs leading-4"),
   listItemEventTimeClass: (info) =>
     cn(info.isNarrow ? "ps-0.5" : "ps-1", "whitespace-nowrap overflow-hidden shrink-1"),
   listItemEventTitleClass: (info) =>
@@ -99,9 +101,9 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           !info.isSelected && info.isDragging && "opacity-75",
         )
       }
-      blockEventInnerClass="text-(--fc-event-contrast-color) print:text-black"
+      blockEventInnerClass="booking-event-label text-(--fc-event-contrast-color) print:text-black"
       blockEventTimeClass="whitespace-nowrap overflow-hidden"
-      blockEventTitleClass="whitespace-nowrap overflow-hidden"
+      blockEventTitleClass="whitespace-normal overflow-hidden line-clamp-2 leading-snug"
 
       /* Row Event
       ----------------------------------------------------------------------------------------- */
@@ -183,15 +185,15 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           "flex",
           info.isShort
             ? "flex-row items-center p-1 gap-1"
-            : ["flex-col", info.isNarrow ? "px-1 py-0.5" : "px-2 py-1"],
+            : ["flex-col", info.isNarrow ? "px-1 py-1" : "px-2 py-1.5"],
           info.isShort || info.isNarrow ? xxsTextClass : "text-xs",
         )
       }
       columnEventTimeClass={(info) =>
-        cn("order-1 shrink-100", !info.isShort && (info.isNarrow ? "pb-0.5" : "pb-1"))
+        cn("order-0 shrink-100", !info.isShort && (info.isNarrow ? "pb-0.5" : "pb-1"))
       }
       columnEventTitleClass={(info) =>
-        cn("shrink-1", !info.isShort && (info.isNarrow ? "py-0.5" : "py-1"))
+        cn("order-1 shrink-1", !info.isShort && (info.isNarrow ? "py-0.5" : "py-1"))
       }
 
       /* More-Link
@@ -213,7 +215,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           info.isDisabled && !info.inPopover && "bg-foreground/3",
         )
       }
-      dayHeaderInnerClass="group mt-2 mx-2 flex flex-col items-center outline-none"
+      dayHeaderInnerClass="group mt-2 mb-3 mx-2 flex flex-col items-center gap-1 outline-none"
       dayHeaderContent={(info) => (
         <>
           {info.weekdayText && (
@@ -292,7 +294,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
       listDayFormat={{ day: "numeric" }}
       listDayAltFormat={{ month: "short", weekday: "short", forceCommas: true }}
       listDayClass={(info) => cn(!info.isLast && "border-b", "flex flex-row items-start")}
-      listDayHeaderClass="p-2 shrink-0 w-1/3 max-w-44 min-h-9 flex flex-row items-center gap-2"
+      listDayHeaderClass="px-3 py-4 sm:px-5 shrink-0 w-1/3 max-w-44 min-h-12 flex flex-row flex-wrap items-center gap-2"
       listDayHeaderInnerClass={(info) =>
         cn(
           !info.level
@@ -310,7 +312,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
             : ["text-xs uppercase", info.hasNavLink && "hover:underline"],
         )
       }
-      listDayBodyClass="grow min-w-0 py-2 gap-1"
+      listDayBodyClass="grow min-w-0 py-3 pe-3 sm:pe-5 gap-2"
 
       /* Single Month (in Multi-Month)
       ----------------------------------------------------------------------------------------- */
@@ -405,7 +407,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
             cn("w-2 self-end justify-end", "border", info.isMinor && "border-dotted"),
           slotHeaderInnerClass: (info) =>
             cn(
-              "relative ms-2 me-3 my-2",
+              "relative ms-2 me-3 my-0.5",
               info.isNarrow ? `-top-4 ${xxsTextClass}` : "-top-5 text-sm",
               info.isFirst && "hidden",
             ),
@@ -421,14 +423,14 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           /* List-View > List-Item Event
           ------------------------------------------------------------------------------------- */
 
-          listItemEventClass: "group p-2 rounded-s-full gap-2",
-          listItemEventBeforeClass: "mx-2 border-5",
-          listItemEventInnerClass: "gap-2 text-sm",
-          listItemEventTimeClass:
-            "shrink-0 w-1/2 max-w-40 whitespace-nowrap overflow-hidden text-ellipsis",
+          listItemEventClass: "group px-3 py-3 rounded-md gap-2",
+          listItemEventBeforeClass: "mx-2 border-5 rounded-full border-(--fc-event-color)",
+          listItemEventInnerClass:
+            "booking-event-label flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
+          listItemEventTimeClass: "shrink-0 w-28 whitespace-nowrap",
           listItemEventTitleClass: (info) =>
             cn(
-              "grow min-w-0 whitespace-nowrap overflow-hidden",
+              "grow min-w-0 basis-40 whitespace-normal break-words",
               info.event.url && "group-hover:underline",
             ),
 

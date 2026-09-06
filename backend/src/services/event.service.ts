@@ -2,6 +2,7 @@ import { Prisma, PrismaClient, event, room } from "@prisma/client";
 import { Error, User } from "../models";
 import { Event } from "../models/event";
 import { checkRules } from "./rule.service";
+import { setTimeout as delay } from "node:timers/promises";
 
 /*
  * Events must end after they start
@@ -199,7 +200,8 @@ export const withBookingTransaction = async (
   prisma: PrismaClient,
   operation: (transaction: Prisma.TransactionClient) => Promise<Error | null>,
 ): Promise<Error | null> => {
-  for (let attempt = 0; attempt < 3; attempt++) {
+  const maxAttempts = 5;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await prisma.$transaction(operation, {
         isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
@@ -208,6 +210,9 @@ export const withBookingTransaction = async (
       });
     } catch (error) {
       if (!isSerializationFailure(error)) throw error;
+      // Jitter prevents a burst of valid bookings from retrying in lockstep.
+      // The failed transaction has rolled back before we wait or try again.
+      if (attempt + 1 < maxAttempts) await delay(20 * 2 ** attempt + Math.random() * 30);
     }
   }
   return {

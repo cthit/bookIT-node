@@ -15,6 +15,7 @@ import {
   type Room,
 } from "@/generated/graphql";
 import { rooms } from "@/lib/rooms";
+import { bookingRoomClass, bookingRoomStyles } from "@/lib/booking-colors";
 import { parseDate, localInput } from "@/lib/dates";
 import { useLanguage } from "@/lib/language";
 import { useUser } from "@/lib/user";
@@ -87,6 +88,7 @@ export function CalendarPage() {
   });
   return (
     <>
+      <style>{bookingRoomStyles}</style>
       <h1 className="sr-only">{t("Calendar", "Kalender")}</h1>
       <div className="flex flex-wrap justify-between items-center gap-3 mb-4">
         <div className="flex flex-wrap gap-2" aria-label={t("Room filters", "Rumsfilter")}>
@@ -132,10 +134,12 @@ export function CalendarPage() {
         scrollTimeReset={false}
         selectable
         eventOverlap
+        slotEventOverlap={false}
+        eventMaxStack={2}
         eventTimeFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
         slotHeaderFormat={{ hour: "2-digit", minute: "2-digit", hour12: false }}
         dayHeaderFormat={{ weekday: "short", day: "2-digit", month: "2-digit" }}
-        views={{ dayGridMonth: { dayHeaderFormat: { weekday: "short" } } }}
+        views={{ dayGridMonth: { dayHeaderFormat: { weekday: "short" }, dayMaxEvents: 3 } }}
         datesSet={(info) =>
           setRange((current) =>
             current.from === info.start.toISOString() && current.to === info.end.toISOString()
@@ -169,14 +173,6 @@ export function CalendarPage() {
           );
         }}
 
-        eventDidMount={(info) => {
-          const booking = bookings.find((event) => event.id === info.event.id);
-          const colors = rooms
-            .filter((room) => booking?.room.includes(room.id))
-            .map((room) => room.color);
-          if (colors.length > 1)
-            info.el.style.backgroundImage = `repeating-linear-gradient(45deg, ${colors.map((color, i) => `${color} ${i * 25}px ${(i + 1) * 25}px`).join(", ")})`;
-        }}
         events={[
           ...visible.map((event) => ({
             id: event.id ?? undefined,
@@ -185,6 +181,7 @@ export function CalendarPage() {
             end: parseDate(event.end),
             color: rooms.find((room) => event.room.includes(room.id))?.color,
             contrastColor: "#fff",
+            className: bookingRoomClass(event.room),
             editable: Boolean(user?.is_admin || user?.groups?.includes(event.booked_as)),
             durationEditable: false,
           })),

@@ -186,7 +186,7 @@ export function RulesPage() {
         <Failure error={query.error} retry={() => void query.refetch()} />
       ) : (
         <Card className="p-0 overflow-hidden">
-          <Table>
+          <Table className="min-w-[1080px] [&_th]:px-5 [&_th]:py-3 [&_td]:px-5 [&_td]:py-4 [&_td]:leading-6">
             <TableHeader>
               <TableRow>
                 {columns.map((column) => (
@@ -209,7 +209,7 @@ export function RulesPage() {
                     </button>
                   </TableHead>
                 ))}
-                <TableHead>
+                <TableHead className="sticky right-0 bg-card">
                   <span className="sr-only">{t("Actions", "Åtgärder")}</span>
                 </TableHead>
               </TableRow>
@@ -217,27 +217,31 @@ export function RulesPage() {
             <TableBody>
               {pageRules.map((rule) => (
                 <TableRow key={rule.id}>
-                  <TableCell className="max-w-72 font-medium">{rule.title}</TableCell>
+                  <TableCell className="min-w-44 max-w-72 whitespace-normal font-medium">
+                    {rule.title}
+                  </TableCell>
                   <TableCell>{rule.priority}</TableCell>
                   <TableCell className="whitespace-nowrap">{dateText(rule.start_date)}</TableCell>
                   <TableCell className="whitespace-nowrap">{dateText(rule.end_date)}</TableCell>
                   <TableCell className="whitespace-nowrap">
                     {rule.start_time}–{rule.end_time}
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="min-w-36 whitespace-normal">
                     {rule.room
                       ?.filter((room): room is Room => Boolean(room))
                       .map(roomName)
                       .join(", ")}
                   </TableCell>
-                  <TableCell>{dayText(rule.day_mask)}</TableCell>
+                  <TableCell className="min-w-44 whitespace-normal">
+                    {dayText(rule.day_mask)}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={rule.allow ? "secondary" : "destructive"}>
                       {rule.allow ? t("Allowed", "Tillåten") : t("Blocked", "Spärrad")}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
+                  <TableCell className="sticky right-0 bg-card">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="ghost"
                         size="sm"
@@ -269,7 +273,7 @@ export function RulesPage() {
               {t("No booking rules yet.", "Inga bokningsregler ännu.")}
             </p>
           )}
-          <div className="flex items-center justify-end gap-3 border-t p-3 text-sm">
+          <div className="flex items-center justify-end gap-3 border-t px-5 py-4 text-sm">
             <span>
               {t("Page", "Sida")} {currentPage + 1} / {pageCount}
             </span>

@@ -40,6 +40,29 @@ For the manual smoke test, run `pnpm e2e:dev` and open the printed BookIT URL.
 The command prints synthetic login credentials and keeps the environment alive.
 Ctrl+C stops application processes and removes the test containers and network.
 
+To populate that local preview with 252 bookings and 24 rules, run:
+
+```sh
+pnpm exec tsx e2e/stress.ts <local-app-url> <local-gamma-url>
+```
+
+The script uses synthetic admin credentials, accepts only localhost URLs, and
+resumes without duplicating matching fixtures. It submits six writes concurrently
+and reports their p95 response time. The CI stress spec uses the same dataset to
+check persistence, multi-room diagonal stripes, calendar views, rule pagination,
+and mobile overflow. This is a bounded local stress check, not a production
+capacity benchmark. The normal concurrency test also verifies that conflicting
+bookings cannot double-book a room.
+
+For screenshots matching the 3840 × 2234 reference images:
+
+```sh
+pnpm exec tsx e2e/screenshots.ts <local-app-url> <local-gamma-url> <output-directory>
+```
+
+This captures week, month, list and rules from the populated preview at a
+1920 × 1117 CSS viewport and 2× pixel density.
+
 Tests import the extended `test` and `expect` from `./fixtures`. The default page
 logs in through Gamma as `member` before the test starts. A spec can use
 `test.use({ role: "admin" })` or `test.use({ role: "outsider" })`; `loginAs` lets a
