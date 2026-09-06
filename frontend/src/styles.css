@@ -118,6 +118,8 @@ textarea {
 
 .booking-multi-room {
   background-image: linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)), var(--booking-stripes);
+  background-origin: border-box;
+  background-repeat: no-repeat;
   color: white;
 }
 
