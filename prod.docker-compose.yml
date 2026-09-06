@@ -1,4 +1,3 @@
-# Uses an existing Gamma installation. See README.md before deployment.
 services:
   backend:
     build:

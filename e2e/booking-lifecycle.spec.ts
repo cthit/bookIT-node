@@ -55,8 +55,6 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
 });
 
 test("simultaneous requests cannot reserve the same room and time twice", async ({ page }) => {
-  // These requests race over HTTP against the real PostgreSQL-backed service.
-  // Checking availability and inserting must form one atomic operation.
   const date = await bookingDate(page);
   const titles = ["E2E concurrent booking A", "E2E concurrent booking B"];
 

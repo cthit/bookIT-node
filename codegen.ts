@@ -9,7 +9,6 @@ import { loadFilesSync } from "@graphql-tools/load-files";
 import { mergeTypeDefs } from "@graphql-tools/merge";
 import { type DocumentNode } from "graphql";
 
-// Local schemas need none of the CLI's remote loaders and deprecated fetch polyfills.
 async function generate() {
   const schema = mergeTypeDefs(loadFilesSync("backend/src/schemas/v1/*.gql"));
   const documents = loadFilesSync<DocumentNode>("frontend/src/**/*.graphql").map((document) => ({

@@ -13,8 +13,6 @@ const conflict = () =>
     code: "P2034",
     clientVersion: "7.10.0",
   });
-// This is the DriverAdapterError shape emitted by @prisma/adapter-pg for
-// PostgreSQL serialization_failure (40001) and deadlock_detected (40P01).
 const driverConflict = () =>
   Object.assign(
     new Error("TransactionWriteConflict", { cause: { kind: "TransactionWriteConflict" } }),
@@ -131,7 +129,6 @@ describe("Booking transaction recovery", () => {
     "requires a fresh valid phone for an anonymized booking, not %s",
     async (phone) => {
       vi.spyOn(prisma, "$transaction").mockImplementation(async (operation) => operation(prisma));
-      // Even inconsistent legacy data must not expose an unowned phone number.
       vi.spyOn(prisma.event, "findUnique").mockResolvedValue({
         ...anonymized,
         phone: "0701234567",

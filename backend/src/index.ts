@@ -20,15 +20,13 @@ const requiredEnvironment = (name: string): string => {
 };
 
 async function main() {
-  // Booking rule clock times belong to the division's local time zone.
   process.env.TZ ??= "Europe/Stockholm";
   const app = express();
   app.disable("x-powered-by");
   if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
   const httpServer = createServer(app);
   const redis = createClient({
-    // Redis 5 predates HELLO/RESP3. Keep the modern client on its supported
-    // RESP2 protocol until the separately planned Redis server upgrade.
+    // Redis 5 does not support RESP3.
     RESP: 2,
     maintNotifications: "disabled",
     socket: {

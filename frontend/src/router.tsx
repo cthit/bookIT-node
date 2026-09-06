@@ -136,7 +136,6 @@ const rulesRoute = createRoute({
   path: "/rules",
   component: lazyRouteComponent(() => import("@/pages/rules"), "RulesPage"),
 });
-// Preserve bookmarks from the previous router.
 const legacyEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/edit-event",

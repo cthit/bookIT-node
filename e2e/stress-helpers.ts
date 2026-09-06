@@ -21,7 +21,6 @@ export async function populateStress(page: Page, concurrency = 6) {
   const rules = data.rules.filter((rule) => !existingRules.has(`${rule.title}|${rule.start_date}`));
   const timings: number[] = [];
 
-  // Resume partial local runs without deleting existing bookings or hiding errors.
   for (let offset = 0; offset < events.length; offset += concurrency) {
     await Promise.all(
       events.slice(offset, offset + concurrency).map(async (event) => {

@@ -14,7 +14,6 @@ async function main() {
   await mkdir(outputDirectory, { recursive: true });
   const browser = await chromium.launch();
   try {
-    // Match the supplied 3840 × 2234 Retina references at a 1920 × 1117 CSS viewport.
     const page = await browser.newPage({
       baseURL: appUrl,
       viewport: { width: 1920, height: 1117 },

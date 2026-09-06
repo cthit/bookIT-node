@@ -36,8 +36,7 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
 
   const event = page.getByRole("button").filter({ hasText: title });
 
-  // Prime the detail cache, then move and edit before its 20-second freshness
-  // window expires. Saving another field must not restore the pre-drag times.
+  // Prime the detail cache before moving the booking.
   const readBooking = async () => {
     const { events } = await graphql<{
       events: { title: string; start: string; end: string }[];

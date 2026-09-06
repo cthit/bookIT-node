@@ -1,5 +1,4 @@
 #!/bin/sh
-# Retain the daily privacy cleanup without the unsupported Jobber image.
 set -eu
 trap 'exit 0' INT TERM
 while :; do

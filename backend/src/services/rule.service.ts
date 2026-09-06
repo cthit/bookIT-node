@@ -55,7 +55,6 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
     end.setHours(0, 0, 0, 0);
     while (current <= end) {
       if (dayApplies(current, rule.day_mask)) insertRule(explicitRules, current, rule);
-      // Calendar-day arithmetic also advances correctly across daylight-saving changes.
       current.setDate(current.getDate() + 1);
     }
   }
@@ -131,8 +130,7 @@ const stockholmDate = new Intl.DateTimeFormat("sv-SE", {
   day: "2-digit",
 });
 
-// Rule dates are stored as UTC-midnight calendar dates, not instant cutoffs.
-// Include the whole last effective day in the Swedish booking calendar.
+// UTC-midnight rule dates include the entire last day in Stockholm time.
 export const ruleDateBounds = (from: Date, to: Date) => ({
   end_date: { gte: new Date(`${stockholmDate.format(from)}T00:00:00.000Z`) },
   start_date: { lte: new Date(`${stockholmDate.format(to)}T00:00:00.000Z`) },

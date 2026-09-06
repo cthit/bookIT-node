@@ -10,8 +10,6 @@ export function bookingRoomClass(selected: readonly (Room | null)[]) {
   return `booking-rooms-${mask}${multiple ? " booking-multi-room" : ""}`;
 }
 
-// There are only 15 nonempty combinations of the four rooms. Declarative classes
-// keep colors correct after edits, filtering and view changes, not just on mount.
 export const bookingRoomStyles = Array.from({ length: (1 << rooms.length) - 1 }, (_, index) => {
   const mask = index + 1;
   const colors = rooms.filter((_, bit) => mask & (1 << bit)).map((room) => room.color);

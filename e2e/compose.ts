@@ -9,8 +9,6 @@ import { applicationImages } from "./application-images";
 
 const root = resolve(__dirname, "..");
 
-// BookIT intentionally retains its deployed database/server major versions.
-// Gamma matches the working chalmers.it test/gamma-integration reference.
 export const images = {
   bookitPostgres: "postgres:12.22-alpine",
   bookitRedis: "redis:5.0.14-alpine",
@@ -20,7 +18,6 @@ export const images = {
     "ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db",
 } as const;
 
-// Synthetic identities are bootstrapped into the real Gamma application.
 export const users = {
   admin: {
     id: "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
@@ -137,7 +134,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
       throw new Error("Gamma did not return complete OAuth and CLIENT API credentials");
     }
 
-    // BookIT admin means this client's authority, not Gamma's global admin flag.
+    // BookIT uses client-specific authority, not Gamma's global admin flag.
     await page.locator('[name="authority"]').fill("admin");
     await page.getByRole("button", { name: "Add user authority", exact: true }).click();
     await page.locator(".authority-user-row").selectOption(users.admin.id);
@@ -179,7 +176,6 @@ export async function loginAs(
 }
 
 export async function compose(browser: Browser): Promise<Environment> {
-  // Validate before allocating any containers; CI must never fall back to dev servers.
   const appImages = applicationImages();
   const network = await new Network().start();
   const containers: StartedTestContainer[] = [];
@@ -188,7 +184,6 @@ export async function compose(browser: Browser): Promise<Environment> {
   let stopped = false;
 
   const record = (name: string, chunk: Buffer | string) => {
-    // Gamma's development bootstrap prints synthetic credentials. Keep them out of CI artifacts.
     const text = String(chunk)
       .replace(/(password:)\S+/g, "$1[REDACTED]")
       .replace(/(and code:)\s*\S+/g, "$1 [REDACTED]");
@@ -291,8 +286,7 @@ export async function compose(browser: Browser): Promise<Environment> {
     );
 
     const gammaPort = await unusedPort();
-    // Chromium resolves *.localhost to loopback. Docker resolves the same name
-    // through Gamma's network alias, keeping the OIDC issuer identical on both sides.
+    // One issuer URL: browser loopback, Docker network alias.
     const gammaHost = appImages ? "gamma.localhost" : "localhost";
     const gammaUrl = `http://${gammaHost}:${gammaPort}`;
     const gammaContainerPort = appImages ? gammaPort : 8081;

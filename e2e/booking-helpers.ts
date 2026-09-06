@@ -2,7 +2,6 @@ import { expect, type Page } from "@playwright/test";
 import { dateSegments, fillSegments } from "./date-time-helpers";
 
 export async function bookingDate(page: Page): Promise<string> {
-  // Match the browser's date, including CI's configured timezone.
   return page.evaluate(() => {
     const now = new Date();
 

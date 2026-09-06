@@ -100,8 +100,6 @@ export function DatePicker({
                 sideOffset={8}
                 collisionPadding={16}
                 onOpenAutoFocus={(event) => {
-                  // Let Radix establish its focus scope before focusing the calendar.
-                  // This also works when the picker is nested inside a rule dialog.
                   event.preventDefault();
                   calendarRef.current
                     ?.querySelector<HTMLElement>('[role="button"][tabindex="0"]')

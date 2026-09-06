@@ -14,8 +14,7 @@ interface CalendarBlock {
   description: string;
 }
 
-// The API resolves rules separately for each room. Combine only their display,
-// after room filtering, so simultaneous restrictions cannot paint overlapping labels.
+// Merge per-room restrictions for display without changing booking validation.
 export function calendarBlocks(slots: readonly BlockedSlot[]): CalendarBlock[] {
   const intervals = slots.map((slot) => ({
     ...slot,

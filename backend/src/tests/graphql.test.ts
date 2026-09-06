@@ -8,8 +8,7 @@ import { mergeTypeDefs } from "@graphql-tools/merge";
 import { getResolvers } from "../resolvers";
 import type { Context } from "../utils/commonTypes";
 
-// Requests in this suite must be rejected before any database access. There is
-// deliberately no database listening here; the E2E suite tests actual persistence.
+// An unreachable database ensures validation failures do not query it.
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: "postgresql://test:test@127.0.0.1:1/test" }),
 });

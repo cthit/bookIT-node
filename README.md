@@ -79,11 +79,6 @@ GraphQL Codegen core API generates backend resolver signatures and typed fronten
 operation documents from this schema and `frontend/src/api/operations.graphql`.
 Both generated outputs are committed; CI rejects stale output.
 
-The redesigned interface keeps the original room filters, multi-room booking colors,
-calendar selection and drag-to-move behavior, booking details dialog, group selection,
-consent fields, Swedish/English labels, and sortable rules table. Room filters remain
-compact so the calendar is the main view; decorative headings are intentionally omitted.
-
 ## Browser verification
 
 Complete a manual browser smoke pass before running the automated flows:
@@ -95,8 +90,8 @@ pnpm e2e:dev
 pnpm test:e2e
 ```
 
-Four separate Playwright specs cover booking persistence, calendar filters and
-navigation, administrator rules, and group/outsider authorization. The extended
+Playwright specs cover booking persistence, calendar filters and navigation,
+administrator rules, authorization, accessibility, and busy calendars. The extended
 test fixture authenticates a fresh browser context by default, with configurable
 admin/member/outsider identities. It uses real Gamma rather than mocked login.
 One `e2e/compose.ts` owns all Testcontainers orchestration and separate databases.

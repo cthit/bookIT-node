@@ -1,4 +1,3 @@
-# Build from the repository root: docker build -f backend/Dockerfile .
 FROM node:24.19.0-bookworm-slim AS base
 ENV COREPACK_HOME=/opt/corepack
 RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates && apt-get clean

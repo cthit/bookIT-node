@@ -1,4 +1,3 @@
-# Build from the repository root: docker build -f frontend/Dockerfile .
 FROM node:24.19.0-bookworm-slim AS build
 ENV CI=true COREPACK_HOME=/opt/corepack
 RUN corepack enable && corepack prepare pnpm@12.3.4 --activate

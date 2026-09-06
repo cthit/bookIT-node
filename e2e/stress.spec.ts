@@ -31,7 +31,6 @@ test("a busy fortnight preserves bookings, diagonal stripes and rule pagination"
   await expect(stripedBooking).toBeVisible();
   await expect(stripedBooking).toHaveCSS("background-image", /repeating-linear-gradient\(45deg/);
 
-  // Both the time and title must fit inside narrow striped cards.
   await page.setViewportSize({ width: 1174, height: 1039 });
   const labelsFit = await stripedBooking.evaluate((card) => {
     const bounds = card.getBoundingClientRect();
@@ -54,7 +53,6 @@ test("a busy fortnight preserves bookings, diagonal stripes and rule pagination"
   await expect(details).toContainText("CTC");
   await page.keyboard.press("Escape");
 
-  // Arrow keys must change the view, not only the visual tab selection.
   await page.getByRole("tab", { name: "Week view", exact: true }).focus();
   await page.keyboard.press("ArrowLeft");
   await expect(page.getByRole("tab", { name: "List view", exact: true })).toHaveAttribute(

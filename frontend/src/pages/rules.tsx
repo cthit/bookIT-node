@@ -126,7 +126,6 @@ export function RulesPage() {
         room: selected,
         start_date: formText(form, "start_date"),
         end_date: formText(form, "end_date"),
-        // Accessible time fields serialize ISO times; the API uses minute precision.
         start_time: formText(form, "start_time").slice(0, 5),
         end_time: formText(form, "end_time").slice(0, 5),
       };

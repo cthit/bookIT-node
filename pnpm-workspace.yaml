@@ -9,8 +9,7 @@ overrides:
   "prisma>mysql2": 3.24.3
   "archiver-utils>glob": 13.0.6
 
-# Vite+ exposes Vite 8.2.2 under its distribution version 0.3.0.
-# These tested Vite-8 consumers otherwise warn about the alias version number.
+# Vite+ reports its distribution version (0.3.0), not its Vite version (8.2.2).
 peerDependencyRules:
   allowedVersions:
     "vitest>vite": "0.3.0"

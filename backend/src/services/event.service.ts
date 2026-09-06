@@ -180,9 +180,7 @@ const toEvent = (event: Event) => ({
 
 const isSerializationFailure = (error: unknown): boolean => {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return true;
-  // Prisma's PostgreSQL driver can surface commit failures directly instead of
-  // wrapping them as P2034. Its structured kind maps SQLSTATE 40001/40P01;
-  // matching the message alone could accidentally retry unrelated failures.
+  // Driver-adapter commit failures can bypass Prisma's P2034 wrapper.
   return (
     error instanceof globalThis.Error &&
     error.name === "DriverAdapterError" &&
@@ -193,9 +191,7 @@ const isSerializationFailure = (error: unknown): boolean => {
   );
 };
 
-// Checking availability and writing must share a serializable transaction.
-// PostgreSQL then rejects concurrent writes based on the same availability
-// snapshot; retrying rechecks the winner's booking before writing again.
+// Retry availability checks and writes together after serialization conflicts.
 export const withBookingTransaction = async (
   prisma: PrismaClient,
   operation: (transaction: Prisma.TransactionClient) => Promise<Error | null>,
@@ -210,8 +206,6 @@ export const withBookingTransaction = async (
       });
     } catch (error) {
       if (!isSerializationFailure(error)) throw error;
-      // Jitter prevents a burst of valid bookings from retrying in lockstep.
-      // The failed transaction has rolled back before we wait or try again.
       if (attempt + 1 < maxAttempts) await delay(20 * 2 ** attempt + Math.random() * 30);
     }
   }
@@ -226,7 +220,6 @@ export const editEvent = async (
   event: Event,
   user: User,
 ): Promise<Error | null> => {
-  // Sanity checks
   if (event.id == null) {
     return {
       sv: "Inget boknings id angivet",
@@ -244,12 +237,7 @@ export const editEvent = async (
         en: "You do not have permission to edit this event",
       };
     }
-    // Group members may edit bookings without access to the author's phone.
-    // Keep both fields together: changing the author would grant the editor
-    // access to a phone number that belonged to someone else.
-    // After privacy cleanup removes the author, require a fresh phone number
-    // and make the authenticated editor the new contact. Never reclaim an old
-    // phone number whose owner is unknown.
+    // Never transfer access to a previous author's phone number to the editor.
     const updated = {
       ...event,
       phone: event.phone ?? (previous.booked_by ? previous.phone : ""),

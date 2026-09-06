@@ -10,8 +10,6 @@ export interface SessionRedis {
   del(key: string): Promise<unknown>;
 }
 
-// OIDC stores have a callback contract, unlike the current connect-redis API.
-// Expire the Redis data with the OIDC session itself.
 export function createSessionStore(client: SessionRedis): OidcStore {
   const key = (sid: string) => `bookit:oidc:${sid}`;
   return {
