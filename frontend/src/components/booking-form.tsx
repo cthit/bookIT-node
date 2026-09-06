@@ -67,15 +67,19 @@ export function BookingForm({
     mutationFn: async (form: FormData) => {
       const from = new Date(formText(form, "start"));
       const to = new Date(formText(form, "end"));
-      if (!(to > from))
+      if (!(to > from)) {
         throw new Error(
           t("End time must be after start time.", "Sluttiden måste vara efter starttiden."),
         );
-      if (!selected.length) throw new Error(t("Select at least one room.", "Välj minst ett rum."));
-      if (!terms || !privacy || !notification)
+      }
+      if (!selected.length) {
+        throw new Error(t("Select at least one room.", "Välj minst ett rum."));
+      }
+      if (!terms || !privacy || !notification) {
         throw new Error(
           t("Please confirm all three booking conditions.", "Bekräfta alla tre bokningsvillkor."),
         );
+      }
       const event = {
         ...(booking?.id ? { id: booking.id } : {}),
         title: formText(form, "title").trim(),
@@ -108,7 +112,7 @@ export function BookingForm({
     setError("");
     mutation.mutate(new FormData(event.currentTarget));
   }
-  if (!eligibleGroups.length)
+  if (!eligibleGroups.length) {
     return (
       <p role="alert" className="rounded-lg bg-amber-50 p-5">
         {t(
@@ -117,6 +121,7 @@ export function BookingForm({
         )}
       </p>
     );
+  }
   return (
     <form onSubmit={submit} className="space-y-7">
       <div className="grid gap-5 sm:grid-cols-2">

@@ -43,7 +43,9 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
     }>(page, "{ events { title start end } }");
 
     const booking = events.find((entry) => entry.title === title);
-    if (!booking) throw new Error("Calendar booking is missing");
+    if (!booking) {
+      throw new Error("Calendar booking is missing");
+    }
 
     return booking;
   };
@@ -56,7 +58,9 @@ test("editing immediately after a calendar drag preserves the moved times", asyn
 
   await event.first().scrollIntoViewIfNeeded();
   const box = await event.first().boundingBox();
-  if (!box) throw new Error("Calendar booking has no drag target");
+  if (!box) {
+    throw new Error("Calendar booking has no drag target");
+  }
 
   const movedResponse = page.waitForResponse(
     (response) =>

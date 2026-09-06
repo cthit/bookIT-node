@@ -6,6 +6,7 @@ export default defineConfig({
   },
   lint: {
     plugins: ["typescript", "react", "jsx-a11y", "import", "unicorn", "oxc"],
+    rules: { curly: ["error", "all"] },
     overrides: [
       {
         files: ["frontend/src/**/*.ts", "frontend/src/**/*.tsx"],

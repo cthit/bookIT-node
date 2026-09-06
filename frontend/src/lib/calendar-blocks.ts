@@ -30,7 +30,9 @@ export function calendarBlocks(slots: readonly BlockedSlot[]): CalendarBlock[] {
     const start = boundaries[index - 1]!;
     const end = boundaries[index]!;
     const active = intervals.filter((slot) => slot.start <= start && slot.end >= end);
-    if (!active.length) continue;
+    if (!active.length) {
+      continue;
+    }
 
     const title = [...new Set(active.map((slot) => slot.title))].sort().join(" · ");
     const description = [

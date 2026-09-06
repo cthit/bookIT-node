@@ -17,7 +17,9 @@ export function createSessionStore(client: SessionRedis): OidcStore {
       void client
         .get(key(sid))
         .then((value) => {
-          if (!value) return null;
+          if (!value) {
+            return null;
+          }
           const payload = JSON.parse(value) as Payload;
           return payload.header.exp > Date.now() / 1000 ? payload : null;
         })

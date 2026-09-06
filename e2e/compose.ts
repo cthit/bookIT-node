@@ -92,7 +92,9 @@ async function unusedPort(): Promise<number> {
 }
 
 async function stopProcess(child: ChildProcess): Promise<void> {
-  if (!child.pid || child.exitCode !== null || child.signalCode !== null) return;
+  if (!child.pid || child.exitCode !== null || child.signalCode !== null) {
+    return;
+  }
 
   const exited = new Promise<void>((resolve) => child.once("exit", () => resolve()));
   process.kill(-child.pid, "SIGTERM");
@@ -203,7 +205,9 @@ export async function compose(browser: Browser): Promise<Environment> {
   };
 
   const stop = async () => {
-    if (stopped) return;
+    if (stopped) {
+      return;
+    }
     stopped = true;
     const failures: unknown[] = [];
 
@@ -229,7 +233,9 @@ export async function compose(browser: Browser): Promise<Environment> {
       failures.push(error);
     }
 
-    if (failures.length) throw new AggregateError(failures, "E2E environment cleanup failed");
+    if (failures.length) {
+      throw new AggregateError(failures, "E2E environment cleanup failed");
+    }
   };
 
   const startProcess = (name: string, args: string[], env: Record<string, string>) => {
@@ -245,8 +251,9 @@ export async function compose(browser: Browser): Promise<Environment> {
     child.stderr?.on("data", (chunk: Buffer) => record(name, chunk));
     child.on("error", (error) => record(name, error.message));
     child.on("exit", (code) => {
-      if (code !== null && code !== 0 && !stopped)
+      if (code !== null && code !== 0 && !stopped) {
         console.error(`[${name}] exited with code ${code}\n${logs[name] ?? ""}`);
+      }
     });
 
     return child;
@@ -484,13 +491,15 @@ export async function compose(browser: Browser): Promise<Environment> {
           "TRUNCATE TABLE event, rule;",
         ]);
 
-        if (result.exitCode !== 0)
+        if (result.exitCode !== 0) {
           throw new Error(`Could not reset isolated BookIT database: ${result.output}`);
+        }
       },
     };
   } catch (error) {
-    for (const [name, log] of Object.entries(logs))
+    for (const [name, log] of Object.entries(logs)) {
       console.error(`[${name}]\n${log.slice(-8_000)}`);
+    }
 
     await stop();
     throw error;

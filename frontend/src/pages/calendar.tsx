@@ -167,7 +167,9 @@ export function CalendarPage() {
           })
         }
         eventClick={(info) => {
-          if (info.event.id) setDetailId(info.event.id);
+          if (info.event.id) {
+            setDetailId(info.event.id);
+          }
         }}
         eventDrop={(info) => {
           const booking = bookings.find((event) => event.id === info.event.id);
@@ -223,7 +225,9 @@ export function CalendarPage() {
       <Dialog
         open={detailId !== null}
         onOpenChange={(open) => {
-          if (!open) setDetailId(null);
+          if (!open) {
+            setDetailId(null);
+          }
         }}
       >
         <DialogContent

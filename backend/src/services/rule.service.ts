@@ -47,14 +47,18 @@ const insertRule = (explicitRules: ExplicitRule[], current: Date, rule: rule): v
 export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRule[] => {
   const explicitRules: ExplicitRule[] = [];
 
-  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || from > to) return [];
+  if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || from > to) {
+    return [];
+  }
   for (const rule of rules) {
     const current = new Date(Math.max(from.getTime(), rule.start_date.getTime()));
     const end = new Date(Math.min(to.getTime(), rule.end_date.getTime()));
     current.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
     while (current <= end) {
-      if (dayApplies(current, rule.day_mask)) insertRule(explicitRules, current, rule);
+      if (dayApplies(current, rule.day_mask)) {
+        insertRule(explicitRules, current, rule);
+      }
       current.setDate(current.getDate() + 1);
     }
   }
@@ -71,8 +75,12 @@ const mergeIntoList = (
   rule: ExplicitRule,
   [nextMergedRule, ...mergedRules]: ExplicitRule[],
 ): ExplicitRule[] => {
-  if (rule.start >= rule.end) return nextMergedRule ? [nextMergedRule, ...mergedRules] : [];
-  if (nextMergedRule == undefined) return [rule];
+  if (rule.start >= rule.end) {
+    return nextMergedRule ? [nextMergedRule, ...mergedRules] : [];
+  }
+  if (nextMergedRule == undefined) {
+    return [rule];
+  }
   if (nextMergedRule.start > rule.start) {
     if (nextMergedRule.start >= rule.end) {
       return [rule, nextMergedRule, ...mergedRules];
@@ -85,8 +93,9 @@ const mergeIntoList = (
       ]),
     ];
   }
-  if (nextMergedRule.end > rule.start)
+  if (nextMergedRule.end > rule.start) {
     return [nextMergedRule, ...mergeIntoList({ ...rule, start: nextMergedRule.end }, mergedRules)];
+  }
   return [nextMergedRule, ...mergeIntoList(rule, mergedRules)];
 };
 

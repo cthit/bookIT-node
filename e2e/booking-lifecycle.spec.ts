@@ -91,7 +91,9 @@ test("simultaneous requests cannot reserve the same room and time twice", async 
   expect(concurrentBookings).toHaveLength(1);
 
   const winner = concurrentBookings[0];
-  if (!winner) throw new Error("The successful concurrent booking was not persisted");
+  if (!winner) {
+    throw new Error("The successful concurrent booking was not persisted");
+  }
 
   const removed = await graphql<DeleteBookingMutation>(
     page,

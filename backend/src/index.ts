@@ -15,7 +15,9 @@ interface GammaGroup {
 
 const requiredEnvironment = (name: string): string => {
   const value = process.env[name];
-  if (!value) throw new Error(`Missing required environment variable: ${name}`);
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`);
+  }
   return value;
 };
 
@@ -23,7 +25,9 @@ async function main() {
   process.env.TZ ??= "Europe/Stockholm";
   const app = express();
   app.disable("x-powered-by");
-  if (process.env.TRUST_PROXY === "1") app.set("trust proxy", 1);
+  if (process.env.TRUST_PROXY === "1") {
+    app.set("trust proxy", 1);
+  }
   const httpServer = createServer(app);
   const redis = createClient({
     // Redis 5 does not support RESP3.
@@ -94,7 +98,9 @@ async function main() {
   console.log(`BookIT listening on port ${port}`);
   let stopping = false;
   const stop = () => {
-    if (stopping) return;
+    if (stopping) {
+      return;
+    }
     stopping = true;
     void apollo
       .stop()

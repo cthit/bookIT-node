@@ -5,7 +5,9 @@ export const userOptions = queryOptions({
   queryKey: ["user"],
   queryFn: async () => {
     const { user } = await request(CurrentUserDocument, {});
-    if (!user) throw new Error("Please sign in to book a room.");
+    if (!user) {
+      throw new Error("Please sign in to book a room.");
+    }
     return user;
   },
   staleTime: 60_000,

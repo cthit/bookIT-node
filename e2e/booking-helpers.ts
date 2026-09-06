@@ -66,7 +66,9 @@ export async function openBooking(page: Page, title: string): Promise<string> {
   );
 
   const id = result.events.find((event) => event.title === title)?.id;
-  if (!id) throw new Error("Booking details did not include a booking id");
+  if (!id) {
+    throw new Error("Booking details did not include a booking id");
+  }
 
   await page.goto(`/bookings/${id}`);
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
@@ -88,7 +90,9 @@ export async function graphql<T>(
 
   const body = (await response.json()) as { data?: T; errors?: unknown[] };
   expect(body.errors).toBeUndefined();
-  if (!body.data) throw new Error("GraphQL response has no data");
+  if (!body.data) {
+    throw new Error("GraphQL response has no data");
+  }
 
   return body.data;
 }

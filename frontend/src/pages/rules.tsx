@@ -54,9 +54,15 @@ type SortKey =
   | "allow";
 
 function sortValue(rule: RuleDetails, key: SortKey): string | number {
-  if (key === "priority" || key === "day_mask") return rule[key] ?? 0;
-  if (key === "allow") return Number(rule.allow);
-  if (key === "room") return rule.room?.map(roomName).sort().join(", ") ?? "";
+  if (key === "priority" || key === "day_mask") {
+    return rule[key] ?? 0;
+  }
+  if (key === "allow") {
+    return Number(rule.allow);
+  }
+  if (key === "room") {
+    return rule.room?.map(roomName).sort().join(", ") ?? "";
+  }
   return rule[key] ?? "";
 }
 
@@ -113,10 +119,11 @@ export function RulesPage() {
   }
   const create = useMutation({
     mutationFn: async (form: FormData) => {
-      if (!selected.length || !days)
+      if (!selected.length || !days) {
         throw new Error(
           t("Select rooms and at least one weekday.", "Välj rum och minst en veckodag."),
         );
+      }
       const rule = {
         title: formText(form, "title").trim(),
         description: formText(form, "description"),
@@ -129,10 +136,11 @@ export function RulesPage() {
         start_time: formText(form, "start_time").slice(0, 5),
         end_time: formText(form, "end_time").slice(0, 5),
       };
-      if (rule.end_date < rule.start_date || rule.end_time <= rule.start_time)
+      if (rule.end_date < rule.start_date || rule.end_time <= rule.start_time) {
         throw new Error(
           t("The rule must end after it starts.", "Regeln måste sluta efter att den börjar."),
         );
+      }
       const result = await request(CreateRuleDocument, { rule });
       checkMutation(result.createRule, language);
     },
@@ -298,7 +306,9 @@ export function RulesPage() {
       <Dialog
         open={Boolean(details)}
         onOpenChange={(open) => {
-          if (!open) setDetailsId(null);
+          if (!open) {
+            setDetailsId(null);
+          }
         }}
       >
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -440,7 +450,9 @@ export function RulesPage() {
       <Dialog
         open={Boolean(deleting)}
         onOpenChange={(open) => {
-          if (!open) setDeleting(null);
+          if (!open) {
+            setDeleting(null);
+          }
         }}
       >
         <DialogContent>

@@ -78,10 +78,16 @@ export function BookingDetails({
     },
     onError: (error) => toast.error(error.message),
   });
-  if (query.isPending) return <Loading />;
-  if (query.error) return <Failure error={query.error} />;
+  if (query.isPending) {
+    return <Loading />;
+  }
+  if (query.error) {
+    return <Failure error={query.error} />;
+  }
   const booking = query.data.event;
-  if (!booking) return <p role="alert">{t("Booking not found.", "Bokningen hittades inte.")}</p>;
+  if (!booking) {
+    return <p role="alert">{t("Booking not found.", "Bokningen hittades inte.")}</p>;
+  }
   const canEdit = user?.is_admin || user?.groups?.includes(booking.booked_as);
   return (
     <div className="max-w-3xl mx-auto">
@@ -103,7 +109,9 @@ export function BookingDetails({
                 if (onClose) {
                   onClose();
                   void navigate({ to: "/edit-event", search: { id } });
-                } else setEditing(!editing);
+                } else {
+                  setEditing(!editing);
+                }
               }}
             >
               <Pencil className="size-4" />

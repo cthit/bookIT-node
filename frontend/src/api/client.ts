@@ -11,13 +11,19 @@ export async function request<T, V extends Record<string, unknown>>(
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ query: print(document), variables }),
   });
-  if (response.status === 401 || response.redirected)
+  if (response.status === 401 || response.redirected) {
     throw new Error("Your session expired. Please sign in again.");
-  if (!response.ok) throw new Error(`Request failed (${response.status}). Please try again.`);
+  }
+  if (!response.ok) {
+    throw new Error(`Request failed (${response.status}). Please try again.`);
+  }
   const result = (await response.json()) as { data?: T; errors?: { message: string }[] };
-  if (result.errors?.length)
+  if (result.errors?.length) {
     throw new Error(result.errors.map((error) => error.message).join(". "));
-  if (!result.data) throw new Error("The server returned no data.");
+  }
+  if (!result.data) {
+    throw new Error("The server returned no data.");
+  }
   return result.data;
 }
 
@@ -25,5 +31,7 @@ export function checkMutation(
   error: { en: string; sv: string } | null | undefined,
   language: "en" | "sv",
 ) {
-  if (error) throw new Error(error[language]);
+  if (error) {
+    throw new Error(error[language]);
+  }
 }

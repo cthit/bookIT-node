@@ -142,7 +142,9 @@ const validEvent = async (
       };
     }
   } catch (e) {
-    if (isSerializationFailure(e)) throw e;
+    if (isSerializationFailure(e)) {
+      throw e;
+    }
     console.log(e);
     return {
       sv: "Kunde inte kontrollera överlappande bokningar",
@@ -179,7 +181,9 @@ const toEvent = (event: Event) => ({
 });
 
 const isSerializationFailure = (error: unknown): boolean => {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") return true;
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
+    return true;
+  }
   // Driver-adapter commit failures can bypass Prisma's P2034 wrapper.
   return (
     error instanceof globalThis.Error &&
@@ -205,8 +209,12 @@ export const withBookingTransaction = async (
         timeout: 10_000,
       });
     } catch (error) {
-      if (!isSerializationFailure(error)) throw error;
-      if (attempt + 1 < maxAttempts) await delay(20 * 2 ** attempt + Math.random() * 30);
+      if (!isSerializationFailure(error)) {
+        throw error;
+      }
+      if (attempt + 1 < maxAttempts) {
+        await delay(20 * 2 ** attempt + Math.random() * 30);
+      }
     }
   }
   return {
@@ -230,7 +238,9 @@ export const editEvent = async (
   const id = event.id;
   return withBookingTransaction(prisma, async (transaction) => {
     const previous = await transaction.event.findUnique({ where: { id } });
-    if (!previous) return { sv: "Kunde inte hämta gamla bokningen", en: "Failed to get event" };
+    if (!previous) {
+      return { sv: "Kunde inte hämta gamla bokningen", en: "Failed to get event" };
+    }
     if (!userIsInBookingGroup(previous, user)) {
       return {
         sv: "Du har inte behörighet att redigera denna bokning",
@@ -245,7 +255,9 @@ export const editEvent = async (
     };
     const error =
       (await validEvent(transaction, updated, user)) || (await checkRules(transaction, updated));
-    if (error) return error;
+    if (error) {
+      return error;
+    }
     await transaction.event.update({ where: { id }, data: toEvent(updated) });
     return null;
   });
@@ -265,7 +277,9 @@ export const createEvent = async (
   return withBookingTransaction(prisma, async (transaction) => {
     const error =
       (await validEvent(transaction, event, user)) || (await checkRules(transaction, event));
-    if (error) return error;
+    if (error) {
+      return error;
+    }
     await transaction.event.create({ data: toEvent(event) });
     return null;
   });

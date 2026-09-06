@@ -46,7 +46,9 @@ export const test = base.extend<TestFixtures, { environment: Environment }>({
   ],
 
   page: async ({ page, environment, role, authenticate }, use) => {
-    if (authenticate) await loginAs(page, environment, role);
+    if (authenticate) {
+      await loginAs(page, environment, role);
+    }
 
     await use(page);
   },

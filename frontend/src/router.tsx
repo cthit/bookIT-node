@@ -143,13 +143,14 @@ const legacyEditRoute = createRoute({
     id: typeof search.id === "string" ? search.id : undefined,
   }),
   beforeLoad: ({ search }) => {
-    if (search.id)
+    if (search.id) {
       throw redirect({
         to: "/bookings/$id",
         params: { id: search.id },
         search: { edit: true },
         replace: true,
       });
+    }
     throw redirect({ to: "/", replace: true });
   },
 });
