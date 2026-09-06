@@ -24,6 +24,7 @@ describe("calendar blocked-period labels", () => {
     const blocks = calendarBlocks([rule, rule, rule]);
 
     expect(blocks).toHaveLength(1);
+
     expect(blocks[0]).toMatchObject({
       title: "Reading morning",
       description: "Reading morning — No bookings",
@@ -39,6 +40,7 @@ describe("calendar blocked-period labels", () => {
 
     expect(blocks).toHaveLength(1);
     expect(blocks[0]?.title).toBe("Maintenance · Reading");
+
     expect(blocks[0]?.description).toBe(
       "Maintenance — Room closed\nReading — Exam preparation\nReading — Quiet time",
     );
@@ -69,7 +71,9 @@ describe("calendar blocked-period labels", () => {
 
   it("handles an empty room selection and does not mutate the source rules", () => {
     expect(calendarBlocks([])).toEqual([]);
+
     const rule = Object.freeze(slot("A"));
+
     expect(calendarBlocks(Object.freeze([rule, rule]))).toHaveLength(1);
     expect(rule).toEqual(slot("A"));
   });

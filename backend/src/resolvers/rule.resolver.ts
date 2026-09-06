@@ -14,6 +14,7 @@ export const getRuleQResolvers = ({ prisma }: Tools) => ({
         id: id,
       },
     });
+
     return result ? ruleResult(result) : null;
   },
 });

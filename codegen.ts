@@ -11,10 +11,13 @@ import { type DocumentNode } from "graphql";
 
 async function generate() {
   const schema = mergeTypeDefs(loadFilesSync("backend/src/schemas/v1/*.gql"));
+
   const documents = loadFilesSync<DocumentNode>("frontend/src/**/*.graphql").map((document) => ({
     document,
   }));
+
   const config = { useTypeImports: true, enumsAsTypes: true };
+
   const outputs = [
     {
       filename: "frontend/src/generated/graphql.ts",
@@ -39,12 +42,14 @@ async function generate() {
       }),
     },
   ];
+
   for (const { filename, content } of outputs) {
     await mkdir(dirname(filename), { recursive: true });
     await writeFile(filename, `${content.trimEnd()}\n`);
     console.log(`Generated ${filename}`);
   }
 }
+
 void generate().catch((error) => {
   console.error(error);
   process.exitCode = 1;

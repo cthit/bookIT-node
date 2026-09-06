@@ -26,6 +26,7 @@ import { Failure, Loading } from "@/components/feedback";
 export function NewBookingPage() {
   const { t } = useLanguage();
   const { start, end } = useSearch({ from: "/new-event" });
+
   return (
     <div className="max-w-3xl mx-auto">
       <Link to="/" className="flex gap-2 items-center text-sm text-muted-foreground mb-6">
@@ -41,11 +42,14 @@ export function NewBookingPage() {
     </div>
   );
 }
+
 export function BookingPage() {
   const { id } = useParams({ from: "/bookings/$id" });
   const { edit } = useSearch({ from: "/bookings/$id" });
+
   return <BookingDetails id={id} initialEditing={edit} />;
 }
+
 export function BookingDetails({
   id,
   initialEditing = false,
@@ -61,13 +65,16 @@ export function BookingDetails({
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
   const cache = useQueryClient();
+
   const query = useQuery({
     queryKey: ["booking", id],
     queryFn: () => request(BookingDetailDocument, { id }),
   });
+
   const mutation = useMutation({
     mutationFn: async () => {
       const result = await request(DeleteBookingDocument, { id });
+
       checkMutation(result.deleteEvent, language);
     },
     onSuccess: async () => {
@@ -78,17 +85,23 @@ export function BookingDetails({
     },
     onError: (error) => toast.error(error.message),
   });
+
   if (query.isPending) {
     return <Loading />;
   }
+
   if (query.error) {
     return <Failure error={query.error} />;
   }
+
   const booking = query.data.event;
+
   if (!booking) {
     return <p role="alert">{t("Booking not found.", "Bokningen hittades inte.")}</p>;
   }
+
   const canEdit = user?.is_admin || user?.groups?.includes(booking.booked_as);
+
   return (
     <div className="max-w-3xl mx-auto">
       {!onClose && (

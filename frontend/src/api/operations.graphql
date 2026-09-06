@@ -11,6 +11,7 @@ fragment Booking on Event {
   created_at
   updated_at
 }
+
 query CurrentUser {
   user {
     sub
@@ -22,6 +23,7 @@ query CurrentUser {
     is_admin
   }
 }
+
 query Calendar($from: String!, $to: String!) {
   eventsFT(from: $from, to: $to) {
     ...Booking
@@ -34,29 +36,34 @@ query Calendar($from: String!, $to: String!) {
     room
   }
 }
+
 query BookingDetail($id: String!) {
   event(id: $id) {
     ...Booking
   }
 }
+
 mutation CreateBooking($event: InputEvent!) {
   createEvent(event: $event) {
     en
     sv
   }
 }
+
 mutation UpdateBooking($event: InputEvent!) {
   editEvent(event: $event) {
     en
     sv
   }
 }
+
 mutation DeleteBooking($id: String!) {
   deleteEvent(id: $id) {
     en
     sv
   }
 }
+
 query Rules {
   rules {
     id
@@ -74,12 +81,14 @@ query Rules {
     room
   }
 }
+
 mutation CreateRule($rule: InputRule!) {
   createRule(rule: $rule) {
     en
     sv
   }
 }
+
 mutation DeleteRule($id: String!) {
   deleteRule(id: $id) {
     en

@@ -44,42 +44,52 @@ export function BookingForm({
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
   const [selected, setSelected] = useState<Room[]>(
     booking?.room.filter((room): room is Room => Boolean(room)) ?? ["BIG_HUB"],
   );
+
   const [terms, setTerms] = useState(Boolean(booking));
   const [privacy, setPrivacy] = useState(Boolean(booking));
   const [notification, setNotification] = useState(Boolean(booking));
   const [error, setError] = useState("");
   const [defaultStart] = useState(() => new Date());
   const groups = user?.groups?.filter((group): group is string => Boolean(group)) ?? [];
+
   const eligibleGroups =
     user?.is_admin && booking && !groups.includes(booking.booked_as)
       ? [...groups, booking.booked_as]
       : groups;
+
   const start = booking
     ? localInput(parseDate(booking.start))
     : initialStart || localInput(defaultStart);
+
   const end = booking
     ? localInput(parseDate(booking.end))
     : initialEnd || localInput(addHours(defaultStart, 1));
+
   const mutation = useMutation({
     mutationFn: async (form: FormData) => {
       const from = new Date(formText(form, "start"));
       const to = new Date(formText(form, "end"));
+
       if (!(to > from)) {
         throw new Error(
           t("End time must be after start time.", "Sluttiden måste vara efter starttiden."),
         );
       }
+
       if (!selected.length) {
         throw new Error(t("Select at least one room.", "Välj minst ett rum."));
       }
+
       if (!terms || !privacy || !notification) {
         throw new Error(
           t("Please confirm all three booking conditions.", "Bekräfta alla tre bokningsvillkor."),
         );
       }
+
       const event = {
         ...(booking?.id ? { id: booking.id } : {}),
         title: formText(form, "title").trim(),
@@ -91,11 +101,14 @@ export function BookingForm({
         booked_as: formText(form, "booked_as"),
         booking_terms: terms,
       };
+
       if (booking) {
         const data = await request(UpdateBookingDocument, { event });
+
         checkMutation(data.editEvent, language);
       } else {
         const data = await request(CreateBookingDocument, { event });
+
         checkMutation(data.createEvent, language);
       }
     },
@@ -107,11 +120,13 @@ export function BookingForm({
     },
     onError: (reason: Error) => setError(reason.message),
   });
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     mutation.mutate(new FormData(event.currentTarget));
   }
+
   if (!eligibleGroups.length) {
     return (
       <p role="alert" className="rounded-lg bg-amber-50 p-5">
@@ -122,6 +137,7 @@ export function BookingForm({
       </p>
     );
   }
+
   return (
     <form onSubmit={submit} className="space-y-7">
       <div className="grid gap-5 sm:grid-cols-2">

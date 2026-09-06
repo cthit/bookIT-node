@@ -70,6 +70,7 @@ const overlappingEvent = async (
   }
 
   let overlap_count = await prisma.event.count(query);
+
   return overlap_count > 0;
 };
 
@@ -147,7 +148,9 @@ const validEvent = async (
     if (isSerializationFailure(e)) {
       throw e;
     }
+
     console.log(e);
+
     return {
       sv: "Kunde inte kontrollera överlappande bokningar",
       en: "Failed to check for overlapping events",
@@ -186,6 +189,7 @@ const isSerializationFailure = (error: unknown): boolean => {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034") {
     return true;
   }
+
   // Driver-adapter commit failures can bypass Prisma's P2034 wrapper.
   return (
     error instanceof globalThis.Error &&
@@ -203,6 +207,7 @@ export const withBookingTransaction = async (
   operation: (transaction: Prisma.TransactionClient) => Promise<Error | null>,
 ): Promise<Error | null> => {
   const maxAttempts = 5;
+
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await prisma.$transaction(operation, {
@@ -214,11 +219,13 @@ export const withBookingTransaction = async (
       if (!isSerializationFailure(error)) {
         throw error;
       }
+
       if (attempt + 1 < maxAttempts) {
         await delay(20 * 2 ** attempt + Math.random() * 30);
       }
     }
   }
+
   return {
     sv: "Bokningen ändrades samtidigt. Försök igen.",
     en: "A booking changed concurrently. Please try again.",
@@ -238,29 +245,37 @@ export const editEvent = async (
   }
 
   const id = event.id;
+
   return withBookingTransaction(prisma, async (transaction) => {
     const previous = await transaction.event.findUnique({ where: { id } });
+
     if (!previous) {
       return { sv: "Kunde inte hämta gamla bokningen", en: "Failed to get event" };
     }
+
     if (!userIsInBookingGroup(previous, user)) {
       return {
         sv: "Du har inte behörighet att redigera denna bokning",
         en: "You do not have permission to edit this event",
       };
     }
+
     // Never transfer access to a previous author's phone number to the editor.
     const updated = {
       ...event,
       phone: event.phone ?? (previous.booked_by ? previous.phone : ""),
       booked_by: previous.booked_by || user.cid,
     };
+
     const error =
       (await validEvent(transaction, updated, user)) || (await checkRules(transaction, updated));
+
     if (error) {
       return error;
     }
+
     await transaction.event.update({ where: { id }, data: toEvent(updated) });
+
     return null;
   });
 };
@@ -276,13 +291,17 @@ export const createEvent = async (
       en: "New bookings must not specify an existing booking ID",
     };
   }
+
   return withBookingTransaction(prisma, async (transaction) => {
     const error =
       (await validEvent(transaction, event, user)) || (await checkRules(transaction, event));
+
     if (error) {
       return error;
     }
+
     await transaction.event.create({ data: toEvent(event) });
+
     return null;
   });
 };
@@ -294,6 +313,7 @@ export const deleteEvent = async (prisma: PrismaClient, id: string, user: User) 
         id: id,
       },
     });
+
     if (!event) {
       return {
         sv: "Kunde ej hitta bokningen",
@@ -313,6 +333,7 @@ export const deleteEvent = async (prisma: PrismaClient, id: string, user: User) 
         id: id,
       },
     });
+
     return null;
   });
 };

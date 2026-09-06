@@ -5,15 +5,20 @@ import { cn } from "@/lib/utils";
 const xxsTextClass = "text-[0.6875rem]/[1.090909]";
 
 const blockPointerResizerClass = "absolute hidden group-hover:block";
+
 const rowPointerResizerClass = `${blockPointerResizerClass} inset-y-0 w-2`;
+
 const columnPointerResizerClass = `${blockPointerResizerClass} inset-x-0 h-2`;
 
 const blockTouchResizerClass =
   "absolute size-2 border border-(--fc-event-color) bg-background rounded-full";
+
 const rowTouchResizerClass = `${blockTouchResizerClass} top-1/2 -mt-1`;
+
 const columnTouchResizerClass = `${blockTouchResizerClass} left-1/2 -ml-1`;
 
 const tallDayCellBottomClass = "min-h-4";
+
 const getShortDayCellBottomClass = (info: DayCellInfo) => cn(!info.isNarrow && "min-h-px");
 
 const dayRowCommonClasses: CalendarOptions = {

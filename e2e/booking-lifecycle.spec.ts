@@ -16,13 +16,17 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Edit", exact: true }).click();
+
   await expect(page.getByRole("textbox", { name: "Phone number", exact: true })).toHaveValue(
     "0701234567",
   );
+
   await page.getByRole("textbox", { name: "Title", exact: true }).fill(`${title} updated`);
+
   await page
     .getByRole("textbox", { name: "Description", exact: true })
     .fill("Agenda updated by a group member.");
+
   await acceptConditions(page);
   await page.getByRole("button", { name: "Save booking", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
@@ -31,7 +35,9 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
   await expect(page.getByText("Agenda updated by a group member.", { exact: true })).toBeVisible();
 
   await page.getByRole("button", { name: "Delete", exact: true }).click();
+
   const dialog = page.getByRole("dialog", { name: "Delete booking?" });
+
   await dialog.getByRole("button", { name: "Cancel", exact: true }).click();
   await expect(page.getByRole("heading", { name: `${title} updated`, exact: true })).toBeVisible();
 
@@ -47,6 +53,7 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
 
 test("two booking forms cannot reserve the same room and time twice", async ({ page }) => {
   const otherPage = await page.context().newPage();
+
   const bookings = [
     { page, title: "E2E concurrent booking A" },
     { page: otherPage, title: "E2E concurrent booking B" },
@@ -54,6 +61,7 @@ test("two booking forms cannot reserve the same room and time twice", async ({ p
 
   try {
     await otherPage.goto("/");
+
     for (const { page: bookingPage, title } of bookings) {
       await bookingPage.getByRole("link", { name: "New booking", exact: true }).click();
       await fillBooking(bookingPage, title);
@@ -71,6 +79,7 @@ test("two booking forms cannot reserve the same room and time twice", async ({ p
 
     const winner = bookings.find(({ page }) => new URL(page.url()).pathname === "/");
     const loser = bookings.find(({ page }) => new URL(page.url()).pathname !== "/");
+
     if (!winner || !loser) {
       throw new Error("Expected one saved booking and one rejected booking form");
     }

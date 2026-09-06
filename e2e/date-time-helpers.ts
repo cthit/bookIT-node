@@ -4,6 +4,7 @@ type Segments = Partial<Record<"year" | "month" | "day" | "hour" | "minute", num
 
 export function dateSegments(value: string): Segments {
   const [year, month, day] = value.split("-").map(Number);
+
   if (year === undefined || month === undefined || day === undefined) {
     throw new Error(`Expected an ISO date, received ${value}`);
   }

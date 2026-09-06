@@ -16,21 +16,26 @@ test("overlapping room restrictions share a compact label and respect room filte
     { title: "Reading", rooms: ["CTC"] },
   ]) {
     await page.getByRole("button", { name: "New rule", exact: true }).click();
+
     const form = page.getByRole("dialog", { name: "New rule", exact: true });
 
     await form.getByRole("textbox", { name: "Title", exact: true }).fill(title);
+
     await form
       .getByRole("textbox", { name: "Description", exact: true })
       .fill("The rooms are unavailable during this time.");
+
     await form.getByRole("combobox", { name: "Availability", exact: true }).selectOption("false");
 
     for (const name of ["Start date", "End date"]) {
       await fillSegments(form.getByRole("group", { name, exact: true }), dateSegments(date));
     }
+
     await fillSegments(form.getByRole("group", { name: "Start time", exact: true }), {
       hour: 12,
       minute: 0,
     });
+
     await fillSegments(form.getByRole("group", { name: "End time", exact: true }), {
       hour: 13,
       minute: 0,
@@ -39,6 +44,7 @@ test("overlapping room restrictions share a compact label and respect room filte
     for (const room of rooms) {
       await form.getByRole("checkbox", { name: room, exact: true }).check();
     }
+
     for (const weekday of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
       await form.getByRole("checkbox", { name: weekday, exact: true }).check();
     }
@@ -49,6 +55,7 @@ test("overlapping room restrictions share a compact label and respect room filte
   }
 
   await page.getByRole("navigation").getByRole("link", { name: "Calendar", exact: true }).click();
+
   const label = page.getByRole("button", { name: "Maintenance · Reading", exact: true });
 
   await expect(label).toHaveCount(1);
@@ -56,7 +63,9 @@ test("overlapping room restrictions share a compact label and respect room filte
   await expect(label).toHaveCSS("white-space", "nowrap");
 
   await label.hover();
+
   const tooltip = page.getByRole("tooltip");
+
   await expect(tooltip).toContainText("Maintenance — The rooms are unavailable during this time.");
   await expect(tooltip).toContainText("Reading — The rooms are unavailable during this time.");
   await page.keyboard.press("Escape");

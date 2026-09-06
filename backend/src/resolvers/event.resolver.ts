@@ -22,6 +22,7 @@ export const getEventQResolvers = ({ prisma }: Tools) => ({
     const result = await prisma.event.findFirst({
       where: { id: id },
     });
+
     return result ? eventResult(result) : null;
   },
 });

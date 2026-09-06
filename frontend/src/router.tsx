@@ -17,11 +17,13 @@ import { Failure, Loading } from "@/components/feedback";
 function Layout() {
   const user = useUser();
   const { t, language, setLanguage } = useLanguage();
+
   useEffect(() => {
     if (user.data?.locale && !localStorage.getItem("bookit-language")) {
       setLanguage(user.data.locale.startsWith("sv") ? "sv" : "en");
     }
   }, [user.data?.locale, setLanguage]);
+
   return (
     <>
       <a
@@ -92,6 +94,7 @@ function Layout() {
     </>
   );
 }
+
 const rootRoute = createRootRoute({
   component: Layout,
   notFoundComponent: () => (
@@ -103,11 +106,13 @@ const rootRoute = createRootRoute({
   ),
   errorComponent: ({ error, reset }) => <Failure error={error} retry={reset} />,
 });
+
 const homeRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
   component: lazyRouteComponent(() => import("@/pages/calendar"), "CalendarPage"),
 });
+
 const newRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/new-event",
@@ -123,6 +128,7 @@ const newRoute = createRoute({
   }),
   component: lazyRouteComponent(() => import("@/pages/booking"), "NewBookingPage"),
 });
+
 const detailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/bookings/$id",
@@ -131,11 +137,13 @@ const detailRoute = createRoute({
   }),
   component: lazyRouteComponent(() => import("@/pages/booking"), "BookingPage"),
 });
+
 const rulesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/rules",
   component: lazyRouteComponent(() => import("@/pages/rules"), "RulesPage"),
 });
+
 const legacyEditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/edit-event",
@@ -151,13 +159,16 @@ const legacyEditRoute = createRoute({
         replace: true,
       });
     }
+
     throw redirect({ to: "/", replace: true });
   },
 });
+
 export const router = createRouter({
   scrollRestoration: true,
   routeTree: rootRoute.addChildren([homeRoute, newRoute, detailRoute, rulesRoute, legacyEditRoute]),
 });
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router;

@@ -1,5 +1,6 @@
 import { AlertCircle, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
 export function Loading() {
   return (
     <output className="flex justify-center items-center gap-3 p-12 text-muted-foreground">
@@ -8,6 +9,7 @@ export function Loading() {
     </output>
   );
 }
+
 export function Failure({ error, retry }: { error: Error; retry?: () => void }) {
   return (
     <div role="alert" className="my-6 rounded-xl border border-red-200 bg-red-50 p-6">

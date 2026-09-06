@@ -43,6 +43,7 @@ import {
 import { Failure, Loading } from "@/components/feedback";
 
 type RuleDetails = NonNullable<NonNullable<RulesQuery["rules"]>[number]>;
+
 type SortKey =
   | "title"
   | "priority"
@@ -57,12 +58,15 @@ function sortValue(rule: RuleDetails, key: SortKey): string | number {
   if (key === "priority" || key === "day_mask") {
     return rule[key] ?? 0;
   }
+
   if (key === "allow") {
     return Number(rule.allow);
   }
+
   if (key === "room") {
     return rule.room?.map(roomName).sort().join(", ") ?? "";
   }
+
   return rule[key] ?? "";
 }
 
@@ -79,26 +83,33 @@ export function RulesPage() {
   const [ascending, setAscending] = useState(true);
   const [pageIndex, setPageIndex] = useState(0);
   const [error, setError] = useState("");
+
   const weekdays =
     language === "en"
       ? ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
       : ["Mån", "Tis", "Ons", "Tor", "Fre", "Lör", "Sön"];
+
   const query = useQuery({ queryKey: ["rules"], queryFn: () => request(RulesDocument, {}) });
+
   const sorted = (query.data?.rules ?? [])
     .filter((rule): rule is RuleDetails => rule !== null)
     .sort((a, b) => {
       const left = sortValue(a, sortKey);
       const right = sortValue(b, sortKey);
+
       const result =
         typeof left === "number" && typeof right === "number"
           ? left - right
           : String(left).localeCompare(String(right), language, { sensitivity: "base" });
+
       return ascending ? result : -result;
     });
+
   const pageCount = Math.max(1, Math.ceil(sorted.length / 10));
   const currentPage = Math.min(pageIndex, pageCount - 1);
   const pageRules = sorted.slice(currentPage * 10, currentPage * 10 + 10);
   const details = sorted.find((rule) => rule.id === detailsId);
+
   const columns: { key: SortKey; label: string }[] = [
     { key: "title", label: t("Title", "Titel") },
     { key: "priority", label: t("Priority", "Prioritet") },
@@ -109,14 +120,18 @@ export function RulesPage() {
     { key: "day_mask", label: t("Weekdays", "Veckodagar") },
     { key: "allow", label: t("Availability", "Tillgänglighet") },
   ];
+
   const dateText = (value: string | null | undefined, withTime = false) =>
     value ? format(parseDate(value), withTime ? "d MMM yyyy, HH:mm" : "d MMM yyyy") : "—";
+
   const dayText = (mask: number | null | undefined) =>
     weekdays.filter((_, index) => ((mask ?? 0) & (1 << index)) !== 0).join(" · ") || "—";
+
   async function invalidate() {
     await cache.invalidateQueries({ queryKey: ["rules"] });
     await cache.invalidateQueries({ queryKey: ["calendar"] });
   }
+
   const create = useMutation({
     mutationFn: async (form: FormData) => {
       if (!selected.length || !days) {
@@ -124,6 +139,7 @@ export function RulesPage() {
           t("Select rooms and at least one weekday.", "Välj rum och minst en veckodag."),
         );
       }
+
       const rule = {
         title: formText(form, "title").trim(),
         description: formText(form, "description"),
@@ -136,12 +152,15 @@ export function RulesPage() {
         start_time: formText(form, "start_time").slice(0, 5),
         end_time: formText(form, "end_time").slice(0, 5),
       };
+
       if (rule.end_date < rule.start_date || rule.end_time <= rule.start_time) {
         throw new Error(
           t("The rule must end after it starts.", "Regeln måste sluta efter att den börjar."),
         );
       }
+
       const result = await request(CreateRuleDocument, { rule });
+
       checkMutation(result.createRule, language);
     },
     onSuccess: async () => {
@@ -152,9 +171,11 @@ export function RulesPage() {
     },
     onError: (reason) => setError(reason.message),
   });
+
   const remove = useMutation({
     mutationFn: async (id: string) => {
       const result = await request(DeleteRuleDocument, { id });
+
       checkMutation(result.deleteRule, language);
     },
     onSuccess: async () => {
@@ -164,11 +185,13 @@ export function RulesPage() {
     },
     onError: (reason) => toast.error(reason.message),
   });
+
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     create.mutate(new FormData(event.currentTarget));
   }
+
   return (
     <>
       <div className="flex justify-between items-end flex-wrap gap-5 mb-7">

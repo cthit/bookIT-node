@@ -27,6 +27,7 @@
   --radius-lg: 0.75rem;
   --radius-xl: 1rem;
 }
+
 :root {
   --background: #f6f8fb;
   --foreground: #17283a;
@@ -39,15 +40,18 @@
   color: var(--foreground);
   background: var(--background);
 }
+
 @layer base {
   * {
     border-color: var(--color-border);
   }
 }
+
 body {
   margin: 0;
   min-width: 320px;
 }
+
 button,
 a,
 input,
@@ -55,10 +59,12 @@ select,
 textarea {
   -webkit-tap-highlight-color: transparent;
 }
+
 button:not(:disabled),
 [role="button"] {
   cursor: pointer;
 }
+
 a,
 button,
 input,
@@ -66,11 +72,13 @@ select,
 textarea {
   outline-offset: 4px;
 }
+
 .app-shell {
   max-width: 1560px;
   margin: auto;
   padding: 2.5rem 3rem 4rem;
 }
+
 .eyebrow {
   font-size: 0.7rem;
   font-weight: 700;
@@ -78,16 +86,19 @@ textarea {
   text-transform: uppercase;
   color: #697a8d;
 }
+
 .page-title {
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   line-height: 1.2;
   letter-spacing: -0.045em;
   font-weight: 700;
 }
+
 .field {
   display: grid;
   gap: 0.55rem;
 }
+
 .native-select {
   min-height: 2.5rem;
   width: 100%;
@@ -97,16 +108,19 @@ textarea {
   font-size: 0.875rem;
   background: white;
 }
+
 .booking-multi-room {
   background-image: var(--booking-stripes);
   color: white;
 }
+
 .booking-multi-room .booking-event-label > * {
   background: rgb(0 0 0 / 55%);
   border-radius: 2px;
   color: white;
   align-self: flex-start;
 }
+
 @media (max-width: 760px) {
   .app-shell {
     padding: 1.5rem 1rem;

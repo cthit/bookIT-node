@@ -32,6 +32,7 @@ export async function fillBooking(page: Page, title: string) {
     hour: 12,
     minute: 0,
   });
+
   await fillSegments(page.getByRole("group", { name: "Ends at", exact: true }), {
     ...dateSegments(date),
     hour: 13,

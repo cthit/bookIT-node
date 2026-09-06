@@ -15,20 +15,27 @@ interface GammaGroup {
 
 const requiredEnvironment = (name: string): string => {
   const value = process.env[name];
+
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
+
   return value;
 };
 
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
+
   const app = express();
+
   app.disable("x-powered-by");
+
   if (process.env.TRUST_PROXY === "1") {
     app.set("trust proxy", 1);
   }
+
   const httpServer = createServer(app);
+
   const redis = createClient({
     // Redis 5 does not support RESP3.
     RESP: 2,
@@ -40,12 +47,15 @@ async function main() {
     password: process.env.REDIS_PASS || undefined,
     database: 1,
   });
+
   redis.on("error", (error) => console.error("Redis connection error", error));
+
   const prisma = new PrismaClient({
     adapter: new PrismaPg({ connectionString: requiredEnvironment("DATABASE_URL") }),
   });
 
   app.get("/api/health", (_req, res) => res.json({ status: "ok" }));
+
   app.use(
     auth({
       secret: requiredEnvironment("SESSION_SECRET"),
@@ -61,6 +71,7 @@ async function main() {
       },
       afterCallback: async (_req, _res, session) => {
         const userInfo = await authRequest<UserInfo>("/oauth2/userinfo", session.access_token);
+
         const [authorities, groups] = await Promise.all([
           authRequest<string[]>(
             `/api/client/v1/authorities/for/${encodeURIComponent(userInfo.sub)}`,
@@ -69,6 +80,7 @@ async function main() {
             `/api/client/v1/groups/for/${encodeURIComponent(userInfo.sub)}`,
           ),
         ]);
+
         return {
           ...session,
           is_admin: authorities.includes("admin"),
@@ -85,23 +97,32 @@ async function main() {
   );
 
   await Promise.all([redis.connect(), prisma.$connect()]);
+
   const apollo = await setupRoutes(app, { prisma }, httpServer);
+
   app.use(((error, _req, res, _next) => {
     console.error("Request failed", error instanceof Error ? error.message : "Unknown error");
     res.status(500).json({ error: "Request failed" });
   }) satisfies express.ErrorRequestHandler);
+
   const port = Number(process.env.PORT || 8080);
+
   await new Promise<void>((resolve, reject) => {
     httpServer.once("error", reject);
     httpServer.listen(port, resolve);
   });
+
   console.log(`BookIT listening on port ${port}`);
+
   let stopping = false;
+
   const stop = () => {
     if (stopping) {
       return;
     }
+
     stopping = true;
+
     void apollo
       .stop()
       .then(() => Promise.all([redis.close(), prisma.$disconnect()]))
@@ -110,6 +131,7 @@ async function main() {
         process.exitCode = 1;
       });
   };
+
   process.once("SIGTERM", stop);
   process.once("SIGINT", stop);
 }

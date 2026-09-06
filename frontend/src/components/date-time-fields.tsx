@@ -60,6 +60,7 @@ export function DatePicker({
   const { language, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
+
   const [value, setValue] = useState<CalendarDate | CalendarDateTime | null>(() =>
     withTime ? parseDateTime(defaultValue) : parseDate(defaultValue),
   );
@@ -101,6 +102,7 @@ export function DatePicker({
                 collisionPadding={16}
                 onOpenAutoFocus={(event) => {
                   event.preventDefault();
+
                   calendarRef.current
                     ?.querySelector<HTMLElement>('[role="button"][tabindex="0"]')
                     ?.focus();
@@ -120,6 +122,7 @@ export function DatePicker({
                           ? new CalendarDateTime(date.year, date.month, date.day)
                           : date,
                     );
+
                     setOpen(false);
                   }}
                   firstDayOfWeek="mon"

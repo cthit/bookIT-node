@@ -1,7 +1,9 @@
 import type { ConfigParams } from "express-openid-connect";
 
 type SessionConfig = Exclude<ConfigParams["session"], boolean | undefined>;
+
 type OidcStore = NonNullable<SessionConfig["store"]>;
+
 type Payload = Parameters<OidcStore["set"]>[1];
 
 export interface SessionRedis {
@@ -12,6 +14,7 @@ export interface SessionRedis {
 
 export function createSessionStore(client: SessionRedis): OidcStore {
   const key = (sid: string) => `bookit:oidc:${sid}`;
+
   return {
     get(sid, callback) {
       void client
@@ -20,7 +23,9 @@ export function createSessionStore(client: SessionRedis): OidcStore {
           if (!value) {
             return null;
           }
+
           const payload = JSON.parse(value) as Payload;
+
           return payload.header.exp > Date.now() / 1000 ? payload : null;
         })
         .then(
@@ -30,6 +35,7 @@ export function createSessionStore(client: SessionRedis): OidcStore {
     },
     set(sid, payload, callback) {
       const ttl = Math.ceil(payload.header.exp - Date.now() / 1000);
+
       const stored = {
         ...payload,
         data: {
@@ -39,8 +45,10 @@ export function createSessionStore(client: SessionRedis): OidcStore {
           is_admin: payload.data.is_admin,
         },
       };
+
       const operation =
         ttl > 0 ? client.set(key(sid), JSON.stringify(stored), { EX: ttl }) : client.del(key(sid));
+
       void operation.then(
         () => callback?.(),
         (error: unknown) => callback?.(error),

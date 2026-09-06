@@ -29,6 +29,7 @@ export const day = (date: Date): string => {
 
 export const dayApplies = (date: Date, day_mask: number): boolean => {
   const dayIndex = (Math.floor(date.getDay()) + 6) % 7;
+
   return (day_mask >> dayIndex) % 2 > 0;
 };
 
@@ -50,18 +51,23 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
   if (!Number.isFinite(from.getTime()) || !Number.isFinite(to.getTime()) || from > to) {
     return [];
   }
+
   for (const rule of rules) {
     const current = new Date(Math.max(from.getTime(), rule.start_date.getTime()));
     const end = new Date(Math.min(to.getTime(), rule.end_date.getTime()));
+
     current.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
+
     while (current <= end) {
       if (dayApplies(current, rule.day_mask)) {
         insertRule(explicitRules, current, rule);
       }
+
       current.setDate(current.getDate() + 1);
     }
   }
+
   return explicitRules.sort((a, b): number => a.priority - b.priority);
 };
 
@@ -78,13 +84,16 @@ const mergeIntoList = (
   if (rule.start >= rule.end) {
     return nextMergedRule ? [nextMergedRule, ...mergedRules] : [];
   }
+
   if (nextMergedRule == undefined) {
     return [rule];
   }
+
   if (nextMergedRule.start > rule.start) {
     if (nextMergedRule.start >= rule.end) {
       return [rule, nextMergedRule, ...mergedRules];
     }
+
     return [
       { ...rule, end: new Date(nextMergedRule.start) },
       ...mergeIntoList({ ...rule, start: new Date(nextMergedRule.end) }, [
@@ -93,23 +102,28 @@ const mergeIntoList = (
       ]),
     ];
   }
+
   if (nextMergedRule.end > rule.start) {
     return [nextMergedRule, ...mergeIntoList({ ...rule, start: nextMergedRule.end }, mergedRules)];
   }
+
   return [nextMergedRule, ...mergeIntoList(rule, mergedRules)];
 };
 
 export const mergeRules = (rules: ExplicitRule[]): ExplicitRule[] => {
   let mergedRules: ExplicitRule[] = [];
+
   for (const rule of rules) {
     mergedRules = mergeIntoList(rule, mergedRules);
   }
+
   return mergedRules;
 };
 
 const breaksExplicitRule = (rule: ExplicitRule, event: InputEvent): boolean => {
   const start = new Date(event.start);
   const end = new Date(event.end);
+
   return rule.start < end && rule.end > start && !rule.allow;
 };
 
@@ -120,6 +134,7 @@ export const doesObeyRules = (rules: rule[], event: InputEvent): Error | null =>
   for (const room of event.room) {
     const roomRules = rules.filter((rule) => rule.room.includes(room));
     const explicitRules = mergeRules(toExplicitRules(roomRules, start, end));
+
     for (const rule of explicitRules) {
       if (breaksExplicitRule(rule, event)) {
         return {
@@ -129,6 +144,7 @@ export const doesObeyRules = (rules: rule[], event: InputEvent): Error | null =>
       }
     }
   }
+
   return null;
 };
 
@@ -160,6 +176,7 @@ export const checkRules = async (prisma: Prisma.TransactionClient, event: InputE
       ...ruleDateBounds(new Date(event.start), new Date(event.end)),
     },
   });
+
   return doesObeyRules(rules, event);
 };
 
@@ -182,19 +199,23 @@ export const createRule = async (
       en: "You do not have permission to create rules",
     };
   }
+
   const start = new Date(rule.start_date);
   const end = new Date(rule.end_date);
+
   if (!validDate(start, end)) {
     return {
       sv: "Ogiltigt datum",
       en: "Invalid date",
     };
   }
+
   rule.start_date = day(start);
   rule.end_date = day(end);
 
   const start_time = new Date(rule.start_date + "T" + rule.start_time);
   const end_time = new Date(rule.start_date + "T" + rule.end_time);
+
   if (!validDateTime(start_time, end_time)) {
     return {
       sv: "Ogiltig tid",
@@ -216,12 +237,14 @@ export const createRule = async (
       end_date: new Date(rule.end_date),
     },
   });
+
   if (!res) {
     return {
       sv: "Kunde inte skapa regel",
       en: "Could not create rule",
     };
   }
+
   return null;
 };
 
@@ -236,9 +259,11 @@ export const deleteRule = async (
       en: "You do not have permission to delete rules",
     };
   }
+
   const rule = await prisma.rule.findUnique({
     where: { id: id },
   });
+
   if (!rule) {
     return {
       sv: "Kunde inte hitta regel",
@@ -253,12 +278,15 @@ export const deleteRule = async (
       },
     }),
   );
+
   if (err) {
     console.log(err);
+
     return {
       sv: "Kunde inte ta bort regel",
       en: "Could not delete rule",
     };
   }
+
   return null;
 };

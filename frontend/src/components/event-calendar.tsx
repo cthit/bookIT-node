@@ -10,6 +10,7 @@ import { EventCalendarCloseIcon } from "@/components/event-calendar-icons";
 import { cn } from "@/lib/utils";
 
 const plugins = [dayGridPlugin, timeGridPlugin, listPlugin, interactionPlugin, multiMonthPlugin];
+
 const defaultAvailableViews = [
   "dayGridMonth",
   "timeGridWeek",
@@ -17,7 +18,9 @@ const defaultAvailableViews = [
   "listWeek",
   "multiMonthYear",
 ];
+
 const navLinkDayClick = "timeGridDay";
+
 const navLinkWeekClick = "timeGridWeek";
 
 export interface EventCalendarProps extends Omit<

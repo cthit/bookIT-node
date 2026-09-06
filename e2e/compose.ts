@@ -34,10 +34,13 @@ const users = {
 } as const;
 
 export type UserRole = keyof typeof users;
+
 const testPassword = "password1337";
 
 const groupId = "aed27030-ad90-4526-855c-1e909b1dcecb";
+
 const postId = "7bb1db15-730d-4864-bfc3-99abe7c0ccf8";
+
 const seed = {
   users: Object.values(users).map((user) => ({
     id: user.id,
@@ -71,9 +74,12 @@ export interface Environment {
 async function unusedPort(): Promise<number> {
   return new Promise((resolve, reject) => {
     const server = createServer();
+
     server.on("error", reject);
+
     server.listen(0, "127.0.0.1", () => {
       const port = (server.address() as AddressInfo).port;
+
       server.close((error) => (error ? reject(error) : resolve(port)));
     });
   });
@@ -84,6 +90,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
 
   try {
     const page = await context.newPage();
+
     page.setDefaultTimeout(30_000);
     await page.goto(`${gammaUrl}/login`);
     await page.locator('[name="username"]').fill("admin");
@@ -101,14 +108,18 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
     await expect(page.getByText("Client details", { exact: true })).toBeVisible();
 
     const clientId = (await page.locator('li:has-text("Client id:") span').innerText()).trim();
+
     const credentials = page
       .locator("article")
       .filter({ has: page.locator("header", { hasText: /^\s*Credentials\s*$/ }) });
+
     const clientSecret = (await credentials.locator("code").first().innerText()).trim();
+
     const authorization = await credentials
       .locator("code")
       .filter({ hasText: "Authorization: pre-shared" })
       .innerText();
+
     const apiKey = authorization.replace("Authorization: pre-shared", "").trim();
 
     if (!clientId || !clientSecret || !/^[\w-]+:\S+$/.test(apiKey)) {
@@ -120,6 +131,7 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
     await page.getByRole("button", { name: "Add user authority", exact: true }).click();
     await page.locator(".authority-user-row").selectOption(users.admin.id);
     await page.getByRole("button", { name: "Save", exact: true }).click();
+
     await expect(
       page.locator("article").filter({ has: page.locator("header", { hasText: /^\s*admin\s*$/ }) }),
     ).toBeVisible();
@@ -159,9 +171,11 @@ export async function loginAs(
 export async function compose(browser: Browser): Promise<Environment> {
   const frontendImage = process.env.BOOKIT_FRONTEND_IMAGE;
   const backendImage = process.env.BOOKIT_BACKEND_IMAGE;
+
   if (!frontendImage || !backendImage) {
     throw new Error("Run E2E with make -C e2e run-e2e");
   }
+
   const network = await new Network().start();
   const containers: StartedTestContainer[] = [];
   const logs: Record<string, string> = {};
@@ -171,12 +185,15 @@ export async function compose(browser: Browser): Promise<Environment> {
     const text = String(chunk)
       .replace(/(password:)\S+/g, "$1[REDACTED]")
       .replace(/(and code:)\s*\S+/g, "$1 [REDACTED]");
+
     logs[name] = ((logs[name] ?? "") + text).slice(-100_000);
   };
 
   const track = async <T extends StartedTestContainer>(pending: Promise<T>): Promise<T> => {
     const container = await pending;
+
     containers.push(container);
+
     return container;
   };
 
@@ -184,7 +201,9 @@ export async function compose(browser: Browser): Promise<Environment> {
     if (stopped) {
       return;
     }
+
     stopped = true;
+
     const failures: unknown[] = [];
 
     for (const container of containers.toReversed()) {
@@ -208,6 +227,7 @@ export async function compose(browser: Browser): Promise<Environment> {
 
   try {
     console.log("Starting isolated PostgreSQL, Redis and Gamma containers...");
+
     const gammaDb = await track(
       new PostgreSqlContainer(images.gammaPostgres)
         .withNetwork(network)
@@ -286,6 +306,7 @@ export async function compose(browser: Browser): Promise<Environment> {
     );
 
     console.log("Provisioning BookIT OAuth client and roles through Gamma...");
+
     const client = await provisionClient(browser, gammaUrl, appUrl);
 
     const env = {
@@ -308,10 +329,13 @@ export async function compose(browser: Browser): Promise<Environment> {
     };
 
     record("images", JSON.stringify({ frontend: frontendImage, backend: backendImage }));
+
     console.log(
       `Using BookIT images: ${JSON.stringify({ frontend: frontendImage, backend: backendImage })}`,
     );
+
     console.log("Initializing the isolated database with the backend image...");
+
     await track(
       new GenericContainer(backendImage)
         .withPlatform("linux/amd64")
@@ -323,6 +347,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withStartupTimeout(120_000)
         .start(),
     );
+
     await track(
       new GenericContainer(frontendImage)
         .withPlatform("linux/amd64")
@@ -336,6 +361,7 @@ export async function compose(browser: Browser): Promise<Environment> {
         .withStartupTimeout(120_000)
         .start(),
     );
+
     await track(
       new GenericContainer(backendImage)
         .withPlatform("linux/amd64")

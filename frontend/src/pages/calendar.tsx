@@ -43,30 +43,40 @@ export function CalendarPage() {
   const [detailId, setDetailId] = useState<string | null>(null);
   const [pendingMove, setPendingMove] = useState<BookingMove | null>(null);
   const savingMove = useRef(false);
+
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
   }));
+
   useEffect(() => {
     const resize = () => setViewport({ width: window.innerWidth, height: window.innerHeight });
+
     window.addEventListener("resize", resize);
+
     return () => window.removeEventListener("resize", resize);
   }, []);
+
   const [range, setRange] = useState(() => ({
     from: startOfWeek(new Date(), { weekStartsOn: 1 }).toISOString(),
     to: addDays(startOfWeek(new Date(), { weekStartsOn: 1 }), 7).toISOString(),
   }));
+
   const [selectedRooms, setSelectedRooms] = useState<Room[]>(rooms.map((room) => room.id));
+
   const query = useQuery({
     queryKey: ["calendar", range],
     queryFn: () => request(CalendarDocument, range),
   });
+
   const bookings = (query.data?.eventsFT ?? []).filter((event): event is BookingFragment =>
     Boolean(event),
   );
+
   const visible = bookings.filter((event) =>
     event.room.some((room) => room && selectedRooms.includes(room)),
   );
+
   const move = useMutation({
     mutationFn: async ({ booking, start, end }: BookingMove) => {
       const { editEvent } = await request(UpdateBookingDocument, {
@@ -81,6 +91,7 @@ export function CalendarPage() {
           booking_terms: true,
         },
       });
+
       checkMutation(editEvent, language);
     },
     onSuccess: async (_result, { booking }) => {
@@ -88,6 +99,7 @@ export function CalendarPage() {
         cache.invalidateQueries({ queryKey: ["calendar"] }),
         cache.invalidateQueries({ queryKey: ["booking", booking.id] }),
       ]);
+
       toast.success(t("Booking moved", "Bokningen flyttades"));
     },
   });
@@ -102,7 +114,9 @@ export function CalendarPage() {
     if (!pendingMove || savingMove.current) {
       return;
     }
+
     savingMove.current = true;
+
     try {
       await move.mutateAsync(pendingMove);
     } catch (error) {
@@ -123,6 +137,7 @@ export function CalendarPage() {
         <div className="flex flex-wrap gap-2" aria-label={t("Room filters", "Rumsfilter")}>
           {rooms.map((room) => {
             const active = selectedRooms.includes(room.id);
+
             return (
               <Button
                 key={room.id}
@@ -202,7 +217,9 @@ export function CalendarPage() {
           const booking = bookings.find((event) => event.id === info.event.id);
           const start = info.event.start;
           const end = info.event.end;
+
           info.revert();
+
           if (
             pendingMove ||
             savingMove.current ||
@@ -213,6 +230,7 @@ export function CalendarPage() {
           ) {
             return;
           }
+
           setPendingMove({ booking, start, end });
         }}
 

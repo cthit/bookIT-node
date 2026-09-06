@@ -15,6 +15,7 @@ declare global {
 
 export function authenticatedUser(req: Request): User {
   const claims = req.oidc.user;
+
   if (
     !req.oidc.isAuthenticated() ||
     typeof claims?.sub !== "string" ||
@@ -22,8 +23,10 @@ export function authenticatedUser(req: Request): User {
   ) {
     throw new GraphQLError("Authentication required", { extensions: { code: "UNAUTHENTICATED" } });
   }
+
   const claim = (name: string): string => (typeof claims[name] === "string" ? claims[name] : "");
   const groups: unknown = req.appSession?.groups;
+
   return {
     sub: claims.sub,
     cid: claims.cid,
