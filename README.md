@@ -30,18 +30,7 @@ pnpm --dir backend exec prisma generate
 Install scripts are explicitly approved in `pnpm-workspace.yaml`. Review new blocked
 scripts individually; do not globally enable dependency build scripts.
 
-The fastest isolated local environment includes real Gamma and test-only identities:
-
-```sh
-pnpm exec playwright install chromium
-pnpm e2e:dev
-```
-
-Docker must be running with sufficient disk space. Open the printed BookIT URL.
-Ctrl+C cleans up only that environment's processes, network and containers.
-See [e2e/README.md](e2e/README.md) for roles and the service-version matrix.
-
-For an existing local Gamma installation:
+With a local Gamma installation:
 
 1. Start local backing services with `docker compose up -d db redis`.
 2. Copy `backend/.env.example` to `backend/.env` and replace its placeholders.
@@ -81,17 +70,15 @@ Both generated outputs are committed; CI rejects stale output.
 
 ## Browser verification
 
-Complete a manual browser smoke pass before running the automated flows:
+With Docker running:
 
 ```sh
-pnpm e2e:dev
-# Open the printed URL and check booking, editing/deletion, rules, language/mobile.
-# Stop the manual environment, then:
+pnpm exec playwright install chromium
 pnpm test:e2e
 ```
 
 Playwright specs cover booking persistence, calendar filters and navigation,
-administrator rules, authorization, accessibility, and busy calendars. The extended
+administrator rules, and authorization. The extended
 test fixture authenticates a fresh browser context by default, with configurable
 admin/member/outsider identities. It uses real Gamma rather than mocked login.
 One `e2e/compose.ts` owns all Testcontainers orchestration and separate databases.

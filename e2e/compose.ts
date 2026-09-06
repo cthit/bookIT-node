@@ -18,7 +18,7 @@ export const images = {
     "ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db",
 } as const;
 
-export const users = {
+const users = {
   admin: {
     id: "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
     cid: "bookadmin",
@@ -40,7 +40,7 @@ export const users = {
 } as const;
 
 export type UserRole = keyof typeof users;
-export const testPassword = "password1337";
+const testPassword = "password1337";
 
 const groupId = "aed27030-ad90-4526-855c-1e909b1dcecb";
 const postId = "7bb1db15-730d-4864-bfc3-99abe7c0ccf8";

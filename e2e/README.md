@@ -13,8 +13,8 @@ to keep the suite's resource usage predictable.
 
 ## Development servers or published images
 
-Local runs default to development servers (`E2E_MODE=dev`), including
-`pnpm e2e:dev`. CI requires `E2E_MODE=images` and refuses to fall back to
+Local runs default to development servers (`E2E_MODE=dev`).
+CI requires `E2E_MODE=images` and refuses to fall back to
 development servers if either image is missing.
 
 To run the same suite locally against specific published candidates:
@@ -31,8 +31,7 @@ pnpm test:e2e
 Replace each placeholder with its 64-character digest from the CI candidate job
 outputs/logs. Tags such as `latest` are rejected. Docker/Testcontainers use the
 host's Docker credential store; credentials are not forwarded into containers.
-Public images do not require a login. Use the same variables with `pnpm e2e:dev`
-to keep a published-image environment open for manual inspection.
+Public images do not require a login.
 
 Image mode runs the exact backend digest once with `prisma db push` against the
 empty, isolated BookIT database, and checks its exit status before starting the
@@ -87,10 +86,6 @@ consistency, language persistence, mobile layout, rule validation/lifecycle, and
 UI/API permissions have separate results. Each test gets its own login and data
 reset; the services stay shared for the worker.
 
-Accessibility regressions cover keyboard date/time editing, leap-day selection,
-focus restoration (including calendars inside dialogs), required-date validation,
-and the mobile date picker layout.
-
 Prefer `getByRole` with an accessible name and scope it to the relevant dialog or
 navigation when needed. Date/time fields use React Aria's named groups and
 editable spinbutton segments. `date-time-helpers.ts` enters values through the
@@ -105,33 +100,6 @@ pnpm exec vp fmt e2e playwright.config.ts
 
 Use `pnpm format` for the whole repository. `pnpm check` checks E2E formatting and
 lint in CI as well.
-
-For the manual smoke test, run `pnpm e2e:dev` and open the printed BookIT URL.
-The command prints synthetic login credentials and keeps the environment alive.
-Ctrl+C stops application processes and removes the test containers and network.
-
-To populate that local preview with 252 bookings and 24 rules, run:
-
-```sh
-pnpm exec tsx e2e/stress.ts <local-app-url> <local-gamma-url>
-```
-
-The script uses synthetic admin credentials, accepts only localhost URLs, and
-resumes without duplicating matching fixtures. It submits six writes concurrently
-and reports their p95 response time. The CI stress spec uses the same dataset to
-check persistence, multi-room diagonal stripes, calendar views, rule pagination,
-and mobile overflow. This is a bounded local stress check, not a production
-capacity benchmark. The normal concurrency test also verifies that conflicting
-bookings cannot double-book a room.
-
-For screenshots matching the 3840 × 2234 reference images:
-
-```sh
-pnpm exec tsx e2e/screenshots.ts <local-app-url> <local-gamma-url> <output-directory>
-```
-
-This captures week, month, list and rules from the populated preview at a
-1920 × 1117 CSS viewport and 2× pixel density.
 
 Tests import the extended `test` and `expect` from `./fixtures`. The default page
 logs in through Gamma as `member` before the test starts. A spec can use
