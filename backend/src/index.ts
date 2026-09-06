@@ -26,6 +26,18 @@ const requiredEnvironment = (name: string): string => {
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
 
+  const issuerBaseURL = requiredEnvironment("ISSUER_BASE_URL");
+  const issuer = new URL(issuerBaseURL);
+  const localIssuer =
+    ["localhost", "127.0.0.1", "[::1]"].includes(issuer.hostname) ||
+    issuer.hostname.endsWith(".localhost");
+
+  if ((process.env.NODE_ENV !== "production" || process.env.CI) && !localIssuer) {
+    throw new Error("Development and CI require a local Gamma ISSUER_BASE_URL");
+  }
+
+  requiredEnvironment("API_KEY");
+
   const app = express();
 
   app.disable("x-powered-by");
@@ -58,6 +70,10 @@ async function main() {
 
   app.use(
     auth({
+      issuerBaseURL,
+      baseURL: requiredEnvironment("BASE_URL"),
+      clientID: requiredEnvironment("CLIENT_ID"),
+      clientSecret: requiredEnvironment("CLIENT_SECRET"),
       secret: requiredEnvironment("SESSION_SECRET"),
       idpLogout: true,
       authRequired: true,

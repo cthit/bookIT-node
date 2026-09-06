@@ -13,7 +13,6 @@ A booking service for the Chalmers Software Engineering Student Division (IT)
 - [Docker](https://www.docker.com/)
 - [Node.js](https://nodejs.org/en/) 24 (see `.node-version`)
 - pnpm 12.3.4
-- A Gamma OAuth client and CLIENT API key for local authentication
 
 ## Setup
 
@@ -25,13 +24,15 @@ corepack prepare pnpm@12.3.4 --activate
 pnpm install --frozen-lockfile
 pnpm codegen
 pnpm --dir backend exec prisma generate
-docker compose up -d db redis
-cp backend/.env.example backend/.env
+docker compose up -d --wait db redis gamma
+docker compose run --rm gamma-init
+test -f backend/.env || cp backend/.env.example backend/.env
 ```
 
-Configure Gamma's issuer URL, client credentials and API key in `backend/.env`.
-Register `http://localhost:8080/api/callback` as the client's redirect URL and
-set `SESSION_SECRET` using `openssl rand -hex 32`.
+Compose starts local Gamma, its test users and BookIT OAuth client, and separate
+PostgreSQL/Redis instances for each app. Copy the local authentication values from
+`backend/.env.example` if you already have an `.env`, and set `SESSION_SECRET`
+using `openssl rand -hex 32`. No production credentials are needed.
 
 Backend, after confirming `DATABASE_URL` points to your local database:
 
@@ -47,7 +48,13 @@ pnpm --dir frontend dev
 ```
 
 Open [http://localhost:8080](http://localhost:8080) to view the website.
+Sign in with `bookmember` (digIT), `bookadmin` (BookIT admin), or `bookguest`
+(no group), all with password `password1337`. Gamma runs at `http://localhost:8081`.
 The GraphQL endpoint is `/api/graphql/v1`.
+
+Ordinary startup preserves database contents; do not use `docker compose down -v`
+to stop development. Use `docker compose stop` instead. Compose is development-only;
+deployments must provide their own authentication settings with `NODE_ENV=production`.
 
 Run `pnpm check`, `pnpm test` and `pnpm build` for the project checks.
 See [browser tests](e2e/README.md) for Playwright setup and CI image testing.

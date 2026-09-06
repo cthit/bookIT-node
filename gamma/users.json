@@ -1,0 +1,60 @@
+{
+  "users": [
+    {
+      "id": "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
+      "cid": "bookadmin",
+      "nick": "BookIT Admin",
+      "firstName": "BookIT",
+      "lastName": "Admin",
+      "acceptanceYear": 2020
+    },
+    {
+      "id": "bc605869-9a4d-46ec-8a29-d00819d4c195",
+      "cid": "bookmember",
+      "nick": "BookIT Member",
+      "firstName": "BookIT",
+      "lastName": "Member",
+      "acceptanceYear": 2020
+    },
+    {
+      "id": "ec8987d7-4087-461d-bed5-9365086b6e3b",
+      "cid": "bookguest",
+      "nick": "BookIT Guest",
+      "firstName": "BookIT",
+      "lastName": "Guest",
+      "acceptanceYear": 2020
+    }
+  ],
+  "superGroups": [
+    {
+      "id": "aed27030-ad90-4526-855c-1e909b1dcecb",
+      "name": "digit",
+      "prettyName": "digIT",
+      "type": "COMMITTEE"
+    }
+  ],
+  "groups": [
+    {
+      "id": "acd27030-ad90-4526-855c-1e909b1dcecb",
+      "name": "digit-local",
+      "prettyName": "digIT local",
+      "superGroupId": "aed27030-ad90-4526-855c-1e909b1dcecb",
+      "members": [
+        {
+          "userId": "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
+          "postId": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8"
+        },
+        {
+          "userId": "bc605869-9a4d-46ec-8a29-d00819d4c195",
+          "postId": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8"
+        }
+      ]
+    }
+  ],
+  "posts": [
+    {
+      "id": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8",
+      "postName": { "sv": "Testmedlem", "en": "Test member" }
+    }
+  ]
+}

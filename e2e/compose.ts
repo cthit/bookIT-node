@@ -311,6 +311,7 @@ export async function compose(browser: Browser): Promise<Environment> {
 
     const env = {
       NODE_ENV: "production",
+      CI: "true",
       TZ: "Europe/Stockholm",
       DATABASE_URL: "postgresql://bookit_test:bookit_test@bookit-db:5432/bookit_test",
       REDIS_HOST: "bookit-redis",
