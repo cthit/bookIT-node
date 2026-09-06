@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: ["**"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -20,6 +20,7 @@ env:
 jobs:
   quality:
     name: Types, lint, tests, build, and dependency audit
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
@@ -58,10 +59,10 @@ jobs:
         if: github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || github.actor == 'dependabot[bot]')
         run: echo "Image publishing and image E2E are skipped for fork/Dependabot PRs. After reviewing the changes, a maintainer must put them on a trusted branch in this repository to run the image pipeline. No registry credentials are supplied to this job." >> "$GITHUB_STEP_SUMMARY"
 
-  candidates:
-    name: Publish candidate images
+  images:
+    name: Publish commit images
     needs: quality
-    if: github.event_name != 'pull_request' || (github.event.pull_request.head.repo.full_name == github.repository && github.actor != 'dependabot[bot]')
+    if: github.event_name != 'pull_request' && github.actor != 'dependabot[bot]'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -75,21 +76,21 @@ jobs:
         with:
           persist-credentials: false
       - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-      - name: Candidate names
+      - name: Image names
         id: names
         shell: bash
         run: |
           repository="ghcr.io/${GITHUB_REPOSITORY,,}"
           echo "frontend=${repository}-frontend" >> "$GITHUB_OUTPUT"
           echo "backend=${repository}-backend" >> "$GITHUB_OUTPUT"
-          echo "tag=candidate-${GITHUB_SHA}-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}" >> "$GITHUB_OUTPUT"
-      - name: Log in to GHCR for candidate publication
+          echo "tag=${GITHUB_SHA}" >> "$GITHUB_OUTPUT"
+      - name: Log in to GHCR for commit publication
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Publish frontend candidate
+      - name: Publish frontend commit
         id: frontend
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -100,7 +101,7 @@ jobs:
           tags: ${{ steps.names.outputs.frontend }}:${{ steps.names.outputs.tag }}
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
-      - name: Publish backend candidate
+      - name: Publish backend commit
         id: backend
         uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7.3.0
         with:
@@ -113,8 +114,8 @@ jobs:
           cache-to: type=gha,mode=max,scope=backend
 
   e2e:
-    name: Browser flows against published candidates
-    needs: candidates
+    name: Browser flows against published images
+    needs: images
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -122,8 +123,8 @@ jobs:
       packages: read
     env:
       E2E_MODE: images
-      BOOKIT_FRONTEND_IMAGE: ${{ needs.candidates.outputs.frontend }}
-      BOOKIT_BACKEND_IMAGE: ${{ needs.candidates.outputs.backend }}
+      BOOKIT_FRONTEND_IMAGE: ${{ needs.images.outputs.frontend }}
+      BOOKIT_BACKEND_IMAGE: ${{ needs.images.outputs.backend }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -144,7 +145,7 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
       - name: Verify Docker is available for Testcontainers
         run: docker info
-      - name: Log in to GHCR for candidate pulls
+      - name: Log in to GHCR for commit pulls
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
@@ -158,6 +159,19 @@ jobs:
         run: |
           docker buildx imagetools create --dry-run --prefer-index=false "$BOOKIT_FRONTEND_IMAGE" > /dev/null
           docker buildx imagetools create --dry-run --prefer-index=false "$BOOKIT_BACKEND_IMAGE" > /dev/null
+      - name: Record tested image digests
+        shell: bash
+        run: |
+          jq -n --arg sha "$GITHUB_SHA" \
+            --arg frontend "$BOOKIT_FRONTEND_IMAGE" --arg backend "$BOOKIT_BACKEND_IMAGE" \
+            '{sha: $sha, frontend: $frontend, backend: $backend}' > tested-images.json
+      - name: Save tested image digests for releases
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: tested-images-${{ github.run_attempt }}
+          path: tested-images.json
+          retention-days: 90
+          if-no-files-found: error
       - name: Preserve failing browser traces, screenshots, videos, and logs
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -169,42 +183,3 @@ jobs:
             e2e-run.log
           if-no-files-found: ignore
           retention-days: 7
-
-  promote:
-    name: Promote tested digests on main
-    needs: [candidates, e2e]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-      packages: write
-    env:
-      BOOKIT_FRONTEND_IMAGE: ${{ needs.candidates.outputs.frontend }}
-      BOOKIT_BACKEND_IMAGE: ${{ needs.candidates.outputs.backend }}
-    steps:
-      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Refuse to promote an outdated main run
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        shell: bash
-        run: test "$(gh api "repos/$GITHUB_REPOSITORY/git/ref/heads/main" --jq .object.sha)" = "$GITHUB_SHA"
-      - name: Tag the tested manifests without rebuilding
-        shell: bash
-        run: |
-          for image in "$BOOKIT_FRONTEND_IMAGE" "$BOOKIT_BACKEND_IMAGE"; do
-            repository="${image%@*}"
-            digest="${image##*@}"
-            docker buildx imagetools create --prefer-index=false \
-              --tag "$repository:$GITHUB_SHA" --tag "$repository:latest" "$image"
-            for tag in "$GITHUB_SHA" latest; do
-              actual="$(docker buildx imagetools inspect "$repository:$tag" --format '{{.Manifest.Digest}}')"
-              test "$actual" = "$digest"
-            done
-          done

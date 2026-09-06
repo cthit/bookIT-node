@@ -17,7 +17,7 @@ Local runs default to development servers (`E2E_MODE=dev`).
 CI requires `E2E_MODE=images` and refuses to fall back to
 development servers if either image is missing.
 
-To run the same suite locally against specific published candidates:
+To run the same suite locally against specific published images:
 
 ```sh
 # For private packages, authenticate Docker with read:packages access first.
@@ -28,7 +28,7 @@ BOOKIT_BACKEND_IMAGE='ghcr.io/cthit/bookit-node-backend@sha256:<backend-digest>'
 pnpm test:e2e
 ```
 
-Replace each placeholder with its 64-character digest from the CI candidate job
+Replace each placeholder with its 64-character digest from the CI image job
 outputs/logs. Tags such as `latest` are rejected. Docker/Testcontainers use the
 host's Docker credential store; credentials are not forwarded into containers.
 Public images do not require a login.
@@ -52,28 +52,28 @@ are involved.
 
 ## CI image lifecycle and fork PRs
 
-Quality checks run first. Trusted runs then publish frontend/backend candidates
-to GHCR, tagged `candidate-<commit>-<run-id>-<attempt>`. PRs use GitHub's checked-out
-merge commit, so the candidates contain exactly the source that quality checks
-examined. Build outputs pass immutable `repository@sha256:...` references to E2E.
-The candidate and E2E jobs have only package-write and package-read permissions,
-respectively, plus checkout read access; login credentials are cleaned up by the
-login action.
+Each branch push runs quality checks, publishes frontend/backend images to GHCR
+as `:<commit-sha>`, then runs E2E against their immutable digests. Same-repository
+PRs use that branch CI; fork PRs run quality checks separately. Publication has
+package-write permission; E2E has package-read permission.
 
-After image E2E passes on a push to main, a separate job copies those manifests to
-the commit-SHA and `latest` tags and verifies the resulting digests. It never
-rebuilds. It refuses promotion if main has advanced. PRs and manual dispatches
-publish candidates only and never update production tags. E2E also dry-runs the
-manifest-copy operation without writing registry tags.
+Publishing a GitHub Release copies the successful push CI run's tested digests
+to the release tag (for example, `v1.2.0`). No rebuild, main-merge promotion, or
+`latest` update occurs. Release tags must be valid Docker tags, not `latest` or
+commit SHAs. Prereleases use their exact release tag too.
+
+The tested-digest artifact is retained for 90 days. Missing or expired evidence
+blocks release tagging: rerun CI for that commit, then rerun the release workflow.
+E2E dry-runs the manifest-copy operation without writing registry tags.
 
 Fork PRs and Dependabot PRs run quality checks only. They receive no registry
-credentials and skip candidate publication/image E2E. After reviewing their code,
+credentials and skip publication/image E2E. After reviewing their code,
 a maintainer must place it on a trusted branch in this repository to get image
 coverage before merging. We do not use `pull_request_target` to execute PR code.
 GHCR packages must grant this repository's Actions token write/read access; this
 may need configuring for pre-existing packages.
 
-Candidate tags are retained for debugging; apply a registry retention policy
+Commit tags are retained; apply a registry retention policy
 separately without removing digests referenced by production tags. Failures retain
 the E2E console log (including image references and startup logs), browser traces,
 screenshots, video, and bounded per-container logs. Normal completion and failure
