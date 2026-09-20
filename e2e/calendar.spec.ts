@@ -36,15 +36,18 @@ test("room filters and period navigation show the expected bookings", async ({ p
   await roomFilter.click();
   await expect(event.first()).toBeVisible();
 
-  const period = page.getByRole("heading", { level: 3, name: /\d{4}/ });
-  const originalPeriod = await period.innerText();
+  // Adjacent weeks can share the same month title; their displayed dates differ.
+  const dayHeaders = page.getByRole("columnheader");
+
+  await expect(dayHeaders.first()).toBeVisible();
+  const originalDates = await dayHeaders.allTextContents();
 
   await page.getByRole("button", { name: /next/i }).click();
-  await expect(period).not.toHaveText(originalPeriod);
+  await expect(dayHeaders).not.toHaveText(originalDates);
   await expect(event).toHaveCount(0);
 
   await page.getByRole("button", { name: /previous/i }).click();
-  await expect(period).toHaveText(originalPeriod);
+  await expect(dayHeaders).toHaveText(originalDates);
   await expect(event.first()).toBeVisible();
 });
 
