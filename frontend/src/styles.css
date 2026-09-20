@@ -117,10 +117,27 @@ textarea {
 }
 
 .booking-multi-room {
-  background-image: linear-gradient(rgb(0 0 0 / 20%), rgb(0 0 0 / 20%)), var(--booking-stripes);
+  background-image: var(--booking-stripes);
   background-origin: border-box;
   background-repeat: no-repeat;
   color: white;
+}
+
+.booking-multi-room .booking-event-label {
+  /* FullCalendar otherwise stretches the label to fill the event. */
+  flex: 0 1 auto !important;
+  width: fit-content;
+  background-color: rgb(0 0 0 / 20%);
+  border-radius: var(--radius-sm);
+}
+
+.booking-multi-room .booking-list-event-label {
+  padding-inline: 0.5rem;
+}
+
+.booking-multi-room .booking-list-event-title {
+  /* Let compact labels fit the title without forcing an extra line. */
+  flex-basis: auto;
 }
 
 @media (max-width: 760px) {

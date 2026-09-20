@@ -346,11 +346,11 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
           listItemEventClass: "group px-3 py-3 rounded-md gap-2",
           listItemEventBeforeClass: "mx-2 border-5 rounded-full border-(--fc-event-color)",
           listItemEventInnerClass:
-            "booking-event-label flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
+            "booking-event-label booking-list-event-label flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
           listItemEventTimeClass: "shrink-0 w-28 whitespace-nowrap",
           listItemEventTitleClass: (info) =>
             cn(
-              "grow min-w-0 basis-40 whitespace-normal break-words",
+              "booking-list-event-title grow min-w-0 basis-40 whitespace-normal break-words",
               info.event.url && "group-hover:underline",
             ),
 
