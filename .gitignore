@@ -5,6 +5,7 @@ package-lock.json
 .env
 .env.*
 !.env.example
+!.env.production.example
 .pnpm-store/
 dist/
 bookit/public/

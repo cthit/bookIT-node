@@ -1,7 +1,5 @@
-FROM node:24.19.0-bookworm-slim AS base
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates openssl \
-    && rm -rf /var/lib/apt/lists/*
+FROM node:24.19.0-alpine AS base
+RUN apk add --no-cache ca-certificates openssl tzdata
 
 FROM base AS build
 ENV CI=true
@@ -27,6 +25,8 @@ FROM base AS runtime
 ENV NODE_ENV=production TZ=Europe/Stockholm
 WORKDIR /app
 COPY --from=build --chown=node:node /app ./
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/bookit-entrypoint
 USER node
 EXPOSE 8080
+ENTRYPOINT ["bookit-entrypoint"]
 CMD ["node", "./build/index.js"]

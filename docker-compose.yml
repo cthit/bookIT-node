@@ -61,7 +61,7 @@ services:
       DB_PASSWORD: gamma-local
       REDIS_HOST: gamma-redis
       SERVER_PORT: "8081"
-      BASE_URL: http://localhost:8081
+      BASE_URL: http://gamma.localhost:8081
       PRODUCTION: "false"
       IS_MOCKING: "true"
       ADMIN_SETUP: "true"
@@ -71,6 +71,10 @@ services:
       - 127.0.0.1:8081:8081
     volumes:
       - ./gamma/users.json:/tmp/bookit-users.json:ro
+    networks:
+      default:
+        aliases:
+          - gamma.localhost
 
   gamma-init:
     image: postgres:16.0-alpine

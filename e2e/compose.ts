@@ -308,20 +308,6 @@ export async function compose(browser: Browser): Promise<Environment> {
 
     console.log(`Using BookIT image: ${image}`);
 
-    console.log("Initializing the isolated database with the BookIT image...");
-
-    await track(
-      new GenericContainer(image)
-        .withPlatform("linux/amd64")
-        .withNetwork(network)
-        .withEnvironment(databaseEnvironment)
-        .withCommand(["./node_modules/.bin/prisma", "db", "push"])
-        .withLogConsumer((stream) => stream.on("data", (chunk: Buffer) => record("schema", chunk)))
-        .withWaitStrategy(Wait.forOneShotStartup())
-        .withStartupTimeout(120_000)
-        .start(),
-    );
-
     await track(
       new GenericContainer(image)
         .withPlatform("linux/amd64")
