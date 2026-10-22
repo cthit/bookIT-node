@@ -94,7 +94,7 @@ services:
         for attempt in $$(seq 1 120); do
           if wget -q -T 2 -O /dev/null http://gamma:8081/login &&
              [ "$$(psql -Atc "SELECT count(*) FROM g_user WHERE cid IN ('bookadmin', 'bookmember', 'bookguest')" 2>/dev/null)" = 3 ] &&
-             [ "$$(psql -Atc "SELECT count(*) FROM g_group WHERE e_name IN ('digit-local', 'hobbyit-local')" 2>/dev/null)" = 2 ]; then
+             [ "$$(psql -Atc "SELECT count(*) FROM g_group WHERE group_id IN ('acd27030-ad90-4526-855c-1e909b1dcecb', 'b99b7073-5609-45f0-9859-34e953afd4aa')" 2>/dev/null)" = 2 ]; then
             exec psql -v ON_ERROR_STOP=1 -f /init/bookit-client.sql
           fi
           sleep 2
