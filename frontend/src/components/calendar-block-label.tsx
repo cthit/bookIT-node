@@ -10,7 +10,7 @@ export function CalendarBlockLabel({ title, description }: { title: string; desc
         <Tooltip.Trigger asChild>
           <button
             type="button"
-            className="pointer-events-auto relative z-2 block w-full truncate px-2 py-1 text-left text-xs italic text-foreground/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
+            className="pointer-events-auto block w-full truncate px-2 py-1 text-left text-xs italic text-foreground/70 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
             onMouseDownCapture={(event) => event.stopPropagation()}
             onTouchStartCapture={(event) => event.stopPropagation()}
             onClick={(event) => {

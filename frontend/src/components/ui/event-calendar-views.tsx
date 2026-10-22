@@ -53,6 +53,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
       eventContrastColor="var(--primary-foreground)"
       eventClass={(info) =>
         cn(
+          "pointer-events-auto",
           info.isSelected
             ? ["outline-3", info.isDragging ? "shadow-lg" : "shadow-md"]
             : "focus-visible:outline-3",
@@ -177,7 +178,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         )
       }
 
-      moreLinkClass="focus-visible:outline-3 outline-ring/50"
+      moreLinkClass="pointer-events-auto focus-visible:outline-3 outline-ring/50"
       moreLinkInnerClass="whitespace-nowrap overflow-hidden"
       columnMoreLinkClass="mb-px border border-transparent print:border-black rounded-sm bg-[color-mix(in_oklab,var(--foreground)_10%,var(--background))] hover:bg-[color-mix(in_oklab,var(--foreground)_13%,var(--background))] print:bg-white ring ring-background"
       columnMoreLinkInnerClass={(info) => (info.isNarrow ? `p-0.5 ${xxsTextClass}` : "p-1 text-xs")}
@@ -250,7 +251,11 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         cn("border", info.isMajor && "border-foreground/20", info.isDisabled && "bg-foreground/3")
       }
       dayLaneInnerClass={(info) =>
-        info.isStack ? "m-1" : info.isNarrow ? "mx-px" : "ms-0.5 me-[2.5%]"
+        cn(
+          // The event layer spans the whole lane; let clicks reach the rule labels beneath it.
+          "pointer-events-none",
+          info.isStack ? "m-1" : info.isNarrow ? "mx-px" : "ms-0.5 me-[2.5%]",
+        )
       }
       slotLaneClass={(info) => cn("border", info.isMinor && "border-dotted")}
 
