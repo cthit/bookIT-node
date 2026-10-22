@@ -53,6 +53,15 @@ proxy in front of `127.0.0.1:8080`; set `TRUST_PROXY=1` only when using exactly 
 trusted proxy. The database and Redis have no published ports. Do not use the
 local test credentials for production.
 
+Gamma decides which groups may book rooms. On the BookIT client in Gamma, create
+a client authority named `booking` (or the name set in `BOOKING_AUTHORITY`) and
+add every super group that may book rooms; members of other super groups cannot
+book. Assign the `admin` authority to BookIT administrators, who may book and
+manage rules regardless of group. Reading the authority requires a Gamma release
+that provides `GET /api/client/v1/authorities/{name}`. If the authority is
+missing, or Gamma predates that endpoint, BookIT logs a warning at each sign-in
+and nobody can book as a group; other Gamma errors fail the sign-in.
+
 The Alpine image runs `prisma migrate deploy` before starting the server and
 exits if migrations fail. Back up existing databases before upgrades. For a
 database previously managed with `prisma db push`, first verify that its schema

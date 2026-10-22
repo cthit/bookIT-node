@@ -133,8 +133,8 @@ export function BookingForm({
     return (
       <p role="alert" className="rounded-lg bg-amber-50 p-5">
         {t(
-          "You need membership in an active group to make a booking.",
-          "Du behöver vara medlem i en aktiv grupp för att boka.",
+          "You need membership in a group that may book rooms to make a booking.",
+          "Du behöver vara medlem i en grupp som får boka lokaler för att boka.",
         )}
       </p>
     );

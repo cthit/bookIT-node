@@ -8,12 +8,9 @@ import { setupRoutes } from "./routes";
 import type { UserInfo } from "./models/user";
 import { authRequest } from "./utils";
 import { createSessionStore } from "./auth/session-store";
+import { bookableGroups, bookingAuthoritySuperGroups, type GammaUserGroup } from "./auth/groups";
 import { cleanupPersonalData, startCleanup } from "./cleanup";
 import { databaseUrl, requiredEnvironment } from "./environment";
-
-interface GammaGroup {
-  superGroup?: { type: string; name: string };
-}
 
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
@@ -90,25 +87,20 @@ async function main() {
       afterCallback: async (_req, _res, session) => {
         const userInfo = await authRequest<UserInfo>("/oauth2/userinfo", session.access_token);
 
-        const [authorities, groups] = await Promise.all([
+        const [authorities, groups, bookingSuperGroups] = await Promise.all([
           authRequest<string[]>(
             `/api/client/v1/authorities/for/${encodeURIComponent(userInfo.sub)}`,
           ),
-          authRequest<GammaGroup[]>(
+          authRequest<GammaUserGroup[]>(
             `/api/client/v1/groups/for/${encodeURIComponent(userInfo.sub)}`,
           ),
+          bookingAuthoritySuperGroups(),
         ]);
 
         return {
           ...session,
           is_admin: authorities.includes("admin"),
-          groups: [
-            ...new Set(
-              groups.flatMap(({ superGroup }) =>
-                superGroup && superGroup.type.toLowerCase() !== "alumni" ? [superGroup.name] : [],
-              ),
-            ),
-          ],
+          groups: bookableGroups(groups, bookingSuperGroups),
         };
       },
     }),

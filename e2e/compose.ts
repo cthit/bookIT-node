@@ -9,6 +9,9 @@ const images = {
   bookitRedis: "redis:5.0.14-alpine",
   gammaPostgres: "postgres:16.0-alpine",
   gammaRedis: "redis:5.0.14-alpine",
+  // BookIT reads the booking authority through GET /api/client/v1/authorities/{name},
+  // which 2.5.1 predates; CI needs a Gamma release containing it before this pin
+  // can move. Locally, GAMMA_IMAGE runs the suite against another Gamma image.
   gamma:
     "ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db",
 } as const;
@@ -28,6 +31,20 @@ const users = {
   member: userWithCid("bookmember"),
   outsider: userWithCid("bookguest"),
 };
+
+function superGroupWithName(name: string) {
+  const superGroup = seed.superGroups.find((superGroup) => superGroup.name === name);
+
+  if (!superGroup) {
+    throw new Error(`Missing Gamma fixture: ${name}`);
+  }
+
+  return superGroup;
+}
+
+// Only this super group gets the booking authority; the member's other super
+// group stays unauthorized.
+const bookingSuperGroup = superGroupWithName("digit");
 
 export type UserRole = keyof typeof users;
 
@@ -104,6 +121,17 @@ async function provisionClient(browser: Browser, gammaUrl: string, appUrl: strin
 
     await expect(
       page.locator("article").filter({ has: page.locator("header", { hasText: /^\s*admin\s*$/ }) }),
+    ).toBeVisible();
+
+    await page.locator('[name="authority"]').fill("booking");
+    await page.getByRole("button", { name: "Add super group authority", exact: true }).click();
+    await page.locator(".authority-super-group-row").selectOption(bookingSuperGroup.id);
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+
+    await expect(
+      page
+        .locator("article")
+        .filter({ has: page.locator("header", { hasText: /^\s*booking\s*$/ }) }),
     ).toBeVisible();
 
     return { clientId, clientSecret, apiKey };
@@ -239,9 +267,18 @@ export async function compose(browser: Browser): Promise<Environment> {
     const appPort = await unusedPort();
     const appUrl = `http://localhost:${appPort}`;
 
+    const gammaImage = process.env.GAMMA_IMAGE;
+    const gamma = new GenericContainer(gammaImage || images.gamma);
+
+    // A locally built override uses the host's architecture.
+    if (!gammaImage) {
+      gamma.withPlatform("linux/amd64");
+    }
+
+    console.log(`Using Gamma image: ${gammaImage || images.gamma}`);
+
     await track(
-      new GenericContainer(images.gamma)
-        .withPlatform("linux/amd64")
+      gamma
         .withResourcesQuota({ memory: 2 })
         .withNetwork(network)
         .withNetworkAliases("gamma", "gamma.localhost")

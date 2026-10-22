@@ -45,7 +45,7 @@ test("an outsider can view bookings but cannot access editing or administration"
   await page.getByRole("link", { name: "New booking", exact: true }).click();
 
   await expect(page.getByRole("alert")).toHaveText(
-    "You need membership in an active group to make a booking.",
+    "You need membership in a group that may book rooms to make a booking.",
   );
 
   await expect(page.getByRole("button", { name: "Save booking", exact: true })).toHaveCount(0);
@@ -63,6 +63,17 @@ test("an outsider can view bookings but cannot access editing or administration"
 
   await expect(page.getByRole("button", { name: "Edit", exact: true })).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Delete", exact: true })).toHaveCount(0);
+});
+
+test("a member can book only as super groups with the Gamma booking authority", async ({
+  page,
+}) => {
+  await page.getByRole("link", { name: "New booking", exact: true }).click();
+
+  const bookingAs = page.getByRole("combobox", { name: "Booking as", exact: true });
+
+  // bookmember also belongs to hobbyit, which lacks the booking authority.
+  await expect(bookingAs.locator("option")).toHaveText(["Select group", "digit"]);
 });
 
 test("a group member can edit a colleague's booking without replacing their private contact", async ({

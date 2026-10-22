@@ -16,6 +16,7 @@ services:
       CLIENT_ID: ${CLIENT_ID:?Set CLIENT_ID in the root .env}
       CLIENT_SECRET: ${CLIENT_SECRET:?Set CLIENT_SECRET in the root .env}
       API_KEY: ${API_KEY:?Set API_KEY in the root .env}
+      BOOKING_AUTHORITY: ${BOOKING_AUTHORITY:-booking}
       TRUST_PROXY: ${TRUST_PROXY:-0}
     depends_on:
       db:
