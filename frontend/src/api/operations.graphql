@@ -8,6 +8,8 @@ fragment Booking on Event {
   phone
   booked_as
   booked_by
+  can_edit
+  can_move
   created_at
   updated_at
 }

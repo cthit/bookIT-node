@@ -10,6 +10,10 @@ type Event {
   phone: String!
   booked_as: String!
   booked_by: String!
+  "Whether the signed-in user may edit or delete this booking."
+  can_edit: Boolean!
+  "Whether the signed-in user may move this booking by dragging it."
+  can_move: Boolean!
 }
 
 type Query {

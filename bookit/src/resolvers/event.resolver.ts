@@ -13,10 +13,10 @@ import { requiredInput, inputRooms } from "./input";
 import { queryRange } from "../utils/date-range";
 
 export const getEventQResolvers = ({ prisma }: Tools) => ({
-  events: async () => {
-    return (await prisma.event.findMany()).map(eventResult);
+  events: async (_: unknown, _args: unknown, { user }: { user: User }) => {
+    return (await prisma.event.findMany()).map((event) => eventResult(event, user));
   },
-  eventsFT: async (_: unknown, ft: { from: string; to: string }) => {
+  eventsFT: async (_: unknown, ft: { from: string; to: string }, { user }: { user: User }) => {
     const { from, to } = queryRange(ft.from, ft.to);
 
     return (
@@ -26,15 +26,15 @@ export const getEventQResolvers = ({ prisma }: Tools) => ({
           start: { lte: to },
         },
       })
-    ).map(eventResult);
+    ).map((event) => eventResult(event, user));
   },
-  event: async (_: unknown, { id }: { id?: string | null }) => {
+  event: async (_: unknown, { id }: { id?: string | null }, { user }: { user: User }) => {
     const eventId = requiredInput(id, "Booking id");
     const result = await prisma.event.findFirst({
       where: { id: eventId },
     });
 
-    return result ? eventResult(result) : null;
+    return result ? eventResult(result, user) : null;
   },
 });
 

@@ -7,6 +7,8 @@ import { MAX_RANGE_DAYS, validRange } from "../utils/date-range";
 
 type Event = Omit<InputEvent, "room"> & { room: room[]; booked_by: string };
 
+type BookingOwnership = Pick<event, "booked_as" | "booked_by" | "room">;
+
 /*
  * Events must end after they start
  */
@@ -26,24 +28,42 @@ const isWithin9Weeks = (event: Event, is_admin: boolean) => {
  * Users must be in a booking group to book a room
  * Admins are exempt from this rule
  */
-const userIsInBookingGroup = (event: Event | event, user: User) => {
+const userIsInBookingGroup = (event: BookingOwnership, user: User) => {
   return user.groups.includes(event.booked_as) || user.is_admin;
 };
 
 /**
  * The person booking the event must be specified
  */
-const bookedByIsSpecified = (event: Event) => {
-  return event.booked_by && event.booked_by != "";
+const bookedByIsSpecified = (event: BookingOwnership): boolean => {
+  return event.booked_by !== "";
 };
 
 /**
  * Big hub and The Cloud cannot be booked for a private event
  */
-const bookingImportantAsPrivate = (event: Event) => {
+const bookingImportantAsPrivate = (event: BookingOwnership) => {
   return (
     event.booked_as == event.booked_by &&
     (event.room.includes(room.BIG_HUB) || event.room.includes(room.THE_CLOUD))
+  );
+};
+
+/**
+ * Whether the user may edit or delete an existing booking.
+ */
+export const canEditEvent = (event: BookingOwnership, user: User): boolean => {
+  return userIsInBookingGroup(event, user);
+};
+
+/**
+ * Whether a drag-and-drop move of an existing booking can succeed. Moving keeps
+ * everything but the times, so a booking that fails validation as it stands
+ * (anonymized contact, or a private booking of a restricted room) cannot be moved.
+ */
+export const canMoveEvent = (event: BookingOwnership, user: User): boolean => {
+  return (
+    canEditEvent(event, user) && bookedByIsSpecified(event) && !bookingImportantAsPrivate(event)
   );
 };
 

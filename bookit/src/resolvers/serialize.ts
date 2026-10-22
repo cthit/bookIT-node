@@ -1,10 +1,14 @@
 import type { event, rule } from "@prisma/client";
 import type { Event, Rule, Room } from "../generated/schema";
 import type { ExplicitRule } from "../services/rule.service";
+import { canEditEvent, canMoveEvent } from "../services/event.service";
+import type { User } from "../models/user";
 
-export function eventResult(value: event): Event {
+export function eventResult(value: event, user: User): Event {
   return {
     ...value,
+    can_edit: canEditEvent(value, user),
+    can_move: canMoveEvent(value, user),
     start: value.start.toISOString(),
     end: value.end.toISOString(),
     created_at: value.created_at.toISOString(),

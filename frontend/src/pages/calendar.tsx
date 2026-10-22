@@ -20,7 +20,6 @@ import { bookingRoomClass, bookingRoomStyles } from "@/lib/booking-colors";
 import { calendarBlocks } from "@/lib/calendar-blocks";
 import { parseDate, localInput } from "@/lib/dates";
 import { useLanguage } from "@/lib/language";
-import { useUser } from "@/lib/user";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -37,7 +36,6 @@ type BookingMove = { booking: BookingFragment; start: Date; end: Date };
 
 export function CalendarPage() {
   const { t, language } = useLanguage();
-  const { data: user } = useUser();
   const navigate = useNavigate();
   const cache = useQueryClient();
   const [detailId, setDetailId] = useState<string | null>(null);
@@ -225,7 +223,7 @@ export function CalendarPage() {
             !booking ||
             !start ||
             !end ||
-            !(user?.is_admin || user?.groups?.includes(booking.booked_as))
+            !booking.can_move
           ) {
             return;
           }
@@ -242,11 +240,7 @@ export function CalendarPage() {
             color: rooms.find((room) => event.room.includes(room.id))?.color,
             contrastColor: "#fff",
             className: bookingRoomClass(event.room),
-            editable: Boolean(
-              !pendingMove &&
-              !move.isPending &&
-              (user?.is_admin || user?.groups?.includes(event.booked_as)),
-            ),
+            editable: !pendingMove && !move.isPending && event.can_move,
             durationEditable: false,
           })),
           ...calendarBlocks(

@@ -8,7 +8,6 @@ import { request, checkMutation } from "@/api/client";
 import { BookingDetailDocument, DeleteBookingDocument, type Room } from "@/generated/graphql";
 import { roomName } from "@/lib/rooms";
 import { parseDate } from "@/lib/dates";
-import { useUser } from "@/lib/user";
 import { useLanguage } from "@/lib/language";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -60,7 +59,6 @@ export function BookingDetails({
   onClose?: () => void;
 }) {
   const { t, language } = useLanguage();
-  const { data: user } = useUser();
   const [editing, setEditing] = useState(initialEditing);
   const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
@@ -100,7 +98,7 @@ export function BookingDetails({
     return <p role="alert">{t("Booking not found.", "Bokningen hittades inte.")}</p>;
   }
 
-  const canEdit = user?.is_admin || user?.groups?.includes(booking.booked_as);
+  const canEdit = booking.can_edit;
 
   return (
     <div className="max-w-3xl mx-auto">

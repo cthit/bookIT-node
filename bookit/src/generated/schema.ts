@@ -31,6 +31,10 @@ export type Event = {
   phone: Scalars['String']['output'];
   booked_as: Scalars['String']['output'];
   booked_by: Scalars['String']['output'];
+  /** Whether the signed-in user may edit or delete this booking. */
+  can_edit: Scalars['Boolean']['output'];
+  /** Whether the signed-in user may move this booking by dragging it. */
+  can_move: Scalars['Boolean']['output'];
 };
 
 export type Query = {
@@ -266,9 +270,9 @@ export type ResolversTypes = {
   Error: ResolverTypeWrapper<Error>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   Event: ResolverTypeWrapper<Event>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Query: ResolverTypeWrapper<Record<PropertyKey, never>>;
   InputEvent: InputEvent;
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   Mutation: ResolverTypeWrapper<Record<PropertyKey, never>>;
   IllegalSlot: ResolverTypeWrapper<IllegalSlot>;
   Room: Room;
@@ -283,9 +287,9 @@ export type ResolversParentTypes = {
   Error: Error;
   String: Scalars['String']['output'];
   Event: Event;
+  Boolean: Scalars['Boolean']['output'];
   Query: Record<PropertyKey, never>;
   InputEvent: InputEvent;
-  Boolean: Scalars['Boolean']['output'];
   Mutation: Record<PropertyKey, never>;
   IllegalSlot: IllegalSlot;
   Rule: Rule;
@@ -311,6 +315,8 @@ export type EventResolvers<ContextType = Context, ParentType extends ResolversPa
   phone?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   booked_as?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   booked_by?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  can_edit?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  can_move?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
 };
 
 export type QueryResolvers<ContextType = Context, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
