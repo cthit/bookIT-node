@@ -23,11 +23,6 @@ const getShortDayCellBottomClass = (info: DayCellInfo) => cn(!info.isNarrow && "
 
 const dayRowCommonClasses: CalendarOptions = {
   listItemEventClass: (info) => cn("mb-1 p-0.5 rounded-sm", info.isNarrow ? "mx-px" : "mx-1"),
-  listItemEventBeforeClass: (info) =>
-    cn(
-      "booking-event-dot border-4 rounded-full border-(--fc-event-color)",
-      info.isNarrow ? "ms-0.5" : "ms-1",
-    ),
   listItemEventInnerClass: (info) =>
     cn(info.isNarrow ? `py-0.5 ${xxsTextClass}` : "py-1 text-xs leading-4"),
   listItemEventTimeClass: (info) =>
@@ -77,7 +72,6 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
       listItemEventClass={(info) =>
         cn("items-center", info.isSelected ? "bg-foreground/5" : "hover:bg-foreground/5")
       }
-      listItemEventBeforeClass="rounded-full border-(--fc-event-color)"
       listItemEventInnerClass="flex flex-row items-center"
 
       blockEventClass={(info) =>
@@ -347,8 +341,6 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         },
         list: {
           listItemEventClass: "group px-3 py-3 rounded-md gap-2",
-          listItemEventBeforeClass:
-            "booking-event-dot mx-2 border-5 rounded-full border-(--fc-event-color)",
           listItemEventInnerClass: "flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
           listItemEventTimeClass: "shrink-0 w-28 whitespace-nowrap",
           listItemEventTitleClass: (info) =>

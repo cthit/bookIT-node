@@ -16,25 +16,9 @@ export const bookingRoomStyles = Array.from({ length: (1 << rooms.length) - 1 },
   const mask = index + 1;
   const colors = rooms.filter((_, bit) => mask & (1 << bit)).map((room) => room.color);
 
-  // Wide diagonal stripes for block events (week/day columns and multi-day rows).
-  const stripes = colors
+  const stops = colors
     .map((color, stop) => `${color} ${stop * 25}px ${(stop + 1) * 25}px`)
     .join(", ");
 
-  // One diagonal band per room, scaled to fit the small dot in list views.
-  const bands = colors
-    .map((color, stop) => {
-      const from = ((stop / colors.length) * 100).toFixed(2);
-      const to = (((stop + 1) / colors.length) * 100).toFixed(2);
-
-      return `${color} ${from}% ${to}%`;
-    })
-    .join(", ");
-
-  return [
-    `.booking-rooms-${mask} {`,
-    `  --booking-stripes: repeating-linear-gradient(45deg, ${stripes});`,
-    `  --booking-bands: linear-gradient(45deg, ${bands});`,
-    `}`,
-  ].join("\n");
+  return `.booking-rooms-${mask} { --booking-stripes: repeating-linear-gradient(45deg, ${stops}); }`;
 }).join("\n");

@@ -117,7 +117,7 @@ textarea {
 }
 
 /* Multi-room bookings: block events (week/day columns, multi-day rows) are striped
-   with every room colour, while list items keep a plain row and show the rooms in the dot. */
+   with every room colour, while list items keep a plain row. */
 .booking-multi-room.booking-block-event {
   background-image: var(--booking-stripes);
   background-origin: border-box;
@@ -131,12 +131,6 @@ textarea {
   width: fit-content;
   background-color: rgb(0 0 0 / 20%);
   border-radius: var(--radius-sm);
-}
-
-.booking-multi-room .booking-event-dot {
-  border-color: transparent;
-  background-image: var(--booking-bands);
-  background-origin: border-box;
 }
 
 @media (max-width: 760px) {
