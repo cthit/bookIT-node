@@ -7,7 +7,7 @@ import {
   Link,
   Outlet,
 } from "@tanstack/react-router";
-import { CalendarDays, LogOut, ShieldCheck } from "lucide-react";
+import { CalendarDays, LogOut } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@/lib/user";
@@ -72,7 +72,6 @@ function Layout() {
               {language === "en" ? "SV" : "EN"}
             </Button>
             <div className="hidden md:flex text-sm items-center gap-2 border-l pl-4 ml-2">
-              {user.data?.is_admin && <ShieldCheck className="size-4 text-accent-foreground" />}
               {user.data?.nickname || user.data?.name || user.data?.cid}
             </div>
             <Button variant="ghost" size="icon" asChild>

@@ -116,14 +116,16 @@ textarea {
   gap: 0.55rem;
 }
 
-.booking-multi-room {
+/* Multi-room bookings: block events (week/day columns, multi-day rows) are striped
+   with every room colour, while list items keep a plain row and show the rooms in the dot. */
+.booking-multi-room.booking-block-event {
   background-image: var(--booking-stripes);
   background-origin: border-box;
   background-repeat: no-repeat;
   color: white;
 }
 
-.booking-multi-room .booking-event-label {
+.booking-multi-room.booking-block-event .booking-event-label {
   /* FullCalendar otherwise stretches the label to fill the event. */
   flex: 0 1 auto !important;
   width: fit-content;
@@ -131,13 +133,10 @@ textarea {
   border-radius: var(--radius-sm);
 }
 
-.booking-multi-room .booking-list-event-label {
-  padding-inline: 0.5rem;
-}
-
-.booking-multi-room .booking-list-event-title {
-  /* Let compact labels fit the title without forcing an extra line. */
-  flex-basis: auto;
+.booking-multi-room .booking-event-dot {
+  border-color: transparent;
+  background-image: var(--booking-bands);
+  background-origin: border-box;
 }
 
 @media (max-width: 760px) {

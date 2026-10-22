@@ -24,9 +24,12 @@ const getShortDayCellBottomClass = (info: DayCellInfo) => cn(!info.isNarrow && "
 const dayRowCommonClasses: CalendarOptions = {
   listItemEventClass: (info) => cn("mb-1 p-0.5 rounded-sm", info.isNarrow ? "mx-px" : "mx-1"),
   listItemEventBeforeClass: (info) =>
-    cn("border-4 rounded-full border-(--fc-event-color)", info.isNarrow ? "ms-0.5" : "ms-1"),
+    cn(
+      "booking-event-dot border-4 rounded-full border-(--fc-event-color)",
+      info.isNarrow ? "ms-0.5" : "ms-1",
+    ),
   listItemEventInnerClass: (info) =>
-    cn("booking-event-label", info.isNarrow ? `py-0.5 ${xxsTextClass}` : "py-1 text-xs leading-4"),
+    cn(info.isNarrow ? `py-0.5 ${xxsTextClass}` : "py-1 text-xs leading-4"),
   listItemEventTimeClass: (info) =>
     cn(info.isNarrow ? "ps-0.5" : "ps-1", "whitespace-nowrap overflow-hidden shrink-1"),
   listItemEventTitleClass: (info) =>
@@ -79,7 +82,7 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
 
       blockEventClass={(info) =>
         cn(
-          "group relative border-transparent print:border-(--fc-event-color) bg-(--fc-event-color) hover:bg-[color-mix(in_oklab,var(--fc-event-color)_92%,var(--fc-event-contrast-color))] print:bg-white",
+          "booking-block-event group relative border-transparent print:border-(--fc-event-color) bg-(--fc-event-color) hover:bg-[color-mix(in_oklab,var(--fc-event-color)_92%,var(--fc-event-contrast-color))] print:bg-white",
           info.isInteractive &&
             "active:bg-[color-mix(in_oklab,var(--fc-event-color)_85%,var(--fc-event-contrast-color))]",
           !info.isSelected && info.isDragging && "opacity-75",
@@ -344,13 +347,13 @@ export function EventCalendarViews({ views: userViews, ...restOptions }: EventCa
         },
         list: {
           listItemEventClass: "group px-3 py-3 rounded-md gap-2",
-          listItemEventBeforeClass: "mx-2 border-5 rounded-full border-(--fc-event-color)",
-          listItemEventInnerClass:
-            "booking-event-label booking-list-event-label flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
+          listItemEventBeforeClass:
+            "booking-event-dot mx-2 border-5 rounded-full border-(--fc-event-color)",
+          listItemEventInnerClass: "flex-wrap gap-x-4 gap-y-1 text-sm leading-6",
           listItemEventTimeClass: "shrink-0 w-28 whitespace-nowrap",
           listItemEventTitleClass: (info) =>
             cn(
-              "booking-list-event-title grow min-w-0 basis-40 whitespace-normal break-words",
+              "grow min-w-0 basis-40 whitespace-normal break-words",
               info.event.url && "group-hover:underline",
             ),
 
