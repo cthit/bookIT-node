@@ -104,7 +104,9 @@ const rootRoute = createRootRoute({
       <Link to="/">Back to calendar</Link>
     </div>
   ),
-  errorComponent: ({ error, reset }) => <Failure error={error} retry={reset} />,
+  errorComponent: ({ error, reset }) => (
+    <Failure error={error instanceof Error ? error : new Error(String(error))} retry={reset} />
+  ),
 });
 
 const homeRoute = createRoute({
