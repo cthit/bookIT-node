@@ -19,9 +19,10 @@ peerDependencyRules:
     "@vitejs/plugin-react>vite": "0.3.0"
 
 allowBuilds:
-  # Native tooling needed by Prisma and tsx.
-  "@prisma/engines@7.10.0": true
-  "esbuild@0.28.2": true
+  # Native tooling needed by Prisma and tsx. Unpinned because `pnpm deploy --legacy`
+  # in the Dockerfile re-resolves versions instead of using the lockfile.
+  "@prisma/engines": true
+  esbuild: true
   # Version notices/checks and optional SSH acceleration are unnecessary.
   "@apollo/protobufjs": false
   protobufjs: false
