@@ -2,7 +2,7 @@ import { queryOptions, useQuery } from "@tanstack/react-query";
 import { request } from "@/api/client";
 import { CurrentUserDocument } from "@/generated/graphql";
 
-export const userOptions = queryOptions({
+const userOptions = queryOptions({
   queryKey: ["user"],
   queryFn: async () => {
     const { user } = await request(CurrentUserDocument, {});

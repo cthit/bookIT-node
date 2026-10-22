@@ -1,9 +1,7 @@
 {
   "name": "bookit",
   "version": "1.0.0",
-  "description": "",
-  "license": "ISC",
-  "author": "",
+  "license": "MIT",
   "files": [
     "build",
     "public",
@@ -11,9 +9,7 @@
     "prisma.config.ts",
     "src/environment.ts"
   ],
-  "main": "index.js",
   "scripts": {
-    "start": "tsx src/index.ts",
     "dev": "NODE_ENV=development tsx watch --env-file=../.env src/index.ts",
     "migrate": "prisma migrate deploy",
     "test": "vp test run",
@@ -34,16 +30,14 @@
     "express-http-proxy": "^2.1.2",
     "express-openid-connect": "^3.4.0",
     "graphql": "^16.14.2",
-    "pg": "^8.23.1",
     "prisma": "^7.10.1",
-    "redis": "^6.3.0",
-    "tsx": "^4.23.15"
+    "redis": "^6.3.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",
     "@types/express-http-proxy": "^1.6.7",
     "@types/node": "^24.19.2",
-    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
 }

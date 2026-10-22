@@ -4,7 +4,7 @@ import { GenericContainer, Network, Wait, type StartedTestContainer } from "test
 import { createServer, type AddressInfo } from "node:net";
 import seed from "../gamma/users.json";
 
-export const images = {
+const images = {
   bookitPostgres: "postgres:12.22-alpine",
   bookitRedis: "redis:5.0.14-alpine",
   gammaPostgres: "postgres:16.0-alpine",

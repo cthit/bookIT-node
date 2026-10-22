@@ -1,5 +1,4 @@
-import { ChevronDownIcon, XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { XIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 
 export function EventCalendarPrevIcon() {
   return <ChevronLeftIcon className="[[dir=rtl]_&]:rotate-180" />;
@@ -14,15 +13,4 @@ const hoverIconClassName =
 
 export function EventCalendarCloseIcon() {
   return <XIcon className={`size-5 ${hoverIconClassName}`} />;
-}
-
-export function EventCalendarExpanderIcon(props: { isExpanded: boolean }) {
-  return (
-    <ChevronDownIcon
-      className={cn(
-        `size-4 m-px ${hoverIconClassName}`,
-        !props.isExpanded && "-rotate-90 [[dir=rtl]_&]:rotate-90",
-      )}
-    />
-  );
 }
