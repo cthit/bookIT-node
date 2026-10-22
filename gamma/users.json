@@ -31,6 +31,12 @@
       "name": "digit",
       "prettyName": "digIT",
       "type": "COMMITTEE"
+    },
+    {
+      "id": "97587d97-d024-42bb-af5c-3360e8fad5ad",
+      "name": "hobbyit",
+      "prettyName": "hobbyIT",
+      "type": "SOCIETY"
     }
   ],
   "groups": [
@@ -44,6 +50,18 @@
           "userId": "88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f",
           "postId": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8"
         },
+        {
+          "userId": "bc605869-9a4d-46ec-8a29-d00819d4c195",
+          "postId": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8"
+        }
+      ]
+    },
+    {
+      "id": "b99b7073-5609-45f0-9859-34e953afd4aa",
+      "name": "hobbyit-local",
+      "prettyName": "hobbyIT local",
+      "superGroupId": "97587d97-d024-42bb-af5c-3360e8fad5ad",
+      "members": [
         {
           "userId": "bc605869-9a4d-46ec-8a29-d00819d4c195",
           "postId": "7bb1db15-730d-4864-bfc3-99abe7c0ccf8"

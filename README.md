@@ -23,7 +23,8 @@ migrations before starting. No `.env`, Node.js installation, or production
 credentials are needed. The first startup may take a few minutes while Gamma
 initializes. Gamma's image runs as `linux/amd64`, including on Apple Silicon.
 
-Sign in with `bookmember` (digIT), `bookadmin` (admin), or `bookguest` (no group),
+Sign in with `bookmember` (digIT; also in hobbyIT, which may not book),
+`bookadmin` (admin), or `bookguest` (no group),
 all with password `password1337`. Gamma runs at
 [http://gamma.localhost:8081](http://gamma.localhost:8081). The `gamma.localhost`
 hostname resolves to loopback in modern browsers and to Gamma inside Docker,
@@ -122,7 +123,8 @@ pnpm --dir frontend dev
 ```
 
 Open [http://localhost:8080](http://localhost:8080) to view the website.
-Sign in with `bookmember` (digIT), `bookadmin` (admin), or `bookguest` (no group),
+Sign in with `bookmember` (digIT; also in hobbyIT, which may not book),
+`bookadmin` (admin), or `bookguest` (no group),
 all with password `password1337`. Gamma runs at `http://gamma.localhost:8081`.
 The GraphQL endpoint is `/api/graphql/v1`.
 

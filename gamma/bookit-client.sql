@@ -1,11 +1,12 @@
 -- Local development seed, run with `docker compose run --rm gamma-init`.
 -- Gamma's mock data creates test users, but BookIT also needs a registered OAuth
--- client for sign-in and an API key to read their groups and admin permissions.
--- This registers the localhost callback and grants bookadmin the BookIT admin
--- role, so developers can exercise booking and rule management without manually
+-- client for sign-in and an API key to read their groups and authorities.
+-- This registers the localhost callback, grants bookadmin the BookIT admin role,
+-- and lets digIT (but not hobbyIT) book through the booking authority, so
+-- developers can exercise booking and rule management without manually
 -- configuring Gamma or using production credentials. The fixed client ID and
 -- credentials match .env.example and must only be used with local Gamma.
--- gamma-init waits for Gamma's schema and mock users before running this file;
+-- gamma-init waits for Gamma's schema and mock groups before running this file;
 -- ON CONFLICT DO NOTHING makes repeated setup preserve the existing seed rows.
 
 BEGIN;
@@ -55,6 +56,17 @@ INSERT INTO g_client_authority_user (created_at, user_id, client_uid, authority_
 VALUES (
     CURRENT_TIMESTAMP, '88eec5c2-5ebb-4e13-9a76-fcc4dac9e74f',
     'b2753bd1-9ca2-42e7-b0f2-28dd56bcc15d', 'admin'
+)
+ON CONFLICT DO NOTHING;
+
+INSERT INTO g_client_authority (created_at, client_uid, authority_name)
+VALUES (CURRENT_TIMESTAMP, 'b2753bd1-9ca2-42e7-b0f2-28dd56bcc15d', 'booking')
+ON CONFLICT DO NOTHING;
+
+INSERT INTO g_client_authority_super_group (created_at, super_group_id, client_uid, authority_name)
+VALUES (
+    CURRENT_TIMESTAMP, 'aed27030-ad90-4526-855c-1e909b1dcecb',
+    'b2753bd1-9ca2-42e7-b0f2-28dd56bcc15d', 'booking'
 )
 ON CONFLICT DO NOTHING;
 

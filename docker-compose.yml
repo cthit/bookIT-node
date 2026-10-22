@@ -93,12 +93,13 @@ services:
       - |
         for attempt in $$(seq 1 120); do
           if wget -q -T 2 -O /dev/null http://gamma:8081/login &&
-             [ "$$(psql -Atc "SELECT count(*) FROM g_user WHERE cid IN ('bookadmin', 'bookmember', 'bookguest')" 2>/dev/null)" = 3 ]; then
+             [ "$$(psql -Atc "SELECT count(*) FROM g_user WHERE cid IN ('bookadmin', 'bookmember', 'bookguest')" 2>/dev/null)" = 3 ] &&
+             [ "$$(psql -Atc "SELECT count(*) FROM g_group WHERE e_name IN ('digit-local', 'hobbyit-local')" 2>/dev/null)" = 2 ]; then
             exec psql -v ON_ERROR_STOP=1 -f /init/bookit-client.sql
           fi
           sleep 2
         done
-        echo "Gamma did not become ready with its local test users" >&2
+        echo "Gamma did not become ready with its local test users and groups" >&2
         exit 1
 
 volumes:
