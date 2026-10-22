@@ -1,0 +1,34 @@
+# Complete local environment, including the app built from this checkout.
+# Test credentials are deliberately fixed and never read from your .env.
+include:
+  - docker-compose.yml
+
+services:
+  app:
+    build: .
+    env_file: .env.example
+    environment:
+      DB_HOST: db
+      REDIS_HOST: redis
+      SECRET: bookit-local-testing-only-session-secret-32-characters
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      gamma-init:
+        condition: service_completed_successfully
+    ports:
+      - 127.0.0.1:8080:8080
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
