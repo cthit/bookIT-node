@@ -58,10 +58,10 @@ Gamma decides which groups may book rooms. On the BookIT client in Gamma, create
 a client authority named `booking` (or the name set in `BOOKING_AUTHORITY`) and
 add every super group that may book rooms; members of other super groups cannot
 book. Assign the `admin` authority to BookIT administrators, who may book and
-manage rules regardless of group. Reading the authority requires a Gamma release
-that provides `GET /api/client/v1/authorities/{name}`. If the authority is
-missing, or Gamma predates that endpoint, BookIT logs a warning at each sign-in
-and nobody can book as a group; other Gamma errors fail the sign-in.
+manage rules regardless of group. Reading the authority requires Gamma 2.5.3 or
+later, which provides `GET /api/client/v1/authorities/{name}`. If the authority
+is missing, or Gamma is older, BookIT logs a warning at each sign-in and nobody
+can book as a group; other Gamma errors fail the sign-in.
 
 The Alpine image runs `prisma migrate deploy` before starting the server and
 exits if migrations fail. Back up existing databases before upgrades. For a

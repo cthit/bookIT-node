@@ -10,10 +10,10 @@ const images = {
   gammaPostgres: "postgres:16.0-alpine",
   gammaRedis: "redis:5.0.14-alpine",
   // BookIT reads the booking authority through GET /api/client/v1/authorities/{name},
-  // which 2.5.1 predates; CI needs a Gamma release containing it before this pin
-  // can move. Locally, GAMMA_IMAGE runs the suite against another Gamma image.
+  // available since Gamma 2.5.3. Locally, GAMMA_IMAGE runs the suite against
+  // another Gamma image.
   gamma:
-    "ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db",
+    "ghcr.io/cthit/gamma:2.5.3@sha256:0d31a682660a2ca8b5754dc2e0939af3f88c5542305c11069430f3f120bdb59b",
 } as const;
 
 function userWithCid(cid: string) {

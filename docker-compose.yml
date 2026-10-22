@@ -47,7 +47,7 @@ services:
       retries: 20
 
   gamma:
-    image: ghcr.io/cthit/gamma:2.5.1@sha256:5112c5673ee5c98b072c38afe4ed0de5f7f7d6ae85c41bbd318c92f0e3d5d9db
+    image: ghcr.io/cthit/gamma:2.5.3@sha256:0d31a682660a2ca8b5754dc2e0939af3f88c5542305c11069430f3f120bdb59b
     platform: linux/amd64
     depends_on:
       gamma-db:
