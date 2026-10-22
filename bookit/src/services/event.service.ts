@@ -9,10 +9,20 @@ type Event = Omit<InputEvent, "room"> & { room: room[]; booked_by: string };
 
 type BookingOwnership = Pick<event, "booked_as" | "booked_by" | "room">;
 
+/**
+ * The fields of a booking that are validated as they are stored, independent
+ * of where in the calendar the booking is placed.
+ */
+type StoredBooking = BookingOwnership & {
+  start: Date | string;
+  end: Date | string;
+  phone?: string | null;
+};
+
 /*
  * Events must end after they start
  */
-const endIsAfterStart = (event: Event) => {
+const endIsAfterStart = (event: StoredBooking) => {
   return new Date(event.start) < new Date(event.end);
 };
 
@@ -56,18 +66,7 @@ export const canEditEvent = (event: BookingOwnership, user: User): boolean => {
   return userIsInBookingGroup(event, user);
 };
 
-/**
- * Whether a drag-and-drop move of an existing booking can succeed. Moving keeps
- * everything but the times, so a booking that fails validation as it stands
- * (anonymized contact, or a private booking of a restricted room) cannot be moved.
- */
-export const canMoveEvent = (event: BookingOwnership, user: User): boolean => {
-  return (
-    canEditEvent(event, user) && bookedByIsSpecified(event) && !bookingImportantAsPrivate(event)
-  );
-};
-
-const roomSpecified = (event: Event) => {
+const roomSpecified = (event: StoredBooking) => {
   return event.room.length > 0;
 };
 
@@ -109,12 +108,11 @@ const validPhoneNumber = (phoneNumber: string | null | undefined) => {
   );
 };
 
-const validEvent = async (
-  prisma: Prisma.TransactionClient,
-  event: Event,
-
-  user: User,
-) => {
+/**
+ * Validation that depends only on the booking itself and the acting user, not
+ * on where the booking sits relative to other bookings, rules, or today.
+ */
+const storedBookingError = (event: StoredBooking, user: User): Error | null => {
   if (!endIsAfterStart(event)) {
     return {
       sv: "Starttid är efter sluttid",
@@ -126,14 +124,6 @@ const validEvent = async (
     return {
       sv: `En bokning får vara högst ${MAX_RANGE_DAYS} dagar lång`,
       en: `A booking may last at most ${MAX_RANGE_DAYS} days`,
-    };
-  }
-
-  if (!isWithin9Weeks(event, user.is_admin)) {
-    // 5443200000 = 63 days or 9 weeks
-    return {
-      sv: "Den angivna starttiden är för långt fram i tiden",
-      en: "Start date is too far in the future",
     };
   }
 
@@ -165,6 +155,45 @@ const validEvent = async (
     };
   }
 
+  if (!validPhoneNumber(event.phone)) {
+    return {
+      sv: "Ogiltigt telefonnummer",
+      en: "Provided phone number is faulty",
+    };
+  }
+
+  return null;
+};
+
+/**
+ * Whether a drag-and-drop move of an existing booking can succeed. Moving keeps
+ * everything but the times, so a booking that fails validation as it stands
+ * cannot be moved, whoever tries.
+ */
+export const canMoveEvent = (event: StoredBooking, user: User): boolean => {
+  return storedBookingError(event, user) === null;
+};
+
+const validEvent = async (
+  prisma: Prisma.TransactionClient,
+  event: Event,
+
+  user: User,
+) => {
+  const storedError = storedBookingError(event, user);
+
+  if (storedError) {
+    return storedError;
+  }
+
+  if (!isWithin9Weeks(event, user.is_admin)) {
+    // 5443200000 = 63 days or 9 weeks
+    return {
+      sv: "Den angivna starttiden är för långt fram i tiden",
+      en: "Start date is too far in the future",
+    };
+  }
+
   try {
     if (await overlappingEvent(prisma, event)) {
       return {
@@ -189,13 +218,6 @@ const validEvent = async (
     return {
       sv: "Du måste godkänna bokningsvillkoren",
       en: "You must accept the booking terms and conditions",
-    };
-  }
-
-  if (!validPhoneNumber(event.phone)) {
-    return {
-      sv: "Ogiltigt telefonnummer",
-      en: "Provided phone number is faulty",
     };
   }
 
