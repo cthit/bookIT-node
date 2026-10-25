@@ -1,0 +1,71 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DB_USER: ${DB_USER:-bookit}
+      DB_PASS: ${DB_PASS:?Set DB_PASS in the root .env}
+      DB_NAME: ${DB_NAME:-bookit}
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      SECRET: ${SECRET:?Set SECRET in the root .env}
+      BASE_URL: ${BASE_URL:?Set BASE_URL in the root .env}
+      ISSUER_BASE_URL: ${ISSUER_BASE_URL:?Set ISSUER_BASE_URL in the root .env}
+      CLIENT_ID: ${CLIENT_ID:?Set CLIENT_ID in the root .env}
+      CLIENT_SECRET: ${CLIENT_SECRET:?Set CLIENT_SECRET in the root .env}
+      API_KEY: ${API_KEY:?Set API_KEY in the root .env}
+      BOOKING_AUTHORITY: ${BOOKING_AUTHORITY:-booking}
+      TRUST_PROXY: ${TRUST_PROXY:-0}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:8080:8080
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "node",
+          "-e",
+          "fetch('http://127.0.0.1:8080/api/health').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  db:
+    image: postgres:16.0-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-bookit}
+      POSTGRES_USER: ${DB_USER:-bookit}
+      POSTGRES_PASSWORD: ${DB_PASS:?Set DB_PASS in the root .env}
+      TZ: Europe/Stockholm
+    volumes:
+      - bookit-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:5.0.14-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - bookit-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  bookit-db:
+  bookit-redis:
