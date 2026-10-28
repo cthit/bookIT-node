@@ -11,6 +11,7 @@ import { createSessionStore } from "./auth/session-store";
 import { bookableGroups, bookingAuthoritySuperGroups, type GammaUserGroup } from "./auth/groups";
 import { cleanupPersonalData, startCleanup } from "./cleanup";
 import { databaseUrl, requiredEnvironment } from "./environment";
+import { runDataMigrations } from "./data-migrations";
 
 async function main() {
   process.env.TZ ??= "Europe/Stockholm";
@@ -123,6 +124,7 @@ async function main() {
   });
 
   await Promise.all([redis.connect(), prisma.$connect()]);
+  await runDataMigrations(prisma);
 
   const apollo = await setupRoutes(app, { prisma }, httpServer);
 

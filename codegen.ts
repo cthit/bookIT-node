@@ -36,7 +36,12 @@ async function generate() {
         schema,
         documents: [],
         filename: "bookit/src/generated/schema.ts",
-        config: { ...config, contextType: "../utils/commonTypes#Context" },
+        config: {
+          ...config,
+          contextType: "../utils/commonTypes#Context",
+          // Fields such as super_groups are resolved from the session user.
+          mappers: { User: "../models/user#User as SessionUser" },
+        },
         plugins: [{ typescript: {} }, { resolvers: {} }],
         pluginMap: { typescript, resolvers },
       }),

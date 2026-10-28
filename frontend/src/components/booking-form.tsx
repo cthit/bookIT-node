@@ -55,12 +55,16 @@ export function BookingForm({
   const [notification, setNotification] = useState(Boolean(booking));
   const [error, setError] = useState("");
   const [defaultStart] = useState(() => new Date());
-  const groups = user?.groups?.filter((group): group is string => Boolean(group)) ?? [];
-  const canEditPhone = !booking?.booked_by || booking.booked_by === user?.cid || user?.is_admin;
+  const groups = user?.super_groups ?? [];
+  const canEditPhone = !booking?.booked_by || booking.booked_by === user?.sub || user?.is_admin;
 
+  const bookedAs = booking?.booked_as;
+
+  // Admins may keep a booking's group even when they are not a member of it.
+  // It is labelled by ID if Gamma could not name it.
   const eligibleGroups =
-    user?.is_admin && booking && !groups.includes(booking.booked_as)
-      ? [...groups, booking.booked_as]
+    user?.is_admin && bookedAs && !groups.some(({ id }) => id === bookedAs)
+      ? [...groups, booking.booked_as_group ?? { id: bookedAs, pretty_name: bookedAs }]
       : groups;
 
   const start = booking
@@ -182,18 +186,13 @@ export function BookingForm({
         </div>
         <div className="field">
           <Label htmlFor="booked_as">{t("Booking as", "Bokas som")}</Label>
-          <NativeSelect
-            id="booked_as"
-            name="booked_as"
-            defaultValue={booking?.booked_as ?? ""}
-            required
-          >
+          <NativeSelect id="booked_as" name="booked_as" defaultValue={bookedAs ?? ""} required>
             <option value="" disabled>
               {t("Select group", "Välj grupp")}
             </option>
             {eligibleGroups.map((group) => (
-              <option key={group} value={group}>
-                {group}
+              <option key={group.id} value={group.id}>
+                {group.pretty_name}
               </option>
             ))}
           </NativeSelect>

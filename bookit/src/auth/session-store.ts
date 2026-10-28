@@ -17,7 +17,7 @@ export interface SessionRedis {
  * by an older build are discarded and users sign in again instead of keeping
  * permissions the current code would not grant them.
  */
-export const SESSION_VERSION = 2;
+export const SESSION_VERSION = 3;
 
 export function createSessionStore(client: SessionRedis): OidcStore {
   const key = (sid: string) => `bookit:oidc:${sid}`;

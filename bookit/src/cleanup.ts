@@ -4,9 +4,9 @@ export async function cleanupPersonalData(prisma: PrismaClient): Promise<void> {
   // Keep the existing database-local midnight cutoff, including its boundary.
   const count = await prisma.$executeRaw`
     UPDATE event
-    SET phone = '', booked_by = ''
+    SET phone = '', booked_by = NULL
     WHERE event.end <= NOW()::DATE - 14
-      AND (phone <> '' OR booked_by <> '')
+      AND (phone <> '' OR booked_by IS NOT NULL)
   `;
 
   console.log(`BookIT privacy cleanup cleared contact data from ${count} bookings`);

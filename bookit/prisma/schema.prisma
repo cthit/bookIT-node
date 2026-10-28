@@ -16,8 +16,10 @@ model event {
   created_at      DateTime      @default(now()) @db.Timestamp(3)
   updated_at      DateTime      @default(now()) @db.Timestamp(3)
   room            String[]
-  booked_by       String
-  booked_as       String
+  // Gamma user ID; null once personal data is cleared.
+  booked_by       String?       @db.Uuid
+  // Gamma super group ID; null if Gamma did not know the group when converted.
+  booked_as       String?       @db.Uuid
 }
 
 enum room {
@@ -41,4 +43,10 @@ model rule {
   room        room[]
   created_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
   updated_at  DateTime @default(dbgenerated("'2022-02-25 18:58:00.815359'::timestamp without time zone")) @db.Timestamp(3)
+}
+
+// Data migrations (bookit/src/data-migrations) that have been applied.
+model data_migration {
+  id         String   @id
+  applied_at DateTime @default(now()) @db.Timestamp(3)
 }

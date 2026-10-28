@@ -8,6 +8,10 @@ fragment Booking on Event {
   phone
   booked_as
   booked_by
+  booked_as_group {
+    id
+    pretty_name
+  }
   can_edit
   can_move
   created_at
@@ -21,7 +25,10 @@ query CurrentUser {
     name
     nickname
     locale
-    groups
+    super_groups {
+      id
+      pretty_name
+    }
     is_admin
   }
 }
@@ -42,7 +49,12 @@ query Calendar($from: String!, $to: String!) {
 query BookingDetail($id: String!) {
   event(id: $id) {
     ...Booking
+    booked_by_user {
+      id
+      display_name
+    }
   }
+  gammaUrl
 }
 
 mutation CreateBooking($event: InputEvent!) {

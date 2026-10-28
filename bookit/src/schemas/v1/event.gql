@@ -8,8 +8,14 @@ type Event {
   updated_at: String
   room: [Room!]!
   phone: String!
-  booked_as: String!
-  booked_by: String!
+  "Gamma ID of the super group the booking is made as; null if Gamma did not know it."
+  booked_as: String
+  "Gamma ID of the user who made the booking; null once personal data is cleared."
+  booked_by: String
+  "The booking super group, or null if Gamma no longer knows it."
+  booked_as_group: SuperGroup
+  "The booking user, or null if cleared or unknown to Gamma."
+  booked_by_user: GammaUser
   "Whether the signed-in user may edit or delete this booking."
   can_edit: Boolean!
   "Whether the signed-in user may move this booking by dragging it."
@@ -32,6 +38,7 @@ input InputEvent {
   updated_at: String
   room: [Room]!
   phone: String
+  "Gamma ID of the super group to book as."
   booked_as: String!
   booking_terms: Boolean!
 }
