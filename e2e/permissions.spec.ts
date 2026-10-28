@@ -73,7 +73,7 @@ test("a member can book only as super groups with the Gamma booking authority", 
   const bookingAs = page.getByRole("combobox", { name: "Booking as", exact: true });
 
   // bookmember also belongs to hobbyit, which lacks the booking authority.
-  await expect(bookingAs.locator("option")).toHaveText(["Select group", "digit"]);
+  await expect(bookingAs.locator("option")).toHaveText(["Select group", "digIT"]);
 });
 
 test("a group member can edit a colleague's booking without replacing their private contact", async ({

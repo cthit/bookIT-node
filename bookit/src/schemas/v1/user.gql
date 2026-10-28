@@ -9,10 +9,30 @@ type User {
   nickname: String
   locale: String
   cid: String
+  "Gamma IDs of the super groups the user may book as."
   groups: [String]
+  "The super groups the user may book as."
+  super_groups: [SuperGroup!]!
   is_admin: Boolean
+}
+
+type SuperGroup {
+  id: String!
+  name: String!
+  pretty_name: String!
+}
+
+type GammaUser {
+  id: String!
+  nick: String!
+  first_name: String!
+  last_name: String!
+  "The user as Chalmers IT shows them: First \"Nick\" Last."
+  display_name: String!
 }
 
 type Query {
   user: User
+  "Base URL of the Gamma instance, used to link to users and groups."
+  gammaUrl: String!
 }

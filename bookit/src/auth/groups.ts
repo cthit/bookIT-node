@@ -2,31 +2,31 @@ import { isAxiosError } from "axios";
 import { authRequest } from "../utils";
 
 export interface GammaUserGroup {
-  superGroup?: { type: string; name: string };
+  superGroup?: { id: string; type: string };
 }
 
 export interface GammaAuthority {
-  superGroups: { name: string }[];
+  superGroups: { id: string }[];
 }
 
 // Gamma assigns this client authority to the super groups that may book rooms.
 export const bookingAuthority = (): string => process.env.BOOKING_AUTHORITY || "booking";
 
 /**
- * Super groups the user may book as: active (non-alumni) memberships that are
- * also assigned the booking authority in Gamma.
+ * IDs of the super groups the user may book as: active (non-alumni)
+ * memberships that are also assigned the booking authority in Gamma.
  */
 export function bookableGroups(
   userGroups: GammaUserGroup[],
-  authoritySuperGroups: { name: string }[],
+  authoritySuperGroups: { id: string }[],
 ): string[] {
-  const authorized = new Set(authoritySuperGroups.map(({ name }) => name));
+  const authorized = new Set(authoritySuperGroups.map(({ id }) => id));
 
   return [
     ...new Set(
       userGroups.flatMap(({ superGroup }) =>
-        superGroup && superGroup.type.toLowerCase() !== "alumni" && authorized.has(superGroup.name)
-          ? [superGroup.name]
+        superGroup && superGroup.type.toLowerCase() !== "alumni" && authorized.has(superGroup.id)
+          ? [superGroup.id]
           : [],
       ),
     ),

@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import seed from "../gamma/users.json";
 import { acceptConditions, createBooking, fillBooking, openBooking } from "./booking-helpers";
 import { expectSegments } from "./date-time-helpers";
 
@@ -39,15 +40,22 @@ test("a new-booking link accepts UTC timestamps and preserves their local time",
   });
   await page.getByRole("textbox", { name: "Title", exact: true }).fill("E2E UTC link booking");
   await page.getByRole("textbox", { name: "Phone number", exact: true }).fill("0701234567");
-  await page.getByRole("combobox", { name: "Booking as", exact: true }).selectOption("digit");
+  await page
+    .getByRole("combobox", { name: "Booking as", exact: true })
+    .selectOption({ label: "digIT" });
   await acceptConditions(page);
   await page.getByRole("button", { name: "Save booking", exact: true }).click();
   await expect(page).toHaveURL(/\/$/);
   await openBooking(page, "E2E UTC link booking");
 });
 
-test("a group member creates, edits and deletes a persisted booking", async ({ page }) => {
+test("a group member creates, edits and deletes a persisted booking", async ({
+  page,
+  environment,
+}) => {
   const title = "E2E digIT planning";
+  const digit = seed.superGroups.find(({ name }) => name === "digit")!;
+  const member = seed.users.find(({ cid }) => cid === "bookmember")!;
 
   await createBooking(page, title);
   await openBooking(page, title);
@@ -55,6 +63,18 @@ test("a group member creates, edits and deletes a persisted booking", async ({ p
   await expect(
     page.getByText("Planning together in our shared room.", { exact: true }),
   ).toBeVisible();
+
+  // Gamma names, linking to Gamma by ID.
+  await expect(page.getByRole("link", { name: digit.prettyName, exact: true })).toHaveAttribute(
+    "href",
+    `${environment.gammaUrl}/super-groups/${digit.id}`,
+  );
+  await expect(
+    page.getByRole("link", {
+      name: `${member.firstName} "${member.nick}" ${member.lastName}`,
+      exact: true,
+    }),
+  ).toHaveAttribute("href", `${environment.gammaUrl}/users/${member.id}`);
 
   await page.reload();
   await openBooking(page, title);

@@ -5,7 +5,7 @@ import { Prisma, rule, room } from "@prisma/client";
 import { GraphQLError } from "graphql";
 import { validRange } from "../utils/date-range";
 
-type RuleBooking = Omit<InputEvent, "room"> & { room: room[] };
+type RuleBooking = Omit<InputEvent, "room" | "booked_as"> & { room: room[] };
 
 /**
  * A single rule that applies to a specific time slot

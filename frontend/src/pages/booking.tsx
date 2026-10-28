@@ -92,7 +92,7 @@ export function BookingDetails({
     return <Failure error={query.error} />;
   }
 
-  const booking = query.data.event;
+  const { event: booking, gammaUrl } = query.data;
 
   if (!booking) {
     return <p role="alert">{t("Booking not found.", "Bokningen hittades inte.")}</p>;
@@ -153,12 +153,16 @@ export function BookingDetails({
               <div>
                 <dt className="text-sm text-muted-foreground">{t("Booking as", "Bokas som")}</dt>
                 <dd className="mt-2 font-medium">
-                  <a
-                    className="text-accent-foreground underline"
-                    href={`https://gamma.chalmers.it/super-groups/${encodeURIComponent(booking.booked_as)}`}
-                  >
-                    {booking.booked_as}
-                  </a>
+                  {booking.booked_as ? (
+                    <a
+                      className="text-accent-foreground underline"
+                      href={`${gammaUrl}/super-groups/${encodeURIComponent(booking.booked_as)}`}
+                    >
+                      {booking.booked_as_group?.pretty_name ?? booking.booked_as}
+                    </a>
+                  ) : (
+                    "—"
+                  )}
                 </dd>
               </div>
               <div>
@@ -179,9 +183,9 @@ export function BookingDetails({
                   {booking.booked_by ? (
                     <a
                       className="text-accent-foreground underline"
-                      href={`https://gamma.chalmers.it/users/${encodeURIComponent(booking.booked_by)}`}
+                      href={`${gammaUrl}/users/${encodeURIComponent(booking.booked_by)}`}
                     >
-                      {booking.booked_by}
+                      {booking.booked_by_user?.display_name ?? booking.booked_by}
                     </a>
                   ) : (
                     "—"

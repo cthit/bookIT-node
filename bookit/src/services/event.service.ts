@@ -5,7 +5,12 @@ import { checkRules } from "./rule.service";
 import { setTimeout as delay } from "node:timers/promises";
 import { MAX_RANGE_DAYS, validRange } from "../utils/date-range";
 
-type Event = Omit<InputEvent, "room"> & { room: room[]; booked_by: string };
+// Stored bookings may lack a group or booker; validation rejects saving them so.
+type Event = Omit<InputEvent, "room" | "booked_as"> & {
+  room: room[];
+  booked_as: string | null;
+  booked_by: string | null;
+};
 
 type BookingOwnership = Pick<event, "booked_as" | "booked_by" | "room">;
 
@@ -39,24 +44,14 @@ const isWithin9Weeks = (event: Event, is_admin: boolean) => {
  * Admins are exempt from this rule
  */
 const userIsInBookingGroup = (event: BookingOwnership, user: User) => {
-  return user.groups.includes(event.booked_as) || user.is_admin;
+  return (event.booked_as !== null && user.groups.includes(event.booked_as)) || user.is_admin;
 };
 
 /**
  * The person booking the event must be specified
  */
 const bookedByIsSpecified = (event: BookingOwnership): boolean => {
-  return event.booked_by !== "";
-};
-
-/**
- * Big hub and The Cloud cannot be booked for a private event
- */
-const bookingImportantAsPrivate = (event: BookingOwnership) => {
-  return (
-    event.booked_as == event.booked_by &&
-    (event.room.includes(room.BIG_HUB) || event.room.includes(room.THE_CLOUD))
-  );
+  return Boolean(event.booked_by);
 };
 
 /**
@@ -127,7 +122,7 @@ const storedBookingError = (event: StoredBooking, user: User): Error | null => {
     };
   }
 
-  if (!event.booked_as.trim() || !userIsInBookingGroup(event, user)) {
+  if (!event.booked_as || !userIsInBookingGroup(event, user)) {
     return {
       sv: "Bokande grupp ej specificerad",
       en: "Booking group not specified",
@@ -138,13 +133,6 @@ const storedBookingError = (event: StoredBooking, user: User): Error | null => {
     return {
       sv: "Bokande användare ej specificerad",
       en: "Booking user not specified",
-    };
-  }
-
-  if (bookingImportantAsPrivate(event)) {
-    return {
-      sv: "Storhubben och The Cloud får inte bokas som privatperson",
-      en: "The big hub and The Cloud cannot be booked as a private person",
     };
   }
 
@@ -230,7 +218,7 @@ const toEvent = (event: Event) => ({
   description: event.description,
   end: new Date(event.end),
   booked_as: event.booked_as,
-  booked_by: event.booked_by || "",
+  booked_by: event.booked_by || null,
   phone: event.phone ?? "",
   room: event.room.map((e) => e.toString()),
 });
@@ -312,7 +300,7 @@ export const editEvent = async (
 
     if (
       previous.booked_by &&
-      previous.booked_by !== user.cid &&
+      previous.booked_by !== user.sub &&
       !user.is_admin &&
       event.phone != null
     ) {
@@ -327,7 +315,7 @@ export const editEvent = async (
     const updated = {
       ...event,
       phone: event.phone ?? (previous.booked_by ? previous.phone : ""),
-      booked_by: previous.booked_by || user.cid,
+      booked_by: previous.booked_by || user.sub,
     };
 
     const error =

@@ -47,7 +47,8 @@ openssl rand -hex 32
 docker compose -f docker-compose.prod.yml up --build -d --wait
 ```
 
-Set `BASE_URL` to the public HTTPS address, `ISSUER_BASE_URL` to your Gamma instance,
+Set `BASE_URL` to the public HTTPS address, `ISSUER_BASE_URL` to your Gamma instance
+(it must be reachable from browsers too, since bookings link to Gamma profiles),
 and supply its `CLIENT_ID`, `CLIENT_SECRET`, and client `API_KEY`. Register
 `<BASE_URL>/api/callback` as the Gamma client's redirect URI. Put a TLS reverse
 proxy in front of `127.0.0.1:8080`; set `TRUST_PROXY=1` only when using exactly one
@@ -62,6 +63,26 @@ manage rules regardless of group. Reading the authority requires Gamma 2.5.3 or
 later, which provides `GET /api/client/v1/authorities/{name}`. If the authority
 is missing, or Gamma is older, BookIT logs a warning at each sign-in and nobody
 can book as a group; other Gamma errors fail the sign-in.
+
+Bookings store only Gamma IDs, as UUIDs: `booked_as` is the super group ID and
+`booked_by` the user ID (null once personal data is cleared). Names shown in
+BookIT are fetched from Gamma and cached in memory for ten minutes; cached
+users are dropped at every privacy cleanup.
+
+Changes to existing data that need more than SQL live in
+`bookit/src/data-migrations`. Pending ones run once at startup, after
+`prisma migrate deploy` and before the server accepts requests, and are recorded
+in the `data_migration` table. If one fails, for example because Gamma is
+unreachable, startup fails and it is retried on the next start. The first one
+converts bookings from older versions, stored with super group names and cids,
+to Gamma IDs. Values without an ID are logged and set to null: groups Gamma no
+longer has, old private bookings, and bookers who no longer accept BookIT in
+Gamma (handled like bookings whose personal data was cleared). If Gamma returns
+no super groups or users, startup fails instead, since that points to a wrong
+`ISSUER_BASE_URL`.
+
+These migrations cannot be undone. To go back to an older BookIT version after
+upgrading, restore the database backup taken before the upgrade.
 
 The Alpine image runs `prisma migrate deploy` before starting the server and
 exits if migrations fail. Back up existing databases before upgrades. For a

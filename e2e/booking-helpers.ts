@@ -24,7 +24,9 @@ export async function fillBooking(page: Page, title: string) {
   await expect(page.getByRole("combobox", { name: "Booking as", exact: true })).toHaveValue("");
   await expect(page.getByRole("checkbox", { name: "Storhubben", exact: true })).toBeChecked();
 
-  await page.getByRole("combobox", { name: "Booking as", exact: true }).selectOption("digit");
+  await page
+    .getByRole("combobox", { name: "Booking as", exact: true })
+    .selectOption({ label: "digIT" });
   await page.getByRole("checkbox", { name: "Storhubben", exact: true }).check();
 
   await fillSegments(page.getByRole("group", { name: "Begins at", exact: true }), {
