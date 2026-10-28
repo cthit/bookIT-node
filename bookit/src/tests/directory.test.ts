@@ -54,6 +54,16 @@ describe("cached", () => {
     assert.equal(await cache.get("a"), "digIT");
   });
 
+  it("forgets everything when cleared", async () => {
+    const fetch = vi.fn<() => Promise<string>>(async () => "BookIT");
+    const cache = cached(fetch);
+
+    await cache.get("a");
+    cache.clear();
+    await cache.get("a");
+    assert.equal(fetch.mock.calls.length, 2);
+  });
+
   it("caches null results", async () => {
     const fetch = vi.fn<() => Promise<null>>(async () => null);
     const cache = cached(fetch);

@@ -81,6 +81,9 @@ export function cached<T>(fetch: (key: string) => Promise<T>) {
 
       throw entry.error;
     },
+    clear() {
+      entries.clear();
+    },
   };
 }
 
@@ -106,6 +109,12 @@ export async function superGroup(id: string): Promise<GammaSuperGroup | null> {
 }
 
 export const user = (id: string): Promise<GammaUser | null> => users.get(id);
+
+/**
+ * Drops cached users, which hold personal data. Called by the privacy cleanup
+ * so names are not kept in memory longer than the bookings that reference them.
+ */
+export const forgetUsers = (): void => users.clear();
 
 /** Users who currently accept BookIT in Gamma; not users who revoked it. */
 export const acceptedUsers = (): Promise<GammaUser[]> =>

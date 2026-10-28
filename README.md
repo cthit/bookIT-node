@@ -66,7 +66,8 @@ can book as a group; other Gamma errors fail the sign-in.
 
 Bookings store only Gamma IDs, as UUIDs: `booked_as` is the super group ID and
 `booked_by` the user ID (null once personal data is cleared). Names shown in
-BookIT are fetched from Gamma and cached in memory for ten minutes.
+BookIT are fetched from Gamma and cached in memory for ten minutes; cached
+users are dropped at every privacy cleanup.
 
 Changes to existing data that need more than SQL live in
 `bookit/src/data-migrations`. Pending ones run once at startup, after
