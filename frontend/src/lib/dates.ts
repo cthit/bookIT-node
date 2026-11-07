@@ -21,6 +21,7 @@ export function bookingSearchDate(value: unknown): string | undefined {
 
   const date = new Date(/^\d{4}-\d{2}-\d{2}$/.test(value) ? `${value}T00:00` : value);
 
+  // The picker holds local wall-clock values, so the range applies to the local year.
   return isValid(date) && date.getFullYear() >= 1 && date.getFullYear() <= 9999
     ? localInput(date)
     : undefined;

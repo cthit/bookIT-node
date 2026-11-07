@@ -14,7 +14,11 @@ describe("booking dates", () => {
   });
 
   it("discards missing, invalid, and out-of-picker-range query parameters", () => {
-    for (const value of [undefined, 123, "not-a-date", "+010000-01-01T00:00:00Z"]) {
+    // The picker holds local wall-clock values, so these instants fall outside
+    // its 0001–9999 range at any UTC offset.
+    const outOfRange = ["+010000-01-02T00:00:00Z", "0000-12-30T00:00:00Z"];
+
+    for (const value of [undefined, 123, "not-a-date", ...outOfRange]) {
       expect(bookingSearchDate(value)).toBeUndefined();
     }
   });

@@ -11,6 +11,7 @@ import {
 } from "../services/rule.service";
 import type { InputEvent } from "../generated/schema";
 import { rule, room } from "@prisma/client";
+import { inEveryProcessTimeZone } from "./process-time-zone";
 
 const defaultRule: rule = {
   id: "",
@@ -55,27 +56,25 @@ const dummyRules: rule[] = [
   },
 ];
 
+// Rule times are Stockholm wall-clock times; in August that is UTC+02:00.
 describe("Rule utility functions", () => {
-  it("Should create ISO date", () => {
-    const date = new Date("2021-08-19");
-    const time = "17:00";
-
-    assert.equal(
-      new Date("2021-08-19T17:00").toISOString(),
-      new Date(day(date) + "T" + time).toISOString(),
-    );
+  it("uses the Stockholm calendar date of an instant", () => {
+    assert.equal(day(new Date("2021-08-19T00:00:00Z")), "2021-08-19");
+    assert.equal(day(new Date("2021-08-18T22:00:00Z")), "2021-08-19");
+    assert.equal(day(new Date("2021-08-18T21:59:59Z")), "2021-08-18");
+    assert.equal(day(new Date("2021-01-31T23:30:00Z")), "2021-02-01");
   });
 
   it("Should allow day", () => {
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b0001000), true, "0b0001000");
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b0001100), true, "0b0001100");
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b0011000), true, "0b0011000");
+    assert.equal(dayApplies("2021-08-19", 0b0001000), true, "0b0001000");
+    assert.equal(dayApplies("2021-08-19", 0b0001100), true, "0b0001100");
+    assert.equal(dayApplies("2021-08-19", 0b0011000), true, "0b0011000");
   });
 
   it("Should not allow day", () => {
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b1110111), false, "0b1110111");
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b0000000), false, "0b0000000");
-    assert.equal(dayApplies(new Date("2021-08-19"), 0b0000111), false, "0b0000111");
+    assert.equal(dayApplies("2021-08-19", 0b1110111), false, "0b1110111");
+    assert.equal(dayApplies("2021-08-19", 0b0000000), false, "0b0000000");
+    assert.equal(dayApplies("2021-08-19", 0b0000111), false, "0b0000111");
   });
 });
 
@@ -108,12 +107,28 @@ describe("Rules to ExplicitRules", () => {
     assert.equal(day(result[1].start), "2021-08-20");
   });
 
+  it("expands rules the same way regardless of the TZ of the process", () => {
+    const expected = toExplicitRules(dummyRules, new Date("2021-08-16"), new Date("2021-08-22"));
+
+    inEveryProcessTimeZone((zone) => {
+      assert.deepEqual(
+        toExplicitRules(dummyRules, new Date("2021-08-16"), new Date("2021-08-22")),
+        expected,
+        zone,
+      );
+    });
+
+    assert.equal(expected.length, 5);
+    assert.equal(expected[0].start.toISOString(), "2021-08-17T05:00:00.000Z");
+    assert.equal(expected[4].end.toISOString(), "2021-08-20T15:00:00.000Z");
+  });
+
   it("Should create one mini rule", () => {
     const expected: ExplicitRule[] = [
       {
         ...defaultExplicitRules,
-        start: new Date("2021-08-20T08:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T08:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
     ];
 
@@ -131,13 +146,13 @@ describe("Rules to ExplicitRules", () => {
     const expected: ExplicitRule[] = [
       {
         ...defaultExplicitRules,
-        start: new Date("2021-08-19T08:00"),
-        end: new Date("2021-08-19T17:00"),
+        start: new Date("2021-08-19T08:00+02:00"),
+        end: new Date("2021-08-19T17:00+02:00"),
       },
       {
         ...defaultExplicitRules,
-        start: new Date("2021-08-20T08:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T08:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
     ];
 
@@ -156,13 +171,13 @@ describe("Rules to ExplicitRules", () => {
     const expected: ExplicitRule[] = [
       {
         ...dummyRules[1],
-        start: new Date("2021-08-17T07:00"),
-        end: new Date("2021-08-17T10:00"),
+        start: new Date("2021-08-17T07:00+02:00"),
+        end: new Date("2021-08-17T10:00+02:00"),
       },
       {
         ...dummyRules[0],
-        start: new Date("2021-08-18T08:00"),
-        end: new Date("2021-08-18T17:00"),
+        start: new Date("2021-08-18T08:00+02:00"),
+        end: new Date("2021-08-18T17:00+02:00"),
       },
     ];
 
@@ -201,8 +216,8 @@ describe("Booking rule scope", () => {
   it("does not let permission in one room override restrictions in another", () => {
     const booking: Omit<InputEvent, "room"> & { room: room[] } = {
       title: "Two rooms",
-      start: "2021-08-20T11:00",
-      end: "2021-08-20T12:00",
+      start: "2021-08-20T09:00:00.000Z",
+      end: "2021-08-20T10:00:00.000Z",
       room: ["BIG_HUB", "GROUP_ROOM"],
       phone: "0701234567",
       booked_as: "digit",
@@ -246,22 +261,22 @@ describe("Merge rules", () => {
   it("preserves later restrictions when an inserted interval is already covered", () => {
     const first = {
       ...defaultExplicitRules,
-      start: new Date("2021-08-20T08:00"),
-      end: new Date("2021-08-20T10:00"),
+      start: new Date("2021-08-20T08:00+02:00"),
+      end: new Date("2021-08-20T10:00+02:00"),
       priority: 1,
     };
 
     const later = {
       ...defaultExplicitRules,
-      start: new Date("2021-08-20T14:00"),
-      end: new Date("2021-08-20T16:00"),
+      start: new Date("2021-08-20T14:00+02:00"),
+      end: new Date("2021-08-20T16:00+02:00"),
       priority: 1,
     };
 
     const covered = {
       ...defaultExplicitRules,
-      start: new Date("2021-08-20T08:00"),
-      end: new Date("2021-08-20T09:00"),
+      start: new Date("2021-08-20T08:00+02:00"),
+      end: new Date("2021-08-20T09:00+02:00"),
       priority: 2,
       allow: true,
     };
@@ -280,8 +295,8 @@ describe("Merge rules", () => {
     const expected: ExplicitRule[] = [
       {
         ...defaultExplicitRules,
-        start: new Date("2021-08-20T08:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T08:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
     ];
 
@@ -322,13 +337,13 @@ describe("Merge rules", () => {
     const expected: ExplicitRule[] = [
       {
         ...rules[1],
-        start: new Date("2021-08-20T07:00"),
-        end: new Date("2021-08-20T10:00"),
+        start: new Date("2021-08-20T07:00+02:00"),
+        end: new Date("2021-08-20T10:00+02:00"),
       },
       {
         ...rules[0],
-        start: new Date("2021-08-20T10:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T10:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
     ];
 
@@ -368,18 +383,18 @@ describe("Merge rules", () => {
     const expected: ExplicitRule[] = [
       {
         ...rules[0],
-        start: new Date("2021-08-20T08:00"),
-        end: new Date("2021-08-20T10:00"),
+        start: new Date("2021-08-20T08:00+02:00"),
+        end: new Date("2021-08-20T10:00+02:00"),
       },
       {
         ...rules[1],
-        start: new Date("2021-08-20T10:00"),
-        end: new Date("2021-08-20T13:00"),
+        start: new Date("2021-08-20T10:00+02:00"),
+        end: new Date("2021-08-20T13:00+02:00"),
       },
       {
         ...rules[0],
-        start: new Date("2021-08-20T13:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T13:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
     ];
 
@@ -430,23 +445,23 @@ describe("Merge rules", () => {
     const expected: ExplicitRule[] = [
       {
         ...rules[0],
-        start: new Date("2021-08-20T08:00"),
-        end: new Date("2021-08-20T10:00"),
+        start: new Date("2021-08-20T08:00+02:00"),
+        end: new Date("2021-08-20T10:00+02:00"),
       },
       {
         ...rules[1],
-        start: new Date("2021-08-20T10:00"),
-        end: new Date("2021-08-20T13:00"),
+        start: new Date("2021-08-20T10:00+02:00"),
+        end: new Date("2021-08-20T13:00+02:00"),
       },
       {
         ...rules[0],
-        start: new Date("2021-08-20T13:00"),
-        end: new Date("2021-08-20T17:00"),
+        start: new Date("2021-08-20T13:00+02:00"),
+        end: new Date("2021-08-20T17:00+02:00"),
       },
       {
         ...rules[2],
-        start: new Date("2021-08-20T17:00"),
-        end: new Date("2021-08-20T19:00"),
+        start: new Date("2021-08-20T17:00+02:00"),
+        end: new Date("2021-08-20T19:00+02:00"),
       },
     ];
 
