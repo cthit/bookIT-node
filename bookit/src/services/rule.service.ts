@@ -4,6 +4,7 @@ import { to } from "../utils";
 import { Prisma, rule, room } from "@prisma/client";
 import { GraphQLError } from "graphql";
 import { validRange } from "../utils/date-range";
+import { calendarDate, zonedDateTime } from "../utils/time-zone";
 
 type RuleBooking = Omit<InputEvent, "room" | "booked_as"> & { room: room[] };
 
@@ -19,28 +20,23 @@ export interface ExplicitRule {
   description: string | null;
 }
 
-/**
- * 6  -> "06"
- * 16 -> "16"
- */
-const zero = (n: number): string => {
-  return n >= 10 ? n.toString() : "0" + n;
-};
+// Rules are expanded per calendar day in the time zone of the rooms, and the
+// Date values below hold the instants of those wall-clock times.
 
-export const day = (date: Date): string => {
-  return `${date.getFullYear()}-${zero(date.getMonth() + 1)}-${zero(date.getDate())}`;
-};
+/** The calendar date (`YYYY-MM-DD`) of an instant. */
+export const day = calendarDate;
 
-export const dayApplies = (date: Date, day_mask: number): boolean => {
-  const dayIndex = (Math.floor(date.getDay()) + 6) % 7;
+/** Whether a calendar date (`YYYY-MM-DD`) is in a day mask (bit 0 is Monday). */
+export const dayApplies = (date: string, day_mask: number): boolean => {
+  const dayIndex = (new Date(`${date}T00:00:00Z`).getUTCDay() + 6) % 7;
 
   return (day_mask >> dayIndex) % 2 > 0;
 };
 
-const insertRule = (explicitRules: ExplicitRule[], current: Date, rule: rule): void => {
+const insertRule = (explicitRules: ExplicitRule[], date: string, rule: rule): void => {
   explicitRules.push({
-    start: new Date(day(current) + "T" + rule.start_time),
-    end: new Date(day(current) + "T" + rule.end_time),
+    start: zonedDateTime(date, rule.start_time),
+    end: zonedDateTime(date, rule.end_time),
     ...rule,
   });
 };
@@ -63,24 +59,27 @@ export const toExplicitRules = (rules: rule[], from: Date, to: Date): ExplicitRu
   }
 
   for (const rule of rules) {
-    const current = new Date(Math.max(from.getTime(), rule.start_date.getTime()));
-    const end = new Date(Math.min(to.getTime(), rule.end_date.getTime()));
+    const first = day(new Date(Math.max(from.getTime(), rule.start_date.getTime())));
+    const last = day(new Date(Math.min(to.getTime(), rule.end_date.getTime())));
 
-    current.setHours(0, 0, 0, 0);
-    end.setHours(0, 0, 0, 0);
+    // Calendar arithmetic happens at UTC midnight, which no TZ setting affects.
+    const current = new Date(`${first}T00:00:00Z`);
+    const end = new Date(`${last}T00:00:00Z`);
 
     while (current <= end) {
-      if (dayApplies(current, rule.day_mask)) {
+      const date = current.toISOString().slice(0, 10);
+
+      if (dayApplies(date, rule.day_mask)) {
         if (explicitRules.length >= 10_000) {
           throw new GraphQLError("Too many recurring rules. Choose a shorter date range.", {
             extensions: { code: "BAD_USER_INPUT" },
           });
         }
 
-        insertRule(explicitRules, current, rule);
+        insertRule(explicitRules, date, rule);
       }
 
-      current.setDate(current.getDate() + 1);
+      current.setUTCDate(current.getUTCDate() + 1);
     }
   }
 
@@ -153,17 +152,11 @@ export const doesObeyRules = (rules: rule[], event: RuleBooking): Error | null =
   return null;
 };
 
-const stockholmDate = new Intl.DateTimeFormat("sv-SE", {
-  timeZone: "Europe/Stockholm",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-});
-
-// UTC-midnight rule dates include the entire last day in Stockholm time.
+// Rule dates are stored as UTC midnight of their calendar date, so these
+// bounds include the entire last day of a rule.
 export const ruleDateBounds = (from: Date, to: Date) => ({
-  end_date: { gte: new Date(`${stockholmDate.format(from)}T00:00:00.000Z`) },
-  start_date: { lte: new Date(`${stockholmDate.format(to)}T00:00:00.000Z`) },
+  end_date: { gte: new Date(`${day(from)}T00:00:00.000Z`) },
+  start_date: { lte: new Date(`${day(to)}T00:00:00.000Z`) },
 });
 
 export const getRulesBetween = async (prisma: Prisma.TransactionClient, from: Date, to: Date) => {
@@ -218,8 +211,8 @@ export const createRule = async (
   rule.start_date = day(start);
   rule.end_date = day(end);
 
-  const start_time = new Date(rule.start_date + "T" + rule.start_time);
-  const end_time = new Date(rule.start_date + "T" + rule.end_time);
+  const start_time = zonedDateTime(rule.start_date, rule.start_time);
+  const end_time = zonedDateTime(rule.start_date, rule.end_time);
 
   if (!validDateTime(start_time, end_time)) {
     return {
